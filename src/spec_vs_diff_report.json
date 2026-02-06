@@ -1,71 +1,45 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T22:08:12.206Z",
-  "summary": "The diff implements many of the requested copy changes (role-play → novelty) and switches logo references to a new transparent filename in the header and landing page. However, the diff does not provide evidence that the new transparent logo asset file was actually added under frontend/public/assets/generated, and it is unclear whether the legacy RoleplayDisclaimerBanner component was updated to novelty wording as required. The diff also appears to introduce substantial unrequested UI/theme and footer branding changes.",
+  "generatedAt": "2026-02-06T22:23:22.353Z",
+  "summary": "Diff adds an optional trackingNumber field to the backend Order type (with migration) and adds frontend support to set/display tracking numbers, plus a post-submit payment-instruction toast. However, the diff summary does not provide evidence that the required backend admin-only set/update method (with status gating) is implemented or that getOrder/getAllOrders definitely return the new field.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Create a new transparent-background Falcon IDs logo image under frontend/public/assets/generated and update frontend references to use it.",
-      "reason": "Frontend components were updated to reference /assets/generated/falcon-ids-logo-transparent.dim_1200x300.png, but the diff summary does not show the new image asset being added under frontend/public/assets/generated (non-text/binary assets may be omitted from this summary). Without evidence of the file existing, the acceptance criteria about the new asset and no broken images cannot be verified from the diff.",
+      "requirement": "Expose optional tracking number via existing order query methods (getOrder, getAllOrders).",
+      "reason": "Although backend Order now includes trackingNumber, the diff excerpt of backend/main.mo is truncated before any getOrder/getAllOrders implementations, so there is no direct evidence those query methods return the new field.",
       "evidence": [
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/pages/LandingPage.tsx"
+        "backend/main.mo (truncated; shows Order has trackingNumber but not getOrder/getAllOrders)",
+        "backend/migration.mo"
       ]
     },
     {
       "id": "REQ-2",
-      "requirement": "Update the disclaimer banner component (frontend/src/components/RoleplayDisclaimerBanner.tsx) so it no longer displays ROLEPLAY wording and instead displays NOVELTY wording (component may be renamed but must still render).",
-      "reason": "A new NoveltyDisclaimerBanner component was added and used, but the diff provides no content for frontend/src/components/RoleplayDisclaimerBanner.tsx (it is listed as modified but not shown). Therefore it is not verifiable that the original banner component was updated to remove 'roleplay' wording per the requirement/AC.",
+      "requirement": "Add an admin-only backend method to set/update an order tracking number, rejecting updates for pending orders and non-admin callers.",
+      "reason": "Frontend calls actor.setTrackingNumber(...) and a hook was added, but the diff summary does not show any corresponding backend function definition nor the required enforcement (admin-only + non-pending status). backend/main.mo is truncated before any such method is visible.",
       "evidence": [
-        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-        "frontend/src/components/AppShell.tsx",
-        "frontend/src/components/RoleplayDisclaimerBanner.tsx"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Ensure all user-facing mentions of the company/service name are consistently presented as \"Falcon IDs\" (including replacing any \"RF-FALCON-IDS\" mentions).",
-      "reason": "Some brand mentions and alt text are updated to 'Falcon IDs', but the diff summary does not include evidence that any existing 'RF-FALCON-IDS' occurrences elsewhere in the UI/copy were found and replaced. With truncated/partial file coverage, this cannot be confirmed.",
-      "evidence": [
-        "frontend/src/content/copy.ts",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/hooks/orders/useSetTrackingNumber.ts (calls actor.setTrackingNumber)",
+        "backend/main.mo (truncated; no setTrackingNumber shown)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/changed site-wide styling/theme to a 'Gothic chrome' aesthetic and other broad UI restyling beyond the requested text/logo updates.",
-      "reason": "The BuildRequest explicitly lists a non-goal of a major redesign beyond text and logo asset updates, but multiple files include new/changed styling and theme-related adjustments per the file summaries and code changes.",
+      "description": "Added a backend migration module and enabled actor migration wiring.",
+      "reason": "BuildRequest did not ask for a migration system/module explicitly; this is additional implementation beyond the stated requirements (though it supports REQ-1 compatibility).",
       "evidence": [
-        "frontend/src/components/AppShell.tsx",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/pages/LandingPage.tsx",
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Introduced a new footer credit linking to caffeine.ai (\"Built with caffeine.ai\") and updated copyright year.",
-      "reason": "This footer credit/link is not requested by any requirement and is outside the scope of 'text and logo asset updates' requested (and may be considered a branding/content addition).",
-      "evidence": [
-        "frontend/src/components/AppShell.tsx"
+        "backend/migration.mo",
+        "backend/main.mo (with migration = Migration.run)"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/components/AppShell.tsx",
-    "frontend/src/components/BrandHeader.tsx",
-    "frontend/src/components/IdCardPreview.tsx",
-    "frontend/src/components/IdWatermark.tsx",
-    "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-    "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-    "frontend/src/content/copy.ts",
-    "frontend/src/pages/DashboardPage.tsx",
-    "frontend/src/pages/LandingPage.tsx",
+    "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+    "frontend/src/pages/AdminPanelPage.tsx",
     "frontend/src/pages/NewOrderPage.tsx",
     "frontend/src/pages/OrderDetailPage.tsx",
     "project_state.json"

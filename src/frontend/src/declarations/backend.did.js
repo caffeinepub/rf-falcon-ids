@@ -55,6 +55,7 @@ export const Time = IDL.Int;
 export const Order = IDL.Record({
   'id' : IDL.Text,
   'status' : Status,
+  'trackingNumber' : IDL.Opt(IDL.Text),
   'owner' : IDL.Opt(IDL.Principal),
   'creationTime' : Time,
   'address' : Address,
@@ -109,6 +110,7 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
 });
 
@@ -162,6 +164,7 @@ export const idlFactory = ({ IDL }) => {
   const Order = IDL.Record({
     'id' : IDL.Text,
     'status' : Status,
+    'trackingNumber' : IDL.Opt(IDL.Text),
     'owner' : IDL.Opt(IDL.Principal),
     'creationTime' : Time,
     'address' : Address,
@@ -220,6 +223,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
   });
 };

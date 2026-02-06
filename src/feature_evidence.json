@@ -2,62 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-the-white-background-from-the-existing-falcon-ids-logo-asset-by-generating-a-transparent-background-version-and-update-all-frontend-references-to-use-the-transparent-logo-file",
-      "featureTitle": "Remove the white background from the existing Falcon IDs logo asset by generating a transparent-background version and update all frontend references to use the transparent logo file.",
+      "featureId": "feature-update-the-admin-panel-ui-to-let-admins-add-edit-a-tracking-number-per-order-only-when-the-order-is-no-longer-pending-and-persist-the-change-to-the-backend-with-success-error-feedback",
+      "featureTitle": "Update the Admin Panel UI to let admins add/edit a tracking number per order, only when the order is no longer pending, and persist the change to the backend with success/error feedback.",
       "files": [
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/pages/LandingPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-replace-the-term-role-play-including-variants-like-roleplay-roleplay-with-novelty-in-all-user-facing-website-copy-disclaimers-banners-and-id-card-watermark-text-while-keeping-the-meaning-that-the-ids-are-not-real-identification",
-      "featureTitle": "Replace the term \"role-play\" (including variants like \"roleplay\", \"ROLEPLAY\") with \"novelty\" in all user-facing website copy, disclaimers, banners, and ID card watermark text while keeping the meaning that the IDs are not real identification.",
-      "files": [
-        "frontend/src/components/AppShell.tsx",
-        "frontend/src/components/IdCardPreview.tsx",
-        "frontend/src/components/IdWatermark.tsx",
-        "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-        "frontend/src/content/copy.ts",
-        "frontend/src/pages/DashboardPage.tsx",
-        "frontend/src/pages/LandingPage.tsx",
-        "frontend/src/pages/NewOrderPage.tsx",
-        "frontend/src/pages/OrderDetailPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-the-brand-name-is-consistently-presented-as-falcon-ids-including-in-long-form-disclaimers-currently-referencing-rf-falcon-ids-across-user-facing-text-where-the-company-service-name-is-mentioned",
-      "featureTitle": "Ensure the brand name is consistently presented as \"Falcon IDs\" (including in long-form disclaimers currently referencing \"RF-FALCON-IDS\") across user-facing text where the company/service name is mentioned.",
-      "files": [
-        "frontend/index.html",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/content/copy.ts",
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+        "frontend/src/pages/AdminPanelPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -70,6 +19,46 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-show-the-tracking-number-on-the-order-details-page-when-it-exists",
+      "featureTitle": "Show the tracking number on the Order Details page when it exists.",
+      "files": [
+        "frontend/src/pages/OrderDetailPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-after-a-user-successfully-submits-an-order-display-a-notification-popup-with-the-exact-text-please-contact-the-owner-for-payment-methods",
+      "featureTitle": "After a user successfully submits an order, display a notification popup with the exact text: \"Please contact the owner for payment methods\".",
+      "files": [
+        "frontend/src/pages/NewOrderPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

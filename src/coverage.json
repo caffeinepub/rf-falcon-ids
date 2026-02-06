@@ -1,94 +1,80 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T22:08:12.209Z",
+  "generatedAt": "2026-02-06T22:23:22.356Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 5,
     "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Remove the white background from the existing Falcon IDs logo asset by generating a transparent-background version and update all frontend references to use the transparent logo file.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/pages/LandingPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/pages/LandingPage.tsx"
-        ]
+        "summary": "Extend the backend Order model to store an optional tracking number, and expose it via existing order query methods (getOrder, getAllOrders).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Replace the term \"role-play\" (including variants like \"roleplay\", \"ROLEPLAY\") with \"novelty\" in all user-facing website copy, disclaimers, banners, and ID card watermark text while keeping the meaning that the IDs are not real identification.",
+        "summary": "Add a backend admin-only method to set/update an order’s tracking number, and enforce that a tracking number can only be set when the order status is not pending (i.e., approved or shipped).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Update the Admin Panel UI to let admins add/edit a tracking number per order, only when the order is no longer pending, and persist the change to the backend with success/error feedback.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/components/IdWatermark.tsx",
-          "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-          "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-          "frontend/src/components/AppShell.tsx",
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/components/IdCardPreview.tsx",
-          "frontend/src/pages/DashboardPage.tsx",
+          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Show the tracking number on the Order Details page when it exists.",
+        "status": "implemented",
+        "plannedFiles": [
           "frontend/src/pages/OrderDetailPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/components/IdWatermark.tsx",
-          "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-          "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-          "frontend/src/components/AppShell.tsx",
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/components/IdCardPreview.tsx",
-          "frontend/src/pages/DashboardPage.tsx",
           "frontend/src/pages/OrderDetailPage.tsx"
         ]
       },
       {
-        "id": "REQ-3",
-        "summary": "Ensure the brand name is consistently presented as \"Falcon IDs\" (including in long-form disclaimers currently referencing \"RF-FALCON-IDS\") across user-facing text where the company/service name is mentioned.",
+        "id": "REQ-5",
+        "summary": "After a user successfully submits an order, display a notification popup with the exact text: \"Please contact the owner for payment methods\".",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/index.html"
+          "frontend/src/pages/NewOrderPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/index.html"
+          "frontend/src/pages/NewOrderPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png",
-    "frontend/src/components/AppShell.tsx",
-    "frontend/src/components/BrandHeader.tsx",
-    "frontend/src/components/IdCardPreview.tsx",
-    "frontend/src/components/IdWatermark.tsx",
-    "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-    "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-    "frontend/src/content/copy.ts",
-    "frontend/src/pages/DashboardPage.tsx",
-    "frontend/src/pages/LandingPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+    "frontend/src/pages/AdminPanelPage.tsx",
     "frontend/src/pages/NewOrderPage.tsx",
     "frontend/src/pages/OrderDetailPage.tsx",
     "project_state.json",

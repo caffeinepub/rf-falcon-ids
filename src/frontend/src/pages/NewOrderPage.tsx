@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useCreateOrder } from '../hooks/orders/useCreateOrder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,10 +15,14 @@ import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { COPY } from '../content/copy';
+import { generateIdNumber } from '../utils/generateIdNumber';
 
 export default function NewOrderPage() {
   const navigate = useNavigate();
   const createOrder = useCreateOrder();
+
+  // Generate a stable ID number for this session (preview + submission)
+  const generatedIdNumber = useRef(generateIdNumber());
 
   // ID Details
   const [firstName, setFirstName] = useState('');
@@ -31,7 +35,6 @@ export default function NewOrderPage() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [zip, setZip] = useState('');
-  const [idNumber, setIdNumber] = useState('');
 
   // Shipping Info
   const [shipFirstName, setShipFirstName] = useState('');
@@ -73,8 +76,8 @@ export default function NewOrderPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
-    if (!firstName || !lastName || !dob || !gender || !height || !eyeColor || !address || !city || !state || !zip || !idNumber) {
+    // Validation (no longer checking idNumber)
+    if (!firstName || !lastName || !dob || !gender || !height || !eyeColor || !address || !city || !state || !zip) {
       toast.error('Please fill in all ID details');
       return;
     }
@@ -110,7 +113,7 @@ export default function NewOrderPage() {
           city,
           state_name: state,
           zip,
-          id_number: idNumber,
+          id_number: generatedIdNumber.current,
         },
         address: {
           first_name: shipFirstName,
@@ -124,6 +127,7 @@ export default function NewOrderPage() {
       });
 
       toast.success('Order created successfully');
+      toast.info('Please contact the owner for payment methods');
       navigate({ to: '/dashboard' });
     } catch (error) {
       console.error('Order creation error:', error);
@@ -279,18 +283,6 @@ export default function NewOrderPage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="idNumber">ID Number</Label>
-                <Input
-                  id="idNumber"
-                  placeholder="e.g., 123456789"
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
-                  className="bg-background/50 border-chrome-300/30"
-                  required
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -368,7 +360,7 @@ export default function NewOrderPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {US_STATES.map((s) => (
-                      <SelectItem key={s.code} value={s.name}>
+                      <SelectItem key={s.code} value={s.code}>
                         {s.name}
                       </SelectItem>
                     ))}
@@ -381,7 +373,10 @@ export default function NewOrderPage() {
           {/* Photo Upload */}
           <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle className="tracking-wide">ID Photo</CardTitle>
+              <CardTitle className="tracking-wide">Photo</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Upload a photo for your novelty ID
+              </p>
             </CardHeader>
             <CardContent>
               <PhotoUploader
@@ -408,7 +403,7 @@ export default function NewOrderPage() {
                   gender={gender}
                   height={height}
                   eyeColor={eyeColor}
-                  idNumber={idNumber}
+                  idNumber={generatedIdNumber.current}
                   state={state}
                   photoUrl={croppedPhotoUrl}
                 />
@@ -420,7 +415,7 @@ export default function NewOrderPage() {
           <Button
             type="submit"
             size="lg"
-            className="w-full bg-chrome-300 hover:bg-chrome-200 text-black font-semibold"
+            className="w-full bg-chrome-900/50 hover:bg-chrome-900/70 border border-chrome-300/30 shadow-glow"
             disabled={createOrder.isPending}
           >
             {createOrder.isPending ? (
@@ -429,7 +424,7 @@ export default function NewOrderPage() {
                 Creating Order...
               </>
             ) : (
-              'Create Order'
+              'Submit Order'
             )}
           </Button>
         </div>

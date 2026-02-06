@@ -39,6 +39,7 @@ export interface Details {
 export interface Order {
     id: string;
     status: Status;
+    trackingNumber?: string;
     owner?: Principal;
     creationTime: Time;
     address: Address;
@@ -68,5 +69,6 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
 }

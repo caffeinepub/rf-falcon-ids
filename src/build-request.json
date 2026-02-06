@@ -1,91 +1,111 @@
 {
   "kind": "build_request",
-  "title": "Make Falcon IDs logo transparent and replace all 'role-play' wording with 'novelty' site-wide",
+  "title": "Add admin tracking number field for orders and show payment instruction notification after order submission",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove the white background from the existing Falcon IDs logo asset by generating a transparent-background version and update all frontend references to use the transparent logo file.",
-      "target": "frontend",
+      "text": "Extend the backend Order model to store an optional tracking number, and expose it via existing order query methods (getOrder, getAllOrders).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-1"
         ],
         "quotes": [
-          "The logo has a white background behind it. Remove that also use the logo I sent you brand name is. Falcon IDs"
+          "Add a area for admin to add a tracking number to orders when they’re no longer pending"
         ]
       },
       "acceptanceCriteria": [
-        "A new transparent logo image exists under frontend/public/assets/generated and visually has no white background.",
-        "All pages/components that render the logo (e.g., header and landing hero) reference the new transparent logo filename.",
-        "The rendered logo blends correctly on dark backgrounds with no visible white box/padding artifact.",
-        "No broken image links occur in the header or landing page after the filename switch."
+        "Each order returned by getOrder and getAllOrders includes a tracking number field (optional/nullable).",
+        "Existing order creation continues to work without requiring a tracking number."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Replace the term \"role-play\" (including variants like \"roleplay\", \"ROLEPLAY\") with \"novelty\" in all user-facing website copy, disclaimers, banners, and ID card watermark text while keeping the meaning that the IDs are not real identification.",
-      "target": "frontend",
+      "text": "Add a backend admin-only method to set/update an order’s tracking number, and enforce that a tracking number can only be set when the order status is not pending (i.e., approved or shipped).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-1"
         ],
         "quotes": [
-          "replace the word role-play everywhere on the website with novelty because we’re still shipping them but their novelty so we are a novel ID selling website"
+          "Add a area for admin to add a tracking number to orders when they’re no longer pending"
         ]
       },
       "acceptanceCriteria": [
-        "All user-visible occurrences of \"role-play\"/\"roleplay\"/\"ROLEPLAY\" across the UI are replaced with \"novelty\"/\"NOVELTY\" as appropriate.",
-        "Centralized copy in frontend/src/content/copy.ts no longer contains \"roleplay\" wording and instead uses \"novelty\" wording.",
-        "The ID card watermark (frontend/src/components/IdWatermark.tsx) no longer says \"ROLEPLAY ONLY\" and instead uses \"NOVELTY\" wording while still stating it is not valid identification.",
-        "The disclaimer banner component (frontend/src/components/RoleplayDisclaimerBanner.tsx) no longer displays \"ROLEPLAY USE ONLY\" and is updated to \"NOVELTY USE ONLY\" (component may be renamed, but functionality and rendering remain intact).",
-        "Landing page hero and disclaimer sections (frontend/src/pages/LandingPage.tsx) no longer describe the service as \"roleplay\" and instead describe it as \"novelty\".",
-        "New order page copy (e.g., shipping section title and subtitle/disclaimer sourced from COPY) no longer includes \"Roleplay\" phrasing and instead uses \"Novelty\" phrasing."
+        "A new admin-only backend function exists to update an order’s tracking number by orderId.",
+        "If the order is pending, the backend rejects the tracking-number update with an error.",
+        "If the order is approved or shipped, the backend stores the provided tracking number and subsequent reads return it.",
+        "Non-admin callers cannot update tracking numbers."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure the brand name is consistently presented as \"Falcon IDs\" (including in long-form disclaimers currently referencing \"RF-FALCON-IDS\") across user-facing text where the company/service name is mentioned.",
+      "text": "Update the Admin Panel UI to let admins add/edit a tracking number per order, only when the order is no longer pending, and persist the change to the backend with success/error feedback.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-1"
         ],
         "quotes": [
-          "brand name is. Falcon IDs"
+          "Add a area for admin to add a tracking number to orders when they’re no longer pending"
         ]
       },
       "acceptanceCriteria": [
-        "Any long-form disclaimers/copy that mention \"RF-FALCON-IDS\" are updated to say \"Falcon IDs\" (or \"FALCON IDs\" if matching existing stylistic capitalization) consistently.",
-        "The logo alt text remains correct for accessibility and reflects the brand name (e.g., \"Falcon IDs\"/\"FALCON IDs\").",
-        "Browser tab title remains branded for Falcon IDs (frontend/index.html)."
+        "For each order in the admin orders list, there is a tracking number input/display area.",
+        "When an order status is pending, the tracking number input is hidden or disabled with a clear UI indication that tracking is available only after pending.",
+        "When an order status is approved or shipped, the admin can save/update the tracking number and receives a success toast on completion and an error toast on failure.",
+        "After saving, the Admin Panel reflects the updated tracking number without a manual refresh (via React Query invalidation/refetch)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Show the tracking number on the Order Details page when it exists.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Add a area for admin to add a tracking number to orders"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If the order has a tracking number, Order Details displays it in a readable field/section.",
+        "If the order has no tracking number, Order Details does not show a misleading empty value."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "After a user successfully submits an order, display a notification popup with the exact text: \"Please contact the owner for payment methods\".",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "after someone submits, an order make it so a notification will pop up saying, please contact the owner for payment methods"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On successful order creation, the UI shows a notification/toast that reads exactly: \"Please contact the owner for payment methods\".",
+        "The notification appears after a successful submission (not on validation errors or backend failures).",
+        "The existing success flow (e.g., navigation to the dashboard) still occurs."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (Shadcn components); compose them instead.",
-    "Do not modify immutable hook entrypoints listed in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
-    "Backend remains single-actor; only modify backend files if absolutely required for this request."
+    "Backend must remain a single Motoko actor in backend/main.mo.",
+    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui/*.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Changing order/payment/shipping functionality or any backend order logic.",
-    "Adding new authentication methods (only Internet Identity remains).",
-    "Major redesign of the site theme beyond text and logo asset updates."
+    "Implementing payment processing or collecting payment details inside the app.",
+    "Adding real-time notifications beyond the post-submit popup/toast.",
+    "Integrating third-party shipping APIs or tracking lookups."
   ],
   "imageRequirements": {
     "required": [],
-    "edits": [
-      "Remove the white background and make the logo background transparent (falcon-ids-logo.dim_1200x300.png > falcon-ids-logo-transparent.dim_1200x300.png)"
-    ]
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
+    "edits": []
   }
 }

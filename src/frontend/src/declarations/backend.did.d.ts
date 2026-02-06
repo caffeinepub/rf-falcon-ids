@@ -35,6 +35,7 @@ export type ExternalBlob = Uint8Array;
 export interface Order {
   'id' : string,
   'status' : Status,
+  'trackingNumber' : [] | [string],
   'owner' : [] | [Principal],
   'creationTime' : Time,
   'address' : Address,
@@ -92,6 +93,7 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setTrackingNumber' : ActorMethod<[string, string], undefined>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

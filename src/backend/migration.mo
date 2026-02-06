@@ -1,8 +1,6 @@
 import Map "mo:core/Map";
 import Text "mo:core/Text";
-import List "mo:core/List";
 import Storage "blob-storage/Storage";
-import Time "mo:core/Time";
 
 module {
   type Address = {
@@ -28,56 +26,43 @@ module {
     eye_color : Text;
   };
 
-  type UserProfile = {
-    name : Text;
-  };
+  type Status = { #pending; #approved; #shipped };
 
   type OldOrder = {
     id : Text;
     details : Details;
     address : Address;
     photo : Storage.ExternalBlob;
-    creationTime : Time.Time;
-    status : { #pending; #approved; #shipped };
-    owner : Principal;
+    creationTime : Int;
+    status : Status;
+    owner : ?Principal;
   };
 
-  type Order = {
+  type NewOrder = {
     id : Text;
     details : Details;
     address : Address;
     photo : Storage.ExternalBlob;
-    creationTime : Time.Time;
-    status : { #pending; #approved; #shipped };
+    creationTime : Int;
+    status : Status;
     owner : ?Principal;
+    trackingNumber : ?Text;
   };
 
   type OldActor = {
     orders : Map.Map<Text, OldOrder>;
-    userOrders : Map.Map<Principal, List.List<Text>>;
-    userProfiles : Map.Map<Principal, UserProfile>;
-    // Add other old state variables as needed
   };
 
   type NewActor = {
-    orders : Map.Map<Text, Order>;
-    userProfiles : Map.Map<Principal, UserProfile>;
-    // Add other new state variables as needed
+    orders : Map.Map<Text, NewOrder>;
   };
 
   public func run(old : OldActor) : NewActor {
-    // Convert orders map from old type to new type
-    let newOrders = old.orders.map<Text, OldOrder, Order>(
+    let newOrders = old.orders.map<Text, OldOrder, NewOrder>(
       func(_id, oldOrder) {
-        { oldOrder with owner = ?oldOrder.owner };
+        { oldOrder with trackingNumber = null };
       }
     );
-
-    // Create and return new actor state
-    {
-      orders = newOrders;
-      userProfiles = old.userProfiles;
-      // Add other new state variables as needed
-    };
+    { orders = newOrders };
   };
 };

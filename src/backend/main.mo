@@ -11,6 +11,9 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
+import Migration "migration";
+
+(with migration = Migration.run)
 actor {
   module State {
     public type State = { /* Add fields as needed */ };
@@ -56,6 +59,7 @@ actor {
       creationTime : Time.Time;
       status : Status;
       owner : ?Principal;
+      trackingNumber : ?Text;
     };
 
     public func compare(o1 : Order, o2 : Order) : Order.Order {
@@ -128,6 +132,7 @@ actor {
       creationTime = Time.now();
       status = #pending;
       owner = ?caller;
+      trackingNumber = null;
     };
 
     orders.add(id, newOrder);
@@ -146,15 +151,41 @@ actor {
     };
   };
 
-  public query ({ caller }) func getOrder(orderId : Text) : async ?Order {
-    if (
-      not (
-        AccessControl.hasPermission(accessControlState, caller, #admin) or isOrderOwner(caller, orderId)
-      )
-    ) {
-      Runtime.trap("Unauthorized: Only admins can view all orders, users can view their own orders");
+  public shared ({ caller }) func setTrackingNumber(orderId : Text, trackingNumber : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can set tracking numbers");
     };
-    orders.get(orderId);
+
+    switch (orders.get(orderId)) {
+      case (null) { Runtime.trap("Order not found") };
+      case (?order) {
+        if (order.status == #pending) {
+          Runtime.trap("Cannot set tracking number for pending orders");
+        };
+        let updatedOrder = { order with trackingNumber = ?trackingNumber };
+        orders.add(orderId, updatedOrder);
+      };
+    };
+  };
+
+  public query ({ caller }) func getOrder(orderId : Text) : async ?Order {
+    // First check if caller has at least user permission
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can view orders");
+    };
+
+    // Check if order exists
+    switch (orders.get(orderId)) {
+      case (null) { null };
+      case (?order) {
+        // Admins can view any order, users can only view their own
+        if (AccessControl.isAdmin(accessControlState, caller) or order.owner == ?caller) {
+          ?order;
+        } else {
+          Runtime.trap("Unauthorized: You can only view your own orders");
+        };
+      };
+    };
   };
 
   public query ({ caller }) func getAllOrders() : async [Order] {

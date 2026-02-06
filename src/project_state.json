@@ -1,35 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Website for Falcon IDs, positioned as a novelty ID selling website (products are shipped but marketed as novelty).",
+  "summary": "Order management enhancements: allow admins to add tracking numbers to non-pending orders and show a post-checkout notification instructing customers to contact the owner for payment methods.",
   "architectural_notes": [],
-  "known_issues": [
-    "Logo currently displays with an unwanted white background."
-  ],
-  "isFixRequest": true,
-  "imageRequirements": "## Edit Images\n- Remove the white background and make the logo background transparent (falcon-ids-logo.dim_1200x300.png > falcon-ids-logo-transparent.dim_1200x300.png)",
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-remove-the-white-background-from-the-existing-falcon-ids-logo-asset-by-generating-a-transparent-background-version-and-update-all-frontend-references-to-use-the-transparent-logo-file",
-      "title": "Remove the white background from the existing Falcon IDs logo asset by generating a transparent-background version and update all frontend references to use the transparent logo file.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-term-role-play-including-variants-like-roleplay-roleplay-with-novelty-in-all-user-facing-website-copy-disclaimers-banners-and-id-card-watermark-text-while-keeping-the-meaning-that-the-ids-are-not-real-identification",
-      "title": "Replace the term \"role-play\" (including variants like \"roleplay\", \"ROLEPLAY\") with \"novelty\" in all user-facing website copy, disclaimers, banners, and ID card watermark text while keeping the meaning that the IDs are not real identification.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-the-brand-name-is-consistently-presented-as-falcon-ids-including-in-long-form-disclaimers-currently-referencing-rf-falcon-ids-across-user-facing-text-where-the-company-service-name-is-mentioned",
-      "title": "Ensure the brand name is consistently presented as \"Falcon IDs\" (including in long-form disclaimers currently referencing \"RF-FALCON-IDS\") across user-facing text where the company/service name is mentioned.",
+      "id": "feature-update-the-admin-panel-ui-to-let-admins-add-edit-a-tracking-number-per-order-only-when-the-order-is-no-longer-pending-and-persist-the-change-to-the-backend-with-success-error-feedback",
+      "title": "Update the Admin Panel UI to let admins add/edit a tracking number per order, only when the order is no longer pending, and persist the change to the backend with success/error feedback.",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-show-the-tracking-number-on-the-order-details-page-when-it-exists",
+      "title": "Show the tracking number on the Order Details page when it exists.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-a-user-successfully-submits-an-order-display-a-notification-popup-with-the-exact-text-please-contact-the-owner-for-payment-methods",
+      "title": "After a user successfully submits an order, display a notification popup with the exact text: \"Please contact the owner for payment methods\".",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -37,25 +34,34 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove white background behind the logo (make logo background transparent / properly cropped).",
+      "summary": "Admin area to add/edit a tracking number on orders once they are no longer pending",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Update site branding to use the provided logo and set brand name to \"Falcon IDs\".",
+      "summary": "After an order is submitted, display a notification: \"please contact the owner for payment methods\"",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Replace the word \"role-play\" everywhere on the website with \"novelty\" to match product positioning.",
-      "reqIds": [],
+      "summary": "Extend the backend Order model to store an optional tracking number, and expose it via existing order query methods (getOrder, getAllOrders).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add a backend admin-only method to set/update an order’s tracking number, and enforce that a tracking number can only be set when the order status is not pending (i.e., approved or shipped).",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Falcon IDs",
+  "projectName": "Add admin tracking number field for orders and show payment instruction notification after order submission",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

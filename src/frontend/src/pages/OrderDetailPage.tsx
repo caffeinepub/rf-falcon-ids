@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import IdCardPreview from '../components/IdCardPreview';
 import IdCardActions from '../components/IdCardActions';
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, Package } from 'lucide-react';
 import { formatOrderStatus } from '../utils/formatters';
 import { useEffect, useState } from 'react';
 import { COPY } from '../content/copy';
@@ -187,6 +187,23 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {order.trackingNumber && (
+            <Card className="bg-card/80 border-chrome-300/20">
+              <CardHeader>
+                <CardTitle className="tracking-wide flex items-center gap-2">
+                  <Package className="w-5 h-5 text-chrome-300" />
+                  Tracking Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tracking Number</div>
+                  <div className="font-medium font-mono text-chrome-300">{order.trackingNumber}</div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
