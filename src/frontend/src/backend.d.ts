@@ -14,6 +14,14 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface Address {
+    zip: string;
+    city: string;
+    state: string;
+    address: string;
+    first_name: string;
+    last_name: string;
+}
 export type Time = bigint;
 export interface Details {
     dob: string;
@@ -31,19 +39,14 @@ export interface Details {
 export interface Order {
     id: string;
     status: Status;
-    owner: Principal;
+    owner?: Principal;
     creationTime: Time;
     address: Address;
     details: Details;
     photo: ExternalBlob;
 }
-export interface Address {
-    zip: string;
-    city: string;
-    state: string;
-    address: string;
-    first_name: string;
-    last_name: string;
+export interface UserProfile {
+    name: string;
 }
 export enum OrderStatus {
     shipped = "shipped",
@@ -57,11 +60,14 @@ export enum UserRole {
 }
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    createOrder(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<Order>;
+    createOrder(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<void>;
     getAllOrders(): Promise<Array<Order>>;
+    getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getOrder(orderId: string): Promise<Order>;
-    getUserOrders(): Promise<Array<Order>>;
+    getOrder(orderId: string): Promise<Order | null>;
+    getOrdersByIds(orderIds: Array<string>): Promise<Array<Order>>;
+    getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
 }

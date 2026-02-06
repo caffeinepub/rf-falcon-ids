@@ -22,7 +22,7 @@ export default function LandingPage() {
         </p>
         <div className="flex gap-4 justify-center pt-4">
           <Button
-            onClick={() => navigate({ to: '/dashboard' })}
+            onClick={() => navigate({ to: '/signin' })}
             size="lg"
             className="bg-cyan-600 hover:bg-cyan-700 text-white"
           >
@@ -42,7 +42,7 @@ export default function LandingPage() {
               </div>
               <h3 className="font-semibold">Sign In</h3>
               <p className="text-sm text-muted-foreground">
-                Authenticate securely using Internet Identity
+                Create an account with username and password
               </p>
             </CardContent>
           </Card>

@@ -35,7 +35,7 @@ export type ExternalBlob = Uint8Array;
 export interface Order {
   'id' : string,
   'status' : Status,
-  'owner' : Principal,
+  'owner' : [] | [Principal],
   'creationTime' : Time,
   'address' : Address,
   'details' : Details,
@@ -48,6 +48,7 @@ export type Status = { 'shipped' : null } |
   { 'pending' : null } |
   { 'approved' : null };
 export type Time = bigint;
+export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -80,12 +81,18 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'createOrder' : ActorMethod<[string, Details, Address, ExternalBlob], Order>,
+  'createOrder' : ActorMethod<
+    [string, Details, Address, ExternalBlob],
+    undefined
+  >,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getOrder' : ActorMethod<[string], Order>,
-  'getUserOrders' : ActorMethod<[], Array<Order>>,
+  'getOrder' : ActorMethod<[string], [] | [Order]>,
+  'getOrdersByIds' : ActorMethod<[Array<string>], Array<Order>>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

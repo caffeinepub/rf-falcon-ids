@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { useIsAdmin } from '../hooks/auth/useIsAdmin';
+import { useSessionAuth } from '../hooks/auth/useSessionAuth';
 import { ShieldAlert } from 'lucide-react';
 
 interface AdminGateProps {
@@ -7,7 +7,7 @@ interface AdminGateProps {
 }
 
 export default function AdminGate({ children }: AdminGateProps) {
-  const { data: isAdmin, isLoading } = useIsAdmin();
+  const { isAdmin, isLoading } = useSessionAuth();
 
   if (isLoading) {
     return (

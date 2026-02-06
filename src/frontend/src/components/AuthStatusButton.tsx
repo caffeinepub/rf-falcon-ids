@@ -1,46 +1,35 @@
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useNavigate } from '@tanstack/react-router';
+import { useSessionAuth } from '../hooks/auth/useSessionAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { LogIn, LogOut } from 'lucide-react';
 
 export default function AuthStatusButton() {
-  const { login, clear, loginStatus, identity } = useInternetIdentity();
+  const navigate = useNavigate();
+  const { isAuthenticated, signOut, username } = useSessionAuth();
   const queryClient = useQueryClient();
-
-  const isAuthenticated = !!identity;
-  const disabled = loginStatus === 'logging-in';
 
   const handleAuth = async () => {
     if (isAuthenticated) {
-      await clear();
+      await signOut();
       queryClient.clear();
+      navigate({ to: '/' });
     } else {
-      try {
-        await login();
-      } catch (error: any) {
-        console.error('Login error:', error);
-        if (error.message === 'User is already authenticated') {
-          await clear();
-          setTimeout(() => login(), 300);
-        }
-      }
+      navigate({ to: '/signin' });
     }
   };
 
   return (
     <Button
       onClick={handleAuth}
-      disabled={disabled}
       variant={isAuthenticated ? 'outline' : 'default'}
       size="sm"
       className={isAuthenticated ? '' : 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-500'}
     >
-      {loginStatus === 'logging-in' ? (
-        'Connecting...'
-      ) : isAuthenticated ? (
+      {isAuthenticated ? (
         <>
           <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
+          Sign Out {username && `(${username})`}
         </>
       ) : (
         <>

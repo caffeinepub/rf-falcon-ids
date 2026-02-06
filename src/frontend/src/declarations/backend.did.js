@@ -55,12 +55,13 @@ export const Time = IDL.Int;
 export const Order = IDL.Record({
   'id' : IDL.Text,
   'status' : Status,
-  'owner' : IDL.Principal,
+  'owner' : IDL.Opt(IDL.Principal),
   'creationTime' : Time,
   'address' : Address,
   'details' : Details,
   'photo' : ExternalBlob,
 });
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const OrderStatus = IDL.Variant({
   'shipped' : IDL.Null,
   'pending' : IDL.Null,
@@ -96,16 +97,19 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'createOrder' : IDL.Func(
-      [IDL.Text, Details, Address, ExternalBlob],
-      [Order],
-      [],
-    ),
+  'createOrder' : IDL.Func([IDL.Text, Details, Address, ExternalBlob], [], []),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getOrder' : IDL.Func([IDL.Text], [Order], ['query']),
-  'getUserOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+  'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
+  'getOrdersByIds' : IDL.Func([IDL.Vec(IDL.Text)], [IDL.Vec(Order)], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
 });
 
@@ -159,12 +163,13 @@ export const idlFactory = ({ IDL }) => {
   const Order = IDL.Record({
     'id' : IDL.Text,
     'status' : Status,
-    'owner' : IDL.Principal,
+    'owner' : IDL.Opt(IDL.Principal),
     'creationTime' : Time,
     'address' : Address,
     'details' : Details,
     'photo' : ExternalBlob,
   });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const OrderStatus = IDL.Variant({
     'shipped' : IDL.Null,
     'pending' : IDL.Null,
@@ -202,14 +207,25 @@ export const idlFactory = ({ IDL }) => {
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createOrder' : IDL.Func(
         [IDL.Text, Details, Address, ExternalBlob],
-        [Order],
+        [],
         [],
       ),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getOrder' : IDL.Func([IDL.Text], [Order], ['query']),
-    'getUserOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+    'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
+    'getOrdersByIds' : IDL.Func(
+        [IDL.Vec(IDL.Text)],
+        [IDL.Vec(Order)],
+        ['query'],
+      ),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
   });
 };

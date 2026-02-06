@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useNavigate } from '@tanstack/react-router';
+import { useSessionAuth } from '../hooks/auth/useSessionAuth';
 import { Button } from '@/components/ui/button';
 import { Shield, Lock } from 'lucide-react';
 
@@ -8,9 +9,20 @@ interface AuthGateProps {
 }
 
 export default function AuthGate({ children }: AuthGateProps) {
-  const { identity, login, loginStatus } = useInternetIdentity();
+  const { isAuthenticated, isLoading } = useSessionAuth();
+  const navigate = useNavigate();
 
-  if (!identity) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="animate-pulse text-cyan-400">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md space-y-6">
@@ -22,14 +34,13 @@ export default function AuthGate({ children }: AuthGateProps) {
           </div>
           <h2 className="text-2xl font-bold">Authentication Required</h2>
           <p className="text-muted-foreground">
-            You must be signed in to access this area. Please authenticate using Internet Identity.
+            You must be signed in to access this area. Please sign in with your username and password.
           </p>
           <Button
-            onClick={login}
-            disabled={loginStatus === 'logging-in'}
+            onClick={() => navigate({ to: '/signin' })}
             className="bg-cyan-600 hover:bg-cyan-700 text-white"
           >
-            {loginStatus === 'logging-in' ? 'Connecting...' : 'Sign In'}
+            Sign In
           </Button>
         </div>
       </div>

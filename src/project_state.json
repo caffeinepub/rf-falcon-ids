@@ -1,15 +1,16 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
-  "summary": "RF-FALCON-IDS: a high-end ROLEPLAY-only ID ordering and management website with a dark futuristic government/military aesthetic, Internet Identity authentication, user dashboards and order history, ID order form with live ID card preview, export/print, and an admin panel to manage orders and statuses.",
+  "projectStateVersion": 7,
+  "summary": "RF-FALCON-IDS: a high-end ROLEPLAY-only ID ordering and management website with a dark futuristic government/military aesthetic, custom username/password authentication (no Google/Internet Identity, no email verification), user dashboards and order history, ID order form with live ID card preview, export/print, post-order payment-instructions screen, and an admin panel to manage orders and statuses.",
   "architectural_notes": [
-    "Authentication will use Internet Identity (no username/password; admin access granted via designated identity).",
     "Include prominent on-site disclaimers: ROLEPLAY USE ONLY / NOT REAL IDENTIFICATION.",
-    "Data storage approach should be backend-ready; initial implementation may use simplest persistence approach compatible with chosen auth."
+    "Data storage approach should be backend-ready; initial implementation may use simplest persistence approach compatible with chosen auth.",
+    "Deployment requested: publish the current full application to a live environment (define target network/hosting + release process).",
+    "User requested initial persistence via localStorage or mock DB while remaining backend-ready (data access layer should be swappable).",
+    "Switch authentication from Internet Identity/Google-style SSO to first-party username/password accounts (no email verification); define admin access under this credential system."
   ],
   "known_issues": [],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- RF-FALCON-IDS wordmark/logo in a dark futuristic government/military style (rf-falcon-ids-logo.dim_1200x300.png)\n- Set of 50 minimalist state seal icons, one per U.S. state, monochrome/duotone to match neon cyan/purple theme, consistent style (state-seals-pack.dim_256x256.png_each)",
   "existing_features": [
     {
       "id": "feature-add-persistent-on-site-disclaimers-across-the-app-stating-the-service-is-roleplay-use-only-and-not-real-identification-and-ensure-the-id-preview-export-also-includes-a-visible-roleplay-only-not-valid-id-watermark",
@@ -114,15 +115,49 @@
         "REQ-15"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-deploy-the-current-full-rf-falcon-ids-application-frontend-backend-canister-to-a-live-internet-computer-environment-with-the-existing-functionality-unchanged-ensuring-the-deployed-app-is-accessible-via-a-public-url-and-all-core-flows-work-end-to-end-internet-identity-login-create-order-with-photo-upload-crop-live-id-preview-export-print-user-dashboard-order-detail-and-admin-panel-access-via-internet-identity-allowlist",
+      "title": "Deploy the current full RF-FALCON-IDS application (frontend + backend canister) to a live Internet Computer environment with the existing functionality unchanged, ensuring the deployed app is accessible via a public URL and all core flows work end-to-end (Internet Identity login, create order with photo upload/crop, live ID preview, export/print, user dashboard/order detail, and admin panel access via Internet Identity allowlist).",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-native-authentication-system-no-google-no-internet-identity-that-lets-users-create-an-account-with-a-username-and-password-then-sign-in-using-those-credentials-with-no-email-verification-step",
+      "title": "Implement a native authentication system (no Google / no Internet Identity) that lets users create an account with a username and password, then sign in using those credentials, with no email verification step.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-order-ownership-model-and-queries-so-user-dashboards-show-only-the-signed-in-user-s-orders-under-the-new-username-password-identity-system-and-admins-can-still-view-update-all-orders",
+      "title": "Update the order ownership model and queries so user dashboards show only the signed-in user’s orders under the new username/password identity system, and admins can still view/update all orders.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-dedicated-sign-in-page-and-integrate-it-into-routing-and-ui-navigation-so-the-app-does-not-prompt-for-internet-identity-anywhere-including-authgate-copy-and-landing-page-messaging",
+      "title": "Create a dedicated Sign In page and integrate it into routing and UI navigation so the app does not prompt for Internet Identity anywhere (including AuthGate copy and landing page messaging).",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-admin-login-works-under-the-same-username-password-system-by-adding-an-admin-role-concept-to-the-new-user-account-model-and-updating-the-admin-gating-logic-accordingly",
+      "title": "Ensure admin login works under the same username/password system by adding an admin role concept to the new user account model and updating the admin gating logic accordingly.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Implement Internet Identity authentication for all users (including admin access via identity)",
-      "reqIds": [],
-      "status": "pending"
-    },
     {
       "id": "AR-2",
       "summary": "Create responsive UI theme: dark futuristic government/military aesthetic with neon cyan/purple accents, glow/scan-line animations, and clean typography",
@@ -172,24 +207,74 @@
       "status": "pending"
     },
     {
-      "id": "AR-10",
-      "summary": "Admin panel (admin via Internet Identity) to view all orders across users, including shipping info, and update status (Pending/Approved/Shipped) with instant user-visible updates",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-14",
-      "summary": "Implement backend order persistence in the single Motoko actor: store orders keyed by authenticated user principal, enforce that users can only create/read their own orders, and support querying all orders only for admin principals.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
-    },
-    {
       "id": "AR-15",
       "summary": "Define an order data model that captures: ID details (first name, last name, DOB, gender, height, eye color, roleplay residential address, state, ID number), roleplay shipping info (full name, address, city, state, ZIP), a photo field (image-only), creation timestamp, and order status (Pending/Approved/Shipped) with default Pending.",
       "reqIds": [
         "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Deploy the current full RF-FALCON-IDS application to a live environment (“go live”)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Add user order-history enhancements: filter orders by status and allow users to delete orders from their history",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Add admin panel enhancements: filter orders by status, allow deleting orders, and show dashboard totals (all/pending/approved/shipped)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Use localStorage or a mock database for initial persistence while keeping the data layer backend-ready",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Optional enhancements: photo editing tools, multiple ID templates, mock tracking numbers, and email notifications",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Admin authentication request: allow admin access via username/password credentials (instead of Internet Identity allowlist)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Replace Google/Internet Identity login with a native sign-in/sign-up flow using username + password (no email verification) and ensure admin login works under the same credential system",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "After an ID order is submitted, redirect to a payment instructions screen that tells the user to send payment to a specified Venmo link",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Add backend session support for username/password authentication and use it to authorize all user-protected and admin-protected backend operations (replacing principal-based authorization checks).",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Add a conditional state migration so that upgrading from the existing Internet Identity/principal-owned data does not break the canister at upgrade time, and existing stored orders remain readable after upgrade.",
+      "reqIds": [
+        "REQ-22"
       ],
       "status": "pending"
     }

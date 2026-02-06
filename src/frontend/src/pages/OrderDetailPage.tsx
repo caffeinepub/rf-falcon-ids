@@ -9,6 +9,7 @@ import IdCardActions from '../components/IdCardActions';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { formatOrderStatus } from '../utils/formatters';
 import { useState, useEffect } from 'react';
+import type { Order } from '../backend';
 
 export default function OrderDetailPage() {
   const { orderId } = useParams({ from: '/orders/$orderId' });
@@ -17,7 +18,7 @@ export default function OrderDetailPage() {
   const [photoUrl, setPhotoUrl] = useState<string>('');
 
   useEffect(() => {
-    if (order?.photo) {
+    if (order && order.photo) {
       const url = order.photo.getDirectURL();
       setPhotoUrl(url);
     }
@@ -48,6 +49,9 @@ export default function OrderDetailPage() {
     );
   }
 
+  // Type guard to ensure order is not null
+  const validOrder: Order = order;
+
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
@@ -64,27 +68,27 @@ export default function OrderDetailPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">
-            {order.details.first_name} {order.details.last_name}
+            {validOrder.details.first_name} {validOrder.details.last_name}
           </h1>
-          <p className="text-muted-foreground mt-1">Order #{order.id}</p>
+          <p className="text-muted-foreground mt-1">Order #{validOrder.id}</p>
         </div>
         <Badge
           variant={
-            order.status === 'shipped'
+            validOrder.status === 'shipped'
               ? 'default'
-              : order.status === 'approved'
+              : validOrder.status === 'approved'
               ? 'secondary'
               : 'outline'
           }
           className={
-            order.status === 'shipped'
+            validOrder.status === 'shipped'
               ? 'bg-green-500/20 text-green-400 border-green-500/30'
-              : order.status === 'approved'
+              : validOrder.status === 'approved'
               ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
               : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
           }
         >
-          {formatOrderStatus(order.status)}
+          {formatOrderStatus(validOrder.status)}
         </Badge>
       </div>
 
@@ -105,47 +109,47 @@ export default function OrderDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-xs text-muted-foreground">First Name</div>
-                  <div className="font-medium">{order.details.first_name}</div>
+                  <div className="font-medium">{validOrder.details.first_name}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Last Name</div>
-                  <div className="font-medium">{order.details.last_name}</div>
+                  <div className="font-medium">{validOrder.details.last_name}</div>
                 </div>
               </div>
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-xs text-muted-foreground">Date of Birth</div>
-                  <div className="font-medium">{order.details.dob}</div>
+                  <div className="font-medium">{validOrder.details.dob}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Gender</div>
-                  <div className="font-medium">{order.details.gender}</div>
+                  <div className="font-medium">{validOrder.details.gender}</div>
                 </div>
               </div>
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-xs text-muted-foreground">Height</div>
-                  <div className="font-medium">{order.details.height}</div>
+                  <div className="font-medium">{validOrder.details.height}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Eye Color</div>
-                  <div className="font-medium">{order.details.eye_color}</div>
+                  <div className="font-medium">{validOrder.details.eye_color}</div>
                 </div>
               </div>
               <Separator />
               <div>
                 <div className="text-xs text-muted-foreground">Address</div>
-                <div className="font-medium">{order.details.address}</div>
+                <div className="font-medium">{validOrder.details.address}</div>
                 <div className="font-medium">
-                  {order.details.city}, {order.details.state_name} {order.details.zip}
+                  {validOrder.details.city}, {validOrder.details.state_name} {validOrder.details.zip}
                 </div>
               </div>
               <Separator />
               <div>
                 <div className="text-xs text-muted-foreground">ID Number</div>
-                <div className="font-medium font-mono">{order.details.id_number}</div>
+                <div className="font-medium font-mono">{validOrder.details.id_number}</div>
               </div>
             </CardContent>
           </Card>
@@ -158,15 +162,15 @@ export default function OrderDetailPage() {
               <div>
                 <div className="text-xs text-muted-foreground">Name</div>
                 <div className="font-medium">
-                  {order.address.first_name} {order.address.last_name}
+                  {validOrder.address.first_name} {validOrder.address.last_name}
                 </div>
               </div>
               <Separator />
               <div>
                 <div className="text-xs text-muted-foreground">Address</div>
-                <div className="font-medium">{order.address.address}</div>
+                <div className="font-medium">{validOrder.address.address}</div>
                 <div className="font-medium">
-                  {order.address.city}, {order.address.state} {order.address.zip}
+                  {validOrder.address.city}, {validOrder.address.state} {validOrder.address.zip}
                 </div>
               </div>
             </CardContent>
@@ -181,14 +185,14 @@ export default function OrderDetailPage() {
             <CardContent className="space-y-6">
               <div className="flex justify-center">
                 <IdCardPreview
-                  firstName={order.details.first_name}
-                  lastName={order.details.last_name}
-                  dob={order.details.dob}
-                  gender={order.details.gender}
-                  height={order.details.height}
-                  eyeColor={order.details.eye_color}
-                  idNumber={order.details.id_number}
-                  state={order.details.state_name}
+                  firstName={validOrder.details.first_name}
+                  lastName={validOrder.details.last_name}
+                  dob={validOrder.details.dob}
+                  gender={validOrder.details.gender}
+                  height={validOrder.details.height}
+                  eyeColor={validOrder.details.eye_color}
+                  idNumber={validOrder.details.id_number}
+                  state={validOrder.details.state_name}
                   photoUrl={photoUrl}
                 />
               </div>

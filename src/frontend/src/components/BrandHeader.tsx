@@ -1,13 +1,11 @@
 import { useNavigate } from '@tanstack/react-router';
 import AuthStatusButton from './AuthStatusButton';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useIsAdmin } from '../hooks/auth/useIsAdmin';
+import { useSessionAuth } from '../hooks/auth/useSessionAuth';
 import { Shield } from 'lucide-react';
 
 export default function BrandHeader() {
   const navigate = useNavigate();
-  const { identity } = useInternetIdentity();
-  const { data: isAdmin } = useIsAdmin();
+  const { isAuthenticated, isAdmin } = useSessionAuth();
 
   return (
     <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -23,7 +21,7 @@ export default function BrandHeader() {
           />
         </button>
         <nav className="flex items-center gap-4">
-          {identity && (
+          {isAuthenticated && (
             <>
               <button
                 onClick={() => navigate({ to: '/dashboard' })}

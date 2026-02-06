@@ -1,19 +1,24 @@
 import Array "mo:core/Array";
-import Blob "mo:core/Blob";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Order "mo:core/Order";
+import List "mo:core/List";
+import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import Principal "mo:core/Principal";
-import Runtime "mo:core/Runtime";
-import List "mo:core/List";
+import Storage "blob-storage/Storage";
+import Migration "migration";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import MixinStorage "blob-storage/Mixin";
-import Storage "blob-storage/Storage";
 
+(with migration = Migration.run)
 actor {
+  module State {
+    public type State = { /* Add fields as needed */ };
+  };
+  let state = { /* Initialize additional state data here */ };
+
   type Address = {
     first_name : Text;
     last_name : Text;
@@ -37,17 +42,22 @@ actor {
     eye_color : Text;
   };
 
+  public type UserProfile = {
+    name : Text;
+    // Additional fields can be added later
+  };
+
   module OrderModule {
     public type Status = { #pending; #approved; #shipped };
 
     public type Order = {
       id : Text;
-      owner : Principal;
       details : Details;
       address : Address;
       photo : Storage.ExternalBlob;
       creationTime : Time.Time;
       status : Status;
+      owner : ?Principal;
     };
 
     public func compare(o1 : Order, o2 : Order) : Order.Order {
@@ -61,116 +71,116 @@ actor {
   // Storage mixin for file uploads
   include MixinStorage();
 
-  module State {
-    // Add additional state data here
-    public type State = { /* Add fields as needed */ };
-  };
-  let state = {
-    // Initialize additional state data here
-  };
+  // Orders keyed by order ID
+  let orders = Map.empty<Text, Order>();
+  // User profiles
+  let userProfiles = Map.empty<Principal, UserProfile>();
 
+  // Initialize the user system state
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Orders keyed by order ID
-  let orders = Map.empty<Text, Order>();
-  // User orders mapping: Principal -> List of order IDs
-  let userOrders = Map.empty<Principal, List.List<Text>>();
+  func isOrderOwner(caller : Principal, orderId : Text) : Bool {
+    switch (orders.get(orderId)) {
+      case (null) { false };
+      case (?order) { order.owner == ?caller };
+    };
+  };
+
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
 
   public shared ({ caller }) func createOrder(
     id : Text,
     details : Details,
     address : Address,
     photo : Storage.ExternalBlob,
-  ) : async Order {
-    // Only authenticated users can create orders
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can create orders");
+  ) : async () {
+    if (orders.containsKey(id)) {
+      Runtime.trap("Order ID already exists");
     };
 
-    // Check if order ID already exists
-    switch (orders.get(id)) {
-      case (?_) { Runtime.trap("Order ID already exists") };
-      case (null) {};
+    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+      Runtime.trap("Unauthorized: Only users can create orders");
     };
 
     let newOrder : Order = {
       id;
-      owner = caller;
       details;
       address;
       photo;
       creationTime = Time.now();
       status = #pending;
+      owner = ?caller;
     };
 
     orders.add(id, newOrder);
-
-    // Add order ID to user's order list
-    let currentUserOrders = switch (userOrders.get(caller)) {
-      case (null) { List.empty<Text>() };
-      case (?list) { list };
-    };
-    currentUserOrders.add(id);
-    userOrders.add(caller, currentUserOrders);
-
-    newOrder;
   };
 
   public shared ({ caller }) func updateOrderStatus(orderId : Text, status : OrderStatus) : async () {
-    // Only admins can update order status
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can update order status");
-    };
-
     switch (orders.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) {
+        if (
+          not (
+            (AccessControl.hasPermission(accessControlState, caller, #admin)) or isOrderOwner(caller, orderId)
+          )
+        ) {
+          Runtime.trap("Unauthorized: Only admins can update any order, users can update their own orders");
+        };
         orders.add(orderId, { order with status });
       };
     };
   };
 
-  public query ({ caller }) func getOrder(orderId : Text) : async Order {
-    // Users must be authenticated
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view orders");
+  public query ({ caller }) func getOrder(orderId : Text) : async ?Order {
+    if (
+      not (
+        AccessControl.hasPermission(accessControlState, caller, #admin) or isOrderOwner(caller, orderId)
+      )
+    ) {
+      Runtime.trap("Unauthorized: Only admins can view all orders, users can view their own orders");
     };
-
-    switch (orders.get(orderId)) {
-      case (null) { Runtime.trap("Order not found") };
-      case (?order) {
-        // Users can only view their own orders, admins can view any order
-        if (order.owner != caller and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Can only view your own orders");
-        };
-        order;
-      };
-    };
+    orders.get(orderId);
   };
 
-  public query ({ caller }) func getUserOrders() : async [Order] {
-    // Only authenticated users can view their orders
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view orders");
+  public query ({ caller }) func getOrdersByIds(orderIds : [Text]) : async [Order] {
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can fetch multiple orders");
     };
 
-    // Find orders for this user
-    let filteredOrders = orders.values().toArray().filter(
-      func(o) {
-        o.owner == caller;
+    orderIds.map(
+      func(id) {
+        switch (orders.get(id)) {
+          case (null) { Runtime.trap("Order not found with id " # id) };
+          case (?order) { order };
+        };
       }
     );
-
-    filteredOrders.sort();
   };
 
   public query ({ caller }) func getAllOrders() : async [Order] {
-    // Only admins can view all orders
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view all orders");
+    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+      Runtime.trap("Unauthorized: Only admins can retrieve all orders");
     };
-
     orders.values().toArray().sort();
   };
 };

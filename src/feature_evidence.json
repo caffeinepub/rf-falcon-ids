@@ -2,13 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-persistent-on-site-disclaimers-across-the-app-stating-the-service-is-roleplay-use-only-and-not-real-identification-and-ensure-the-id-preview-export-also-includes-a-visible-roleplay-only-not-valid-id-watermark",
-      "featureTitle": "Add persistent, on-site disclaimers across the app stating the service is ROLEPLAY USE ONLY and NOT REAL IDENTIFICATION, and ensure the ID preview/export also includes a visible ROLEPLAY-ONLY / NOT VALID ID watermark.",
+      "featureId": "feature-implement-a-native-authentication-system-no-google-no-internet-identity-that-lets-users-create-an-account-with-a-username-and-password-then-sign-in-using-those-credentials-with-no-email-verification-step",
+      "featureTitle": "Implement a native authentication system (no Google / no Internet Identity) that lets users create an account with a username and password, then sign in using those credentials, with no email verification step.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/IdCardPreview.tsx",
-        "frontend/src/components/IdWatermark.tsx",
-        "frontend/src/components/RoleplayDisclaimerBanner.tsx"
+        "frontend/src/components/AuthStatusButton.tsx",
+        "frontend/src/hooks/auth/useSessionAuth.tsx",
+        "frontend/src/pages/SignInPage.tsx",
+        "frontend/src/pages/SignUpPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -20,268 +20,39 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-17"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-internet-identity-authentication-for-all-users-and-gate-all-authenticated-pages-actions-behind-login-show-a-signed-out-landing-screen-with-a-clear-call-to-action-to-sign-in",
-      "featureTitle": "Implement Internet Identity authentication for all users and gate all authenticated pages/actions behind login; show a signed-out landing screen with a clear call-to-action to sign in.",
+      "featureId": "feature-update-the-order-ownership-model-and-queries-so-user-dashboards-show-only-the-signed-in-user-s-orders-under-the-new-username-password-identity-system-and-admins-can-still-view-update-all-orders",
+      "featureTitle": "Update the order ownership model and queries so user dashboards show only the signed-in user’s orders under the new username/password identity system, and admins can still view/update all orders.",
+      "files": [
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/hooks/orders/useGetOrder.ts",
+        "frontend/src/hooks/orders/useUserOrders.ts",
+        "frontend/src/pages/OrderDetailPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-19"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-dedicated-sign-in-page-and-integrate-it-into-routing-and-ui-navigation-so-the-app-does-not-prompt-for-internet-identity-anywhere-including-authgate-copy-and-landing-page-messaging",
+      "featureTitle": "Create a dedicated Sign In page and integrate it into routing and UI navigation so the app does not prompt for Internet Identity anywhere (including AuthGate copy and landing page messaging).",
       "files": [
         "frontend/src/App.tsx",
         "frontend/src/components/AuthGate.tsx",
-        "frontend/src/components/AuthStatusButton.tsx",
-        "frontend/src/pages/LandingPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-a-coherent-dark-futuristic-government-military-visual-theme-with-neon-cyan-purple-accents-glow-scan-line-animations-clean-professional-typography-and-full-responsiveness-across-desktop-chromebook-mobile-apply-the-theme-consistently-across-all-pages-and-components",
-      "featureTitle": "Create a coherent, dark futuristic government/military visual theme with neon cyan + purple accents, glow + scan-line animations, clean professional typography, and full responsiveness across desktop/Chromebook/mobile; apply the theme consistently across all pages and components.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/AppShell.tsx",
-        "frontend/src/index.css",
-        "frontend/tailwind.config.js"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-the-user-dashboard-ui-show-the-signed-in-user-s-order-history-list-order-name-holder-name-state-id-number-current-status-created-date-and-provide-navigation-to-create-a-new-order-and-view-an-individual-order-s-details",
-      "featureTitle": "Build the user dashboard UI: show the signed-in user’s order history list (order name/holder name, state, ID number, current status, created date) and provide navigation to create a new order and view an individual order’s details.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/hooks/orders/useUserOrders.ts",
-        "frontend/src/pages/DashboardPage.tsx",
-        "frontend/src/pages/OrderDetailPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-the-id-ordering-flow-ui-an-order-form-that-collects-all-required-id-fields-and-roleplay-shipping-fields-including-a-u-s-state-dropdown-validates-required-inputs-and-submits-the-order-to-the-backend",
-      "featureTitle": "Build the ID ordering flow UI: an order form that collects all required ID fields and roleplay shipping fields, including a U.S. state dropdown, validates required inputs, and submits the order to the backend.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/constants/usStates.ts",
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/pages/NewOrderPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-7"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-state-selection-with-state-seal-logo-support-selecting-a-state-updates-the-id-card-preview-to-show-the-chosen-state-name-and-corresponding-seal-image",
-      "featureTitle": "Implement state selection with state seal/logo support: selecting a state updates the ID card preview to show the chosen state name and corresponding seal image.",
-      "files": [
-        "frontend/src/components/IdCardPreview.tsx",
-        "frontend/src/components/StateSeal.tsx",
-        "frontend/src/utils/stateSeals.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-8"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-photo-upload-image-only-with-client-side-validation-and-an-auto-crop-flow-to-an-id-photo-aspect-ratio-display-the-cropped-photo-in-the-live-id-card-preview-and-include-it-in-export-print",
-      "featureTitle": "Add photo upload (image-only) with client-side validation and an auto-crop flow to an ID-photo aspect ratio; display the cropped photo in the live ID card preview and include it in export/print.",
-      "files": [
-        "frontend/src/components/IdCardPreview.tsx",
-        "frontend/src/components/PhotoCropModal.tsx",
-        "frontend/src/components/PhotoUploader.tsx",
-        "frontend/src/pages/NewOrderPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-9"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-a-live-digital-id-card-preview-component-that-updates-as-the-user-types-and-includes-name-photo-state-seal-dob-gender-height-eye-color-id-number-and-a-subtle-animated-scan-line-effect-ensure-it-visually-resembles-a-secure-id-card-while-remaining-readable",
-      "featureTitle": "Create a live digital ID card preview component that updates as the user types and includes name, photo, state + seal, DOB, gender, height, eye color, ID number, and a subtle animated scan-line effect; ensure it visually resembles a secure ID card while remaining readable.",
-      "files": [
-        "frontend/src/components/IdCardPreview.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/NewOrderPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-10"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-export-print-allow-users-to-export-the-id-card-preview-as-a-png-image-and-print-the-id-cleanly-ensuring-exported-printed-output-contains-only-the-card-no-surrounding-ui",
-      "featureTitle": "Implement Export & Print: allow users to export the ID card preview as a PNG image and print the ID cleanly, ensuring exported/printed output contains only the card (no surrounding UI).",
-      "files": [
-        "frontend/src/components/IdCardActions.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/NewOrderPage.tsx",
-        "frontend/src/utils/exportIdCard.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-11"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-admin-access-via-internet-identity-no-password-configure-a-backend-admin-allowlist-of-principals-add-an-admin-panel-ui-that-is-visible-accessible-only-to-admin-principals-and-allows-viewing-all-orders-and-updating-any-order-s-status-to-pending-approved-shipped",
-      "featureTitle": "Implement admin access via Internet Identity (no password): configure a backend admin allowlist of principals; add an Admin Panel UI that is visible/accessible only to admin principals and allows viewing all orders and updating any order’s status to Pending/Approved/Shipped.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/AdminGate.tsx",
-        "frontend/src/hooks/auth/useIsAdmin.ts",
-        "frontend/src/hooks/orders/useAllOrders.ts",
-        "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-        "frontend/src/pages/AdminPanelPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-12"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-use-react-query-for-data-fetching-caching-and-ensure-key-flows-invalidate-refetch-appropriately-create-order-update-status-so-ui-stays-in-sync-with-backend-state",
-      "featureTitle": "Use React Query for data fetching/caching and ensure key flows invalidate/refetch appropriately (create order, update status) so UI stays in sync with backend state.",
-      "files": [
-        "frontend/src/hooks/orders/queryKeys.ts",
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-        "frontend/src/hooks/useActor.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-13"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-basic-safety-clarity-copy-in-english-throughout-the-ui-to-avoid-confusion-with-real-identification-e-g-on-order-form-and-export-print-screens-while-keeping-the-secure-service-presentation-style",
-      "featureTitle": "Add basic safety/clarity copy in English throughout the UI to avoid confusion with real identification (e.g., on order form and export/print screens) while keeping the “secure service” presentation style.",
-      "files": [
-        "frontend/src/content/copy.ts",
-        "frontend/src/pages/LandingPage.tsx",
-        "frontend/src/pages/NewOrderPage.tsx",
-        "frontend/src/pages/OrderDetailPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-14"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-simple-public-landing-page-that-introduces-rf-falcon-ids-as-a-roleplay-only-service-shows-the-visual-theme-and-provides-entry-points-to-sign-in-and-learn-how-the-ordering-process-works-high-level",
-      "featureTitle": "Add a simple public landing page that introduces RF-FALCON-IDS as a ROLEPLAY-only service, shows the visual theme, and provides entry points to sign in and learn how the ordering process works (high-level).",
-      "files": [
-        "frontend/src/App.tsx",
         "frontend/src/components/BrandHeader.tsx",
         "frontend/src/pages/LandingPage.tsx"
       ],
@@ -295,7 +66,28 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-15"
+        "REQ-20"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-admin-login-works-under-the-same-username-password-system-by-adding-an-admin-role-concept-to-the-new-user-account-model-and-updating-the-admin-gating-logic-accordingly",
+      "featureTitle": "Ensure admin login works under the same username/password system by adding an admin role concept to the new user account model and updating the admin gating logic accordingly.",
+      "files": [
+        "frontend/src/components/AdminGate.tsx",
+        "frontend/src/components/BrandHeader.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-21"
       ],
       "confidence": "high"
     }

@@ -1,6 +1,8 @@
 import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
+import { SessionAuthProvider, useSessionAuth } from './hooks/auth/useSessionAuth';
 import LandingPage from './pages/LandingPage';
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
 import DashboardPage from './pages/DashboardPage';
 import NewOrderPage from './pages/NewOrderPage';
 import OrderDetailPage from './pages/OrderDetailPage';
@@ -24,8 +26,8 @@ const rootRoute = createRootRoute({
 });
 
 function IndexComponent() {
-  const { identity } = useInternetIdentity();
-  if (identity) {
+  const { isAuthenticated } = useSessionAuth();
+  if (isAuthenticated) {
     return <DashboardPage />;
   }
   return <LandingPage />;
@@ -35,6 +37,18 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: IndexComponent,
+});
+
+const signInRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/signin',
+  component: SignInPage,
+});
+
+const signUpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/signup',
+  component: SignUpPage,
 });
 
 const dashboardRoute = createRoute({
@@ -81,6 +95,8 @@ const adminRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  signInRoute,
+  signUpRoute,
   dashboardRoute,
   newOrderRoute,
   orderDetailRoute,
@@ -95,11 +111,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+function AppContent() {
+  return (
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <RouterProvider router={router} />
-      <Toaster />
+      <SessionAuthProvider>
+        <AppContent />
+      </SessionAuthProvider>
     </ThemeProvider>
   );
 }

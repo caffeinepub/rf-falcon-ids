@@ -1,71 +1,106 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T19:10:06.335Z",
-  "summary": "Diff adds a Motoko backend actor with order creation/status update logic plus a React frontend scaffold with routing, Internet Identity gating components, admin gating, a persistent roleplay disclaimer banner, an ID card preview (with scan-line effect + watermark), photo upload/crop components, state list constants, and React Query hooks/query keys. Some acceptance-criteria-specific behaviors are not verifiable from the provided diff summary due to truncation/omitted files; one reduced-motion requirement is not evidenced.",
+  "generatedAt": "2026-02-06T20:49:44.660Z",
+  "summary": "The diff adds new frontend Sign In/Sign Up pages and a client-side session context, and introduces a backend migration that changes order.owner from Principal to ?Principal. However, the requested native username/password auth + backend session-token authorization is not implemented: backend logic still relies on Principal-based access control, frontend auth is simulated via localStorage with insecure password handling, and order ownership/dashboard filtering is not enforced via the new username identity/session token model.",
   "missing_requirements": [
     {
-      "id": "REQ-10",
-      "requirement": "Scan-line animation can be paused/disabled automatically for reduced-motion preferences (if supported).",
-      "reason": "The ID card preview includes a scan-line overlay, but there is no evidence of prefers-reduced-motion handling or an alternate non-animated mode in the shown component/CSS.",
+      "id": "REQ-17",
+      "requirement": "Implement a native authentication system (no Google / no Internet Identity) with username/password sign-up and sign-in; passwords never stored/returned in plaintext (store only salted/hashed representation).",
+      "reason": "Frontend implements a simulated localStorage-based user DB and base64-encodes passwords; there is no backend signUp/signIn, and no salted/hashed password storage in backend is shown.",
       "evidence": [
-        "frontend/src/components/IdCardPreview.tsx"
+        "frontend/src/hooks/auth/useSessionAuth.tsx"
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "requirement": "Add backend session support for username/password authentication and use it to authorize all protected operations using a session token (replace Principal-based authorization checks).",
+      "reason": "backend/main.mo still authorizes using Principal caller permissions (AccessControl/hasPermission/isAdmin) and order ownership checks against caller Principal; no signUp/signIn/getSession methods or session-token authorization are shown.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "requirement": "Update order ownership/queries so dashboards show only the signed-in user’s orders under the new username/password identity; order detail blocked if not owned unless admin; admin can list/update all orders using admin session.",
+      "reason": "Backend order ownership remains tied to Principal (owner : ?Principal and comparisons to caller). Frontend user order filtering is implemented via localStorage order-id lists per username because 'backend doesn't have getUserOrders', and there is no session-token-based enforcement for order detail ownership.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/orders/useUserOrders.ts",
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/hooks/orders/useGetOrder.ts",
+        "frontend/src/pages/OrderDetailPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "requirement": "Ensure admin login works under the same username/password system with an admin role in the new user account model; frontend AdminGate uses new backend admin check based on session token.",
+      "reason": "Admin role is determined purely client-side (localStorage user record; isAdmin when username === 'admin'). Backend admin gating remains Principal/AccessControl-based; no backend session-token admin check is shown.",
+      "evidence": [
+        "frontend/src/hooks/auth/useSessionAuth.tsx",
+        "frontend/src/components/AdminGate.tsx",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "requirement": "Add a conditional state migration so upgrading from existing Internet Identity/principal-owned data does not break at upgrade time and existing orders remain readable after upgrade.",
+      "reason": "A migration file exists and backend references it, but the shown migration only changes Order.owner from Principal to ?Principal and does not demonstrate conditional handling for the broader shift to username/password sessions (nor that existing orders remain readable via admin listing under the new auth model). Given truncation, the required conditional/complete migration for the requested auth/ownership changes is not evidenced.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Footer branding/link to caffeine.ai and related icon/heart attribution",
-      "reason": "BuildRequest does not request or mention adding third-party platform branding/attribution links in the app UI.",
+      "description": "Client-side user database and authentication using localStorage (rf_falcon_users) instead of backend-based signup/signin.",
+      "reason": "BuildRequest requires a native username/password auth system with backend handling and hashed/salted passwords; it does not request localStorage-based auth simulation.",
       "evidence": [
-        "frontend/src/components/AppShell.tsx"
+        "frontend/src/hooks/auth/useSessionAuth.tsx"
+      ]
+    },
+    {
+      "description": "Passwords stored as base64-encoded strings in localStorage (btoa(password)).",
+      "reason": "This is insecure and contradicts the requirement that passwords are never stored/returned in plaintext and must be stored only as salted/hashed representation by the backend; base64 is not hashing.",
+      "evidence": [
+        "frontend/src/hooks/auth/useSessionAuth.tsx"
+      ]
+    },
+    {
+      "description": "Admin role assignment hardcoded as username === 'admin' in the frontend.",
+      "reason": "BuildRequest asks for an admin role concept in the new user account model and backend-admin determination based on session token; it does not specify or request a client-side username-based admin shortcut.",
+      "evidence": [
+        "frontend/src/hooks/auth/useSessionAuth.tsx"
+      ]
+    },
+    {
+      "description": "User order ownership tracking in the frontend via localStorage keys user_orders_<username> because backend lacks getUserOrders.",
+      "reason": "BuildRequest requires order ownership and queries to be updated under the new identity model and enforced (including order detail blocking) using backend authorization; it does not request a client-side localStorage workaround for ownership.",
+      "evidence": [
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/hooks/orders/useUserOrders.ts"
       ]
     }
   ],
-  "confidence": 0.56,
+  "confidence": 0.83,
   "changed_files": [
-    "all_files_summary.json",
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.css",
-    "frontend/index.html",
-    "frontend/src/@types/html2canvas.d.ts",
     "frontend/src/App.tsx",
     "frontend/src/components/AdminGate.tsx",
-    "frontend/src/components/AppShell.tsx",
     "frontend/src/components/AuthGate.tsx",
     "frontend/src/components/AuthStatusButton.tsx",
     "frontend/src/components/BrandHeader.tsx",
-    "frontend/src/components/IdCardActions.tsx",
-    "frontend/src/components/IdCardPreview.tsx",
-    "frontend/src/components/IdWatermark.tsx",
-    "frontend/src/components/PhotoCropModal.tsx",
-    "frontend/src/components/PhotoUploader.tsx",
-    "frontend/src/components/RoleplayDisclaimerBanner.tsx",
-    "frontend/src/components/StateSeal.tsx",
-    "frontend/src/constants/usStates.ts",
-    "frontend/src/content/copy.ts",
-    "frontend/src/hooks/auth/useIsAdmin.ts",
-    "frontend/src/hooks/orders/queryKeys.ts",
-    "frontend/src/hooks/orders/useAllOrders.ts",
+    "frontend/src/hooks/auth/useSessionAuth.tsx",
     "frontend/src/hooks/orders/useCreateOrder.ts",
     "frontend/src/hooks/orders/useGetOrder.ts",
-    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
     "frontend/src/hooks/orders/useUserOrders.ts",
-    "frontend/src/hooks/useActor.ts",
-    "frontend/src/hooks/useInternetIdentity.ts",
-    "frontend/src/index.css",
-    "frontend/src/main.tsx",
-    "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/DashboardPage.tsx",
     "frontend/src/pages/LandingPage.tsx",
-    "frontend/src/pages/NewOrderPage.tsx",
     "frontend/src/pages/OrderDetailPage.tsx",
-    "frontend/src/utils/exportIdCard.ts",
-    "frontend/src/utils/formatters.ts",
-    "frontend/src/utils/stateSeals.ts",
-    "frontend/src/utils/urlParams.ts",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/SignInPage.tsx",
+    "frontend/src/pages/SignUpPage.tsx",
     "project_state.json"
   ]
 }
