@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { normalizeUsername, isFixedAdminUsername } from '@/utils/username';
 
 interface SessionAuthContextType {
   isAuthenticated: boolean;
@@ -13,11 +14,17 @@ interface SessionAuthContextType {
 const SessionAuthContext = createContext<SessionAuthContextType | null>(null);
 
 const SESSION_STORAGE_KEY = 'rf_falcon_session';
+const USERS_STORAGE_KEY = 'rf_falcon_users';
 
 interface SessionData {
   username: string;
   token: string;
   isAdmin: boolean;
+}
+
+interface UserRecord {
+  password: string;
+  isAdmin?: boolean; // Stored but ignored; admin is derived from username
 }
 
 export function SessionAuthProvider({ children }: { children: ReactNode }) {
@@ -30,7 +37,14 @@ export function SessionAuthProvider({ children }: { children: ReactNode }) {
     if (stored) {
       try {
         const data = JSON.parse(stored) as SessionData;
-        setSession(data);
+        // Recompute isAdmin from username, ignoring stored value
+        const correctedSession: SessionData = {
+          ...data,
+          isAdmin: isFixedAdminUsername(data.username),
+        };
+        setSession(correctedSession);
+        // Optionally rewrite to localStorage to fix any stale data
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(correctedSession));
       } catch (e) {
         localStorage.removeItem(SESSION_STORAGE_KEY);
       }
@@ -39,8 +53,6 @@ export function SessionAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (username: string, password: string) => {
-    // For now, simulate signup - in production this would call backend
-    // Backend should hash password and store user
     if (!username || !password) {
       throw new Error('Username and password are required');
     }
@@ -49,20 +61,23 @@ export function SessionAuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Password must be at least 6 characters');
     }
 
+    const normalizedUsername = normalizeUsername(username);
+
     // Store in localStorage as a simple user database
-    const users = JSON.parse(localStorage.getItem('rf_falcon_users') || '{}');
+    const users: Record<string, UserRecord> = JSON.parse(
+      localStorage.getItem(USERS_STORAGE_KEY) || '{}'
+    );
     
-    if (users[username]) {
+    if (users[normalizedUsername]) {
       throw new Error('Username already exists');
     }
 
     // Simple hash simulation (in production, backend would handle this securely)
-    users[username] = {
+    users[normalizedUsername] = {
       password: btoa(password), // Base64 encoding (NOT secure, just for demo)
-      isAdmin: username === 'admin', // First user or 'admin' username gets admin
     };
     
-    localStorage.setItem('rf_falcon_users', JSON.stringify(users));
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
   };
 
   const signIn = async (username: string, password: string) => {
@@ -70,19 +85,23 @@ export function SessionAuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Username and password are required');
     }
 
+    const normalizedUsername = normalizeUsername(username);
+
     // Retrieve users from localStorage
-    const users = JSON.parse(localStorage.getItem('rf_falcon_users') || '{}');
-    const user = users[username];
+    const users: Record<string, UserRecord> = JSON.parse(
+      localStorage.getItem(USERS_STORAGE_KEY) || '{}'
+    );
+    const user = users[normalizedUsername];
 
     if (!user || user.password !== btoa(password)) {
       throw new Error('Invalid username or password');
     }
 
-    // Create session
+    // Create session with admin derived solely from username
     const sessionData: SessionData = {
-      username,
-      token: `token_${username}_${Date.now()}`,
-      isAdmin: user.isAdmin || false,
+      username: normalizedUsername,
+      token: `token_${normalizedUsername}_${Date.now()}`,
+      isAdmin: isFixedAdminUsername(normalizedUsername),
     };
 
     setSession(sessionData);

@@ -1,128 +1,67 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T20:49:44.663Z",
+  "generatedAt": "2026-02-06T21:14:06.019Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-17",
-        "summary": "Implement a native authentication system (no Google / no Internet Identity) that lets users create an account with a username and password, then sign in using those credentials, with no email verification step.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/auth/useSessionAuth.tsx",
-          "frontend/src/hooks/auth/useSession.ts",
-          "frontend/src/pages/SignInPage.tsx",
-          "frontend/src/pages/SignUpPage.tsx",
-          "frontend/src/components/AuthStatusButton.tsx",
-          "frontend/src/backend.d.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/auth/useSessionAuth.tsx",
-          "frontend/src/pages/SignInPage.tsx",
-          "frontend/src/pages/SignUpPage.tsx",
-          "frontend/src/components/AuthStatusButton.tsx",
-          "frontend/src/backend.d.ts"
-        ]
-      },
-      {
-        "id": "REQ-18",
-        "summary": "Add backend session support for username/password authentication and use it to authorize all user-protected and admin-protected backend operations (replacing principal-based authorization checks).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-19",
-        "summary": "Update the order ownership model and queries so user dashboards show only the signed-in user’s orders under the new username/password identity system, and admins can still view/update all orders.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/hooks/orders/useUserOrders.ts",
-          "frontend/src/hooks/orders/useGetOrder.ts",
-          "frontend/src/pages/OrderDetailPage.tsx",
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/backend.d.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/hooks/orders/useUserOrders.ts",
-          "frontend/src/hooks/orders/useGetOrder.ts",
-          "frontend/src/pages/OrderDetailPage.tsx",
-          "frontend/src/backend.d.ts"
-        ]
-      },
-      {
-        "id": "REQ-20",
-        "summary": "Create a dedicated Sign In page and integrate it into routing and UI navigation so the app does not prompt for Internet Identity anywhere (including AuthGate copy and landing page messaging).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/AuthGate.tsx",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/pages/LandingPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/AuthGate.tsx",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/pages/LandingPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-21",
-        "summary": "Ensure admin login works under the same username/password system by adding an admin role concept to the new user account model and updating the admin gating logic accordingly.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/auth/useIsAdmin.ts",
-          "frontend/src/components/AdminGate.tsx",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/backend.d.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/AdminGate.tsx",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/backend.d.ts"
-        ]
-      },
-      {
         "id": "REQ-22",
-        "summary": "Add a conditional state migration so that upgrading from the existing Internet Identity/principal-owned data does not break the canister at upgrade time, and existing stored orders remain readable after upgrade.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Update the app’s username/password auth so the ONLY admin is the account whose username is exactly \"TravvyC\"; no other username may ever have admin access, even if localStorage contains an old/stale `isAdmin` flag.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/auth/useSessionAuth.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/auth/useSessionAuth.tsx"
+        ]
+      },
+      {
+        "id": "REQ-23",
+        "summary": "Enforce unique usernames during sign-up and block duplicate usernames from being created, showing a clear error in English when a duplicate is attempted.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/username.ts",
+          "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "frontend/src/pages/SignUpPage.tsx",
+          "frontend/src/pages/SignInPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/username.ts",
+          "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "frontend/src/pages/SignUpPage.tsx",
+          "frontend/src/pages/SignInPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-24",
+        "summary": "Ensure the admin determination is applied consistently across sign-up, sign-in, and session restore (loading an existing session from localStorage) so that a previously-created \"TravvyC\" account becomes admin after this change without requiring manual data edits.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "frontend/src/hooks/auth/useSessionAuth.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "frontend/src/hooks/auth/useSessionAuth.tsx"
+        ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/AdminGate.tsx",
-    "frontend/src/components/AuthGate.tsx",
-    "frontend/src/components/AuthStatusButton.tsx",
-    "frontend/src/components/BrandHeader.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/auth/useSessionAuth.tsx",
-    "frontend/src/hooks/orders/useCreateOrder.ts",
-    "frontend/src/hooks/orders/useGetOrder.ts",
-    "frontend/src/hooks/orders/useUserOrders.ts",
-    "frontend/src/pages/LandingPage.tsx",
-    "frontend/src/pages/OrderDetailPage.tsx",
     "frontend/src/pages/SignInPage.tsx",
     "frontend/src/pages/SignUpPage.tsx",
+    "frontend/src/utils/username.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

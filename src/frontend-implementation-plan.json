@@ -1,155 +1,74 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Replace Internet Identity UI with native username/password session auth and update admin gating",
+  "title": "Single fixed admin (TravvyC) + unique usernames in localStorage auth",
   "requirements": [
     {
-      "id": "REQ-17",
-      "summary": "Add username/password Sign Up + Sign In UI and a persistent session-based auth state (no email verification).",
+      "id": "REQ-22",
+      "summary": "Make admin access impossible for any username except exactly \"TravvyC\", ignoring any stale localStorage isAdmin flags.",
       "acceptanceCriteria": [
-        "The app provides a dedicated Sign In page and a Create Account (Sign Up) flow.",
-        "Sign Up requires at minimum: username + password (and password confirmation).",
-        "No email collection or email verification is required anywhere in the UI or backend.",
-        "After successful Sign Up, the user can Sign In with the created username/password and is treated as authenticated across the app until they sign out.",
-        "Passwords are never stored or returned in plaintext by the backend (store only a salted/hashed representation)."
+        "When signed in as username \"TravvyC\", the session/auth context `isAdmin` is true and the Admin link is visible in the header.",
+        "When signed in as any username other than \"TravvyC\", the session/auth context `isAdmin` is false and the Admin link is not visible.",
+        "Attempting to navigate to /admin while signed in as any username other than \"TravvyC\" shows the existing \"Access Denied\" state (AdminGate).",
+        "Changing any stored user record (e.g., `rf_falcon_users`) to include `isAdmin: true` does not grant admin access unless the signed-in username is \"TravvyC\"."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "operation": "modify",
+          "description": "Update session auth so admin is computed solely from the signed-in username being exactly \"TravvyC\" (and never from stored user/session `isAdmin` fields). Ensure the context `isAdmin` value and any session object persisted to localStorage cannot grant admin for other usernames."
+        }
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "summary": "Block duplicate username creation during sign-up and display a clear English error when a duplicate is attempted.",
+      "acceptanceCriteria": [
+        "If a user attempts to sign up with a username that already exists, sign-up fails and shows an error message (e.g., \"Username already exists\").",
+        "A successful sign-up persists the new user such that a second sign-up attempt with the same username is rejected.",
+        "The duplicate-username check is applied consistently with the exact same username string the system stores/uses for sign-in."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/username.ts",
           "operation": "create",
-          "description": "Create a session-auth React context/provider that manages username/password sign-in state, persists a backend-issued session token in localStorage/sessionStorage, provides signUp/signIn/signOut helpers, and exposes isAuthenticated + basic session info to the UI."
+          "description": "Add shared helpers (e.g., normalizeUsername and isFixedAdminUsername) used by both sign-up and sign-in so duplicate checks and lookups use the exact same stored/used username string."
         },
         {
-          "path": "frontend/src/hooks/auth/useSession.ts",
-          "operation": "create",
-          "description": "Add a small hook/util layer for reading/writing the session token and deriving authenticated state without depending on Internet Identity."
-        },
-        {
-          "path": "frontend/src/pages/SignInPage.tsx",
-          "operation": "create",
-          "description": "Implement the dedicated Sign In page UI (username + password) that calls the new session auth hook to obtain and store a session token; include clear English errors on invalid credentials; include navigation to Sign Up."
+          "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "operation": "modify",
+          "description": "Enforce uniqueness by applying the shared username normalization consistently when reading/writing `rf_falcon_users`, and throw a clear English error (\"Username already exists\") when a duplicate is attempted."
         },
         {
           "path": "frontend/src/pages/SignUpPage.tsx",
-          "operation": "create",
-          "description": "Implement the Create Account (Sign Up) page UI (username, password, confirm password) that calls session auth signUp and then guides the user to sign in (or auto-signs in if the backend supports it), with no email fields anywhere."
+          "operation": "modify",
+          "description": "Before calling signUp, apply the same username normalization as the auth layer (via the shared helper) so UI input matches what is stored/checked, and ensure any duplicate attempt surfaces the clear English error message."
         },
         {
-          "path": "frontend/src/components/AuthStatusButton.tsx",
+          "path": "frontend/src/pages/SignInPage.tsx",
           "operation": "modify",
-          "description": "Replace Internet Identity login/logout handling with session-based Sign In/Sign Out behavior: when signed out, navigate to Sign In; when signed in, clear the session token and clear React Query cached data."
-        },
-        {
-          "path": "frontend/src/backend.d.ts",
-          "operation": "modify",
-          "description": "Update the frontend backend interface typings to include username/password auth capabilities (e.g., signUp, signIn, signOut/getSession) returning/accepting a session token; ensure no types expose plaintext passwords beyond client-to-backend submission."
+          "description": "Before calling signIn, apply the same username normalization as the auth layer (via the shared helper) so sign-in uses the exact same username string the system stores/uses."
         }
       ]
     },
     {
-      "id": "REQ-19",
-      "summary": "Update user order browsing to use the session identity so dashboards show only the signed-in user’s orders and order detail access is blocked when not owned (unless admin).",
+      "id": "REQ-24",
+      "summary": "Apply the fixed \"TravvyC\" admin determination consistently on sign-up, sign-in, and session restore from localStorage so existing TravvyC accounts become admin automatically.",
       "acceptanceCriteria": [
-        "When a signed-in user creates an order, the order is associated with that authenticated user identity (not the Internet Identity principal).",
-        "Dashboard order list shows only orders for the currently signed-in user session.",
-        "Order detail page blocks access if the order is not owned by the current signed-in user session (unless the session is an admin session).",
-        "Admin panel can list all orders and update any order’s status using an admin session."
+        "If localStorage already contains a valid session for username \"TravvyC\", reloading the page results in `isAdmin === true` and access to /admin is allowed.",
+        "If localStorage already contains a valid session for a non-\"TravvyC\" username (even if the stored session has `isAdmin: true`), reloading the page results in `isAdmin === false` and /admin is denied.",
+        "If localStorage contains user records created before this change, signing in as \"TravvyC\" still yields admin access after credential verification."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
+          "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
           "operation": "modify",
-          "description": "Update order creation to include the current session token when calling the backend protected order-creation capability; ensure failures surface as clear UI errors (e.g., unauthorized when signed out)."
+          "description": "During session restore (initial localStorage load), recompute `isAdmin` from the restored username (exact match \"TravvyC\") and ignore any stored `isAdmin` value; optionally rewrite the stored session to reflect the corrected derived `isAdmin` so future restores remain consistent."
         },
         {
-          "path": "frontend/src/hooks/orders/useUserOrders.ts",
+          "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
           "operation": "modify",
-          "description": "Update the user-orders query to call the backend capability that returns orders for the current session token (instead of relying on principal-based ownership)."
-        },
-        {
-          "path": "frontend/src/hooks/orders/useGetOrder.ts",
-          "operation": "modify",
-          "description": "Update order detail fetching to include the session token so the backend can enforce ownership/admin authorization; treat unauthorized responses as a 'not found / no permission' UI state."
-        },
-        {
-          "path": "frontend/src/pages/OrderDetailPage.tsx",
-          "operation": "modify",
-          "description": "Ensure unauthorized order access produces the existing 'doesn't exist or you don't have permission' state based on session-based authorization errors (including non-owner access)."
-        },
-        {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
-          "operation": "modify",
-          "description": "Ensure order submission works under session auth by relying on the updated create-order hook; keep existing ROLEPLAY-ONLY disclaimers and watermark behavior unchanged."
-        },
-        {
-          "path": "frontend/src/backend.d.ts",
-          "operation": "modify",
-          "description": "Align typings for order capabilities to support session-token authorization on user-protected operations (create order, list my orders, get order detail) while preserving existing Order model usage in the UI."
-        }
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "summary": "Add Sign In/Sign Up routes and update all UI copy/navigation to remove Internet Identity prompts and direct users to username/password sign-in.",
-      "acceptanceCriteria": [
-        "A new route exists for Sign In (and Sign Up if separate), and it is reachable from signed-out states.",
-        "Any UI that previously instructed users to use “Internet Identity” is updated to refer to signing in with username/password (English copy).",
-        "AuthGate no longer renders a button that triggers Internet Identity login; instead it directs the user to the Sign In page.",
-        "Brand header authentication controls support: Sign In (when signed out) and Sign Out (when signed in), based on the new auth state.",
-        "Landing page “How It Works” step text is updated to match the new sign-in method (username/password)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Register new routes for /signin and /signup, and update index routing decisions to use session-auth state (not Internet Identity). Ensure Sign In/Up routes are reachable when signed out and protected areas still use AuthGate."
-        },
-        {
-          "path": "frontend/src/components/AuthGate.tsx",
-          "operation": "modify",
-          "description": "Replace Internet Identity gating with session-auth gating: when signed out, present English copy referencing username/password and provide a CTA that navigates to the Sign In route (no Internet Identity login button)."
-        },
-        {
-          "path": "frontend/src/components/BrandHeader.tsx",
-          "operation": "modify",
-          "description": "Update header navigation to use session-auth state for showing Dashboard/Admin links and for rendering Sign In/Sign Out behavior via the updated AuthStatusButton."
-        },
-        {
-          "path": "frontend/src/pages/LandingPage.tsx",
-          "operation": "modify",
-          "description": "Update the 'How It Works' Step 1 text to say users sign in with username/password (remove 'Internet Identity' wording). Keep existing roleplay disclaimers intact."
-        }
-      ]
-    },
-    {
-      "id": "REQ-21",
-      "summary": "Update admin gating and navigation to use session-based admin role checks under the new username/password system.",
-      "acceptanceCriteria": [
-        "Backend supports determining whether the current session token corresponds to an admin user (e.g., an isAdmin flag or role).",
-        "Frontend AdminGate uses the new backend admin check (based on the session token) to allow/deny access to /admin.",
-        "A signed-in admin user sees the Admin navigation entry and can access the Admin Panel successfully.",
-        "A signed-in non-admin user receives an “Access Denied” state on /admin."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/auth/useIsAdmin.ts",
-          "operation": "modify",
-          "description": "Update the admin check query to use the current session token and call the backend capability that verifies admin role for that session. This role-based behavior is backed by the selected \"authorization\" component on the backend; verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/AdminGate.tsx",
-          "operation": "modify",
-          "description": "Ensure AdminGate authorization decisions are based on the session-token admin check and show the existing Access Denied UI for non-admin sessions."
-        },
-        {
-          "path": "frontend/src/components/BrandHeader.tsx",
-          "operation": "modify",
-          "description": "Ensure the Admin navigation entry is only shown for admin sessions (using the session-based isAdmin check)."
-        },
-        {
-          "path": "frontend/src/backend.d.ts",
-          "operation": "modify",
-          "description": "Update typings to include session-based role/admin-check capability used by AdminGate and admin navigation (consistent with the new username/password session auth model)."
+          "description": "During sign-in, after credential verification, set derived `isAdmin` based only on normalized username === \"TravvyC\" so previously-created TravvyC users gain admin immediately without any manual edits."
         }
       ]
     }

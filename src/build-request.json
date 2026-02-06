@@ -1,149 +1,78 @@
 {
   "kind": "build_request",
-  "title": "Replace Internet Identity with native username/password sign-in and ensure admin login works",
+  "title": "Make TravvyC the only admin and enforce unique usernames at account creation",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-17",
-      "text": "Implement a native authentication system (no Google / no Internet Identity) that lets users create an account with a username and password, then sign in using those credentials, with no email verification step.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-user-1"
-        ],
-        "quotes": [
-          "OK, so instead of when you sign in it redirects you you sign in with Google I want it to have its own sign in page. You don’t have to confirm with your email where you can either create a username and a password and it will save in the system"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The app provides a dedicated Sign In page and a Create Account (Sign Up) flow.",
-        "Sign Up requires at minimum: username + password (and password confirmation).",
-        "No email collection or email verification is required anywhere in the UI or backend.",
-        "After successful Sign Up, the user can Sign In with the created username/password and is treated as authenticated across the app until they sign out.",
-        "Passwords are never stored or returned in plaintext by the backend (store only a salted/hashed representation)."
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "text": "Add backend session support for username/password authentication and use it to authorize all user-protected and admin-protected backend operations (replacing principal-based authorization checks).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-user-1"
-        ],
-        "quotes": [
-          "create a username and a password and it will save in the system",
-          "then as well as the admin login I want that to work"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend exposes auth methods for: signUp, signIn, signOut (optional), getSession (or equivalent), returning a session token on successful sign-in.",
-        "Backend stores session state so that subsequent calls using a valid session token are treated as authenticated as the associated user.",
-        "All existing protected operations (create order, view user orders, view order detail, update order status, list all orders, profile access) enforce authorization using the session token rather than the caller Principal permissions.",
-        "Invalid/expired session tokens are rejected with clear errors (e.g., \"Unauthorized\")."
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "text": "Update the order ownership model and queries so user dashboards show only the signed-in user’s orders under the new username/password identity system, and admins can still view/update all orders.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-user-1"
-        ],
-        "quotes": [
-          "then as well as the admin login I want that to work"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When a signed-in user creates an order, the order is associated with that authenticated user identity (not the Internet Identity principal).",
-        "Dashboard order list shows only orders for the currently signed-in user session.",
-        "Order detail page blocks access if the order is not owned by the current signed-in user session (unless the session is an admin session).",
-        "Admin panel can list all orders and update any order’s status using an admin session."
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "text": "Create a dedicated Sign In page and integrate it into routing and UI navigation so the app does not prompt for Internet Identity anywhere (including AuthGate copy and landing page messaging).",
+      "id": "REQ-22",
+      "text": "Update the app’s username/password auth so the ONLY admin is the account whose username is exactly \"TravvyC\"; no other username may ever have admin access, even if localStorage contains an old/stale `isAdmin` flag.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-9"
         ],
         "quotes": [
-          "I want it to have its own sign in page."
+          "Yes TravvyC should be the only admin regardless"
         ]
       },
       "acceptanceCriteria": [
-        "A new route exists for Sign In (and Sign Up if separate), and it is reachable from signed-out states.",
-        "Any UI that previously instructed users to use “Internet Identity” is updated to refer to signing in with username/password (English copy).",
-        "AuthGate no longer renders a button that triggers Internet Identity login; instead it directs the user to the Sign In page.",
-        "Brand header authentication controls support: Sign In (when signed out) and Sign Out (when signed in), based on the new auth state.",
-        "Landing page “How It Works” step text is updated to match the new sign-in method (username/password)."
+        "When signed in as username \"TravvyC\", the session/auth context `isAdmin` is true and the Admin link is visible in the header.",
+        "When signed in as any username other than \"TravvyC\", the session/auth context `isAdmin` is false and the Admin link is not visible.",
+        "Attempting to navigate to /admin while signed in as any username other than \"TravvyC\" shows the existing \"Access Denied\" state (AdminGate).",
+        "Changing any stored user record (e.g., `rf_falcon_users`) to include `isAdmin: true` does not grant admin access unless the signed-in username is \"TravvyC\"."
       ]
     },
     {
-      "id": "REQ-21",
-      "text": "Ensure admin login works under the same username/password system by adding an admin role concept to the new user account model and updating the admin gating logic accordingly.",
-      "target": "both",
+      "id": "REQ-23",
+      "text": "Enforce unique usernames during sign-up and block duplicate usernames from being created, showing a clear error in English when a duplicate is attempted.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-7",
+          "msg-9"
         ],
         "quotes": [
-          "then as well as the admin login I want that to work"
+          "don’t let duplicate usernames when people are creating accounts",
+          "and the answer to number three is yes"
         ]
       },
       "acceptanceCriteria": [
-        "Backend supports determining whether the current session token corresponds to an admin user (e.g., an isAdmin flag or role).",
-        "Frontend AdminGate uses the new backend admin check (based on the session token) to allow/deny access to /admin.",
-        "A signed-in admin user sees the Admin navigation entry and can access the Admin Panel successfully.",
-        "A signed-in non-admin user receives an “Access Denied” state on /admin."
+        "If a user attempts to sign up with a username that already exists, sign-up fails and shows an error message (e.g., \"Username already exists\").",
+        "A successful sign-up persists the new user such that a second sign-up attempt with the same username is rejected.",
+        "The duplicate-username check is applied consistently with the exact same username string the system stores/uses for sign-in."
       ]
     },
     {
-      "id": "REQ-22",
-      "text": "Add a conditional state migration so that upgrading from the existing Internet Identity/principal-owned data does not break the canister at upgrade time, and existing stored orders remain readable after upgrade.",
-      "target": "backend",
+      "id": "REQ-24",
+      "text": "Ensure the admin determination is applied consistently across sign-up, sign-in, and session restore (loading an existing session from localStorage) so that a previously-created \"TravvyC\" account becomes admin after this change without requiring manual data edits.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-7",
+          "msg-9"
         ],
         "quotes": [
-          "it will save in the system"
+          "OK, I created my account, but it did not make me a admin",
+          "then build it"
         ]
       },
       "acceptanceCriteria": [
-        "If existing stable state is present, the canister upgrades successfully without trapping.",
-        "Existing orders can still be returned by admin listing after upgrade (even if they become “legacy-owned”).",
-        "Migration is only added/used if required by the current stored data layout (respect the project’s conditional migration policy)."
+        "If localStorage already contains a valid session for username \"TravvyC\", reloading the page results in `isAdmin === true` and access to /admin is allowed.",
+        "If localStorage already contains a valid session for a non-\"TravvyC\" username (even if the stored session has `isAdmin: true`), reloading the page results in `isAdmin === false` and /admin is denied.",
+        "If localStorage contains user records created before this change, signing in as \"TravvyC\" still yields admin access after credential verification."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend immutablePaths (including frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, and frontend/src/main.tsx); implement the new username/password auth flow without modifying those files.",
-    "Backend must remain a single Motoko actor with all logic in backend/main.mo; add backend/migration.mo only if a state upgrade requires it.",
-    "Use English for all user-facing UI text.",
-    "Maintain existing ROLEPLAY-ONLY / NOT VALID ID disclaimers and watermark behavior; do not weaken or remove safety/clarity messaging."
+    "Do not edit files in frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Keep all user-facing text in English."
   ],
   "nonGoals": [
-    "Do not implement third-party authentication providers (Google, Facebook, GitHub, Auth0).",
-    "Do not add email collection, email verification, password reset emails, or SMS verification.",
-    "Do not add payment/Venmo instruction screens in this change (not requested in the latest message).",
-    "Do not introduce external databases or non-Motoko backend services."
+    "Implementing backend-backed username/password authentication in Motoko (this change only adjusts the existing frontend session/localStorage auth behavior).",
+    "Adding additional admin accounts or role management UI beyond the single fixed admin username \"TravvyC\"."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

@@ -1,286 +1,56 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "RF-FALCON-IDS: a high-end ROLEPLAY-only ID ordering and management website with a dark futuristic government/military aesthetic, custom username/password authentication (no Google/Internet Identity, no email verification), user dashboards and order history, ID order form with live ID card preview, export/print, post-order payment-instructions screen, and an admin panel to manage orders and statuses.",
+  "projectStateVersion": 3,
+  "summary": "Implement account/role system rules: enforce unique usernames at signup and assign admin privileges exclusively to the user with username \"TravvyC\" (no other admins).",
   "architectural_notes": [
-    "Include prominent on-site disclaimers: ROLEPLAY USE ONLY / NOT REAL IDENTIFICATION.",
-    "Data storage approach should be backend-ready; initial implementation may use simplest persistence approach compatible with chosen auth.",
-    "Deployment requested: publish the current full application to a live environment (define target network/hosting + release process).",
-    "User requested initial persistence via localStorage or mock DB while remaining backend-ready (data access layer should be swappable).",
-    "Switch authentication from Internet Identity/Google-style SSO to first-party username/password accounts (no email verification); define admin access under this credential system."
+    "Admin authorization is determined solely by username string equality to \"TravvyC\" (single-admin model).",
+    "Usernames must be globally unique; account creation must validate against existing usernames and reject duplicates."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Newly created account did not automatically receive expected admin privileges; admin assignment rules need implementation."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-persistent-on-site-disclaimers-across-the-app-stating-the-service-is-roleplay-use-only-and-not-real-identification-and-ensure-the-id-preview-export-also-includes-a-visible-roleplay-only-not-valid-id-watermark",
-      "title": "Add persistent, on-site disclaimers across the app stating the service is ROLEPLAY USE ONLY and NOT REAL IDENTIFICATION, and ensure the ID preview/export also includes a visible ROLEPLAY-ONLY / NOT VALID ID watermark.",
+      "id": "feature-update-the-app-s-username-password-auth-so-the-only-admin-is-the-account-whose-username-is-exactly-travvyc-no-other-username-may-ever-have-admin-access-even-if-localstorage-contains-an-old-stale-isadmin-flag",
+      "title": "Update the app’s username/password auth so the ONLY admin is the account whose username is exactly \"TravvyC\"; no other username may ever have admin access, even if localStorage contains an old/stale `isAdmin` flag.",
       "reqIds": [
-        "REQ-1"
+        "REQ-22"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-internet-identity-authentication-for-all-users-and-gate-all-authenticated-pages-actions-behind-login-show-a-signed-out-landing-screen-with-a-clear-call-to-action-to-sign-in",
-      "title": "Implement Internet Identity authentication for all users and gate all authenticated pages/actions behind login; show a signed-out landing screen with a clear call-to-action to sign in.",
+      "id": "feature-enforce-unique-usernames-during-sign-up-and-block-duplicate-usernames-from-being-created-showing-a-clear-error-in-english-when-a-duplicate-is-attempted",
+      "title": "Enforce unique usernames during sign-up and block duplicate usernames from being created, showing a clear error in English when a duplicate is attempted.",
       "reqIds": [
-        "REQ-2"
+        "REQ-23"
       ],
       "version": 1
     },
     {
-      "id": "feature-create-a-coherent-dark-futuristic-government-military-visual-theme-with-neon-cyan-purple-accents-glow-scan-line-animations-clean-professional-typography-and-full-responsiveness-across-desktop-chromebook-mobile-apply-the-theme-consistently-across-all-pages-and-components",
-      "title": "Create a coherent, dark futuristic government/military visual theme with neon cyan + purple accents, glow + scan-line animations, clean professional typography, and full responsiveness across desktop/Chromebook/mobile; apply the theme consistently across all pages and components.",
+      "id": "feature-ensure-the-admin-determination-is-applied-consistently-across-sign-up-sign-in-and-session-restore-loading-an-existing-session-from-localstorage-so-that-a-previously-created-travvyc-account-becomes-admin-after-this-change-without-requiring-manual-data-edits",
+      "title": "Ensure the admin determination is applied consistently across sign-up, sign-in, and session restore (loading an existing session from localStorage) so that a previously-created \"TravvyC\" account becomes admin after this change without requiring manual data edits.",
       "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-the-user-dashboard-ui-show-the-signed-in-user-s-order-history-list-order-name-holder-name-state-id-number-current-status-created-date-and-provide-navigation-to-create-a-new-order-and-view-an-individual-order-s-details",
-      "title": "Build the user dashboard UI: show the signed-in user’s order history list (order name/holder name, state, ID number, current status, created date) and provide navigation to create a new order and view an individual order’s details.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-the-id-ordering-flow-ui-an-order-form-that-collects-all-required-id-fields-and-roleplay-shipping-fields-including-a-u-s-state-dropdown-validates-required-inputs-and-submits-the-order-to-the-backend",
-      "title": "Build the ID ordering flow UI: an order form that collects all required ID fields and roleplay shipping fields, including a U.S. state dropdown, validates required inputs, and submits the order to the backend.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-state-selection-with-state-seal-logo-support-selecting-a-state-updates-the-id-card-preview-to-show-the-chosen-state-name-and-corresponding-seal-image",
-      "title": "Implement state selection with state seal/logo support: selecting a state updates the ID card preview to show the chosen state name and corresponding seal image.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-photo-upload-image-only-with-client-side-validation-and-an-auto-crop-flow-to-an-id-photo-aspect-ratio-display-the-cropped-photo-in-the-live-id-card-preview-and-include-it-in-export-print",
-      "title": "Add photo upload (image-only) with client-side validation and an auto-crop flow to an ID-photo aspect ratio; display the cropped photo in the live ID card preview and include it in export/print.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-a-live-digital-id-card-preview-component-that-updates-as-the-user-types-and-includes-name-photo-state-seal-dob-gender-height-eye-color-id-number-and-a-subtle-animated-scan-line-effect-ensure-it-visually-resembles-a-secure-id-card-while-remaining-readable",
-      "title": "Create a live digital ID card preview component that updates as the user types and includes name, photo, state + seal, DOB, gender, height, eye color, ID number, and a subtle animated scan-line effect; ensure it visually resembles a secure ID card while remaining readable.",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-export-print-allow-users-to-export-the-id-card-preview-as-a-png-image-and-print-the-id-cleanly-ensuring-exported-printed-output-contains-only-the-card-no-surrounding-ui",
-      "title": "Implement Export & Print: allow users to export the ID card preview as a PNG image and print the ID cleanly, ensuring exported/printed output contains only the card (no surrounding UI).",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-admin-access-via-internet-identity-no-password-configure-a-backend-admin-allowlist-of-principals-add-an-admin-panel-ui-that-is-visible-accessible-only-to-admin-principals-and-allows-viewing-all-orders-and-updating-any-order-s-status-to-pending-approved-shipped",
-      "title": "Implement admin access via Internet Identity (no password): configure a backend admin allowlist of principals; add an Admin Panel UI that is visible/accessible only to admin principals and allows viewing all orders and updating any order’s status to Pending/Approved/Shipped.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-use-react-query-for-data-fetching-caching-and-ensure-key-flows-invalidate-refetch-appropriately-create-order-update-status-so-ui-stays-in-sync-with-backend-state",
-      "title": "Use React Query for data fetching/caching and ensure key flows invalidate/refetch appropriately (create order, update status) so UI stays in sync with backend state.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-basic-safety-clarity-copy-in-english-throughout-the-ui-to-avoid-confusion-with-real-identification-e-g-on-order-form-and-export-print-screens-while-keeping-the-secure-service-presentation-style",
-      "title": "Add basic safety/clarity copy in English throughout the UI to avoid confusion with real identification (e.g., on order form and export/print screens) while keeping the “secure service” presentation style.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-simple-public-landing-page-that-introduces-rf-falcon-ids-as-a-roleplay-only-service-shows-the-visual-theme-and-provides-entry-points-to-sign-in-and-learn-how-the-ordering-process-works-high-level",
-      "title": "Add a simple public landing page that introduces RF-FALCON-IDS as a ROLEPLAY-only service, shows the visual theme, and provides entry points to sign in and learn how the ordering process works (high-level).",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-deploy-the-current-full-rf-falcon-ids-application-frontend-backend-canister-to-a-live-internet-computer-environment-with-the-existing-functionality-unchanged-ensuring-the-deployed-app-is-accessible-via-a-public-url-and-all-core-flows-work-end-to-end-internet-identity-login-create-order-with-photo-upload-crop-live-id-preview-export-print-user-dashboard-order-detail-and-admin-panel-access-via-internet-identity-allowlist",
-      "title": "Deploy the current full RF-FALCON-IDS application (frontend + backend canister) to a live Internet Computer environment with the existing functionality unchanged, ensuring the deployed app is accessible via a public URL and all core flows work end-to-end (Internet Identity login, create order with photo upload/crop, live ID preview, export/print, user dashboard/order detail, and admin panel access via Internet Identity allowlist).",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-a-native-authentication-system-no-google-no-internet-identity-that-lets-users-create-an-account-with-a-username-and-password-then-sign-in-using-those-credentials-with-no-email-verification-step",
-      "title": "Implement a native authentication system (no Google / no Internet Identity) that lets users create an account with a username and password, then sign in using those credentials, with no email verification step.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-order-ownership-model-and-queries-so-user-dashboards-show-only-the-signed-in-user-s-orders-under-the-new-username-password-identity-system-and-admins-can-still-view-update-all-orders",
-      "title": "Update the order ownership model and queries so user dashboards show only the signed-in user’s orders under the new username/password identity system, and admins can still view/update all orders.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-a-dedicated-sign-in-page-and-integrate-it-into-routing-and-ui-navigation-so-the-app-does-not-prompt-for-internet-identity-anywhere-including-authgate-copy-and-landing-page-messaging",
-      "title": "Create a dedicated Sign In page and integrate it into routing and UI navigation so the app does not prompt for Internet Identity anywhere (including AuthGate copy and landing page messaging).",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-admin-login-works-under-the-same-username-password-system-by-adding-an-admin-role-concept-to-the-new-user-account-model-and-updating-the-admin-gating-logic-accordingly",
-      "title": "Ensure admin login works under the same username/password system by adding an admin role concept to the new user account model and updating the admin gating logic accordingly.",
-      "reqIds": [
-        "REQ-21"
+        "REQ-24"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
+      "id": "AR-1",
+      "summary": "Enforce unique usernames during account creation; reject duplicate usernames with an error",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
       "id": "AR-2",
-      "summary": "Create responsive UI theme: dark futuristic government/military aesthetic with neon cyan/purple accents, glow/scan-line animations, and clean typography",
+      "summary": "Admin role assignment: only username \"TravvyC\" is admin regardless of identity; no other users can be admin",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "User dashboard showing user-specific order history and order details (users can only see their own orders)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "ID ordering form capturing ID details (name, DOB, gender, height, eye color, roleplay address, ID number) plus roleplay shipping info (name, address, city, state, ZIP)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "State selection dropdown with all U.S. states and associated seals/logos; update ID card display based on selected state",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Photo upload (image only) with auto-crop to ID photo ratio and display in the live ID card preview",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Live digital ID card preview that updates as the user types; includes photo, state seal, all ID data, and animated scan-line effect",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Export generated ID card as PNG and support clean print output with no UI elements",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Order persistence with default status 'Pending'; status changes reflected for users",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Define an order data model that captures: ID details (first name, last name, DOB, gender, height, eye color, roleplay residential address, state, ID number), roleplay shipping info (full name, address, city, state, ZIP), a photo field (image-only), creation timestamp, and order status (Pending/Approved/Shipped) with default Pending.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Deploy the current full RF-FALCON-IDS application to a live environment (“go live”)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-17",
-      "summary": "Add user order-history enhancements: filter orders by status and allow users to delete orders from their history",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-18",
-      "summary": "Add admin panel enhancements: filter orders by status, allow deleting orders, and show dashboard totals (all/pending/approved/shipped)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-19",
-      "summary": "Use localStorage or a mock database for initial persistence while keeping the data layer backend-ready",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-20",
-      "summary": "Optional enhancements: photo editing tools, multiple ID templates, mock tracking numbers, and email notifications",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-21",
-      "summary": "Admin authentication request: allow admin access via username/password credentials (instead of Internet Identity allowlist)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-22",
-      "summary": "Replace Google/Internet Identity login with a native sign-in/sign-up flow using username + password (no email verification) and ensure admin login works under the same credential system",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-23",
-      "summary": "After an ID order is submitted, redirect to a payment instructions screen that tells the user to send payment to a specified Venmo link",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-25",
-      "summary": "Add backend session support for username/password authentication and use it to authorize all user-protected and admin-protected backend operations (replacing principal-based authorization checks).",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-29",
-      "summary": "Add a conditional state migration so that upgrading from the existing Internet Identity/principal-owned data does not break the canister at upgrade time, and existing stored orders remain readable after upgrade.",
-      "reqIds": [
-        "REQ-22"
-      ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "RF-FALCON-IDS",
+  "projectName": "Make TravvyC the only admin and enforce unique usernames at account creation",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

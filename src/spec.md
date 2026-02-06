@@ -1,15 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Replace Internet Identity-based authentication with a native username/password sign-up and sign-in experience, and ensure admin access works under the same system.
+**Goal:** Ensure only the username "TravvyC" is treated as admin across the entire frontend auth flow, and prevent duplicate usernames during account creation.
 
 **Planned changes:**
-- Add username/password account creation (sign up) and sign in UI flows with no email collection or verification.
-- Implement backend authentication endpoints for signUp/signIn (and signOut/getSession as needed) that issue and validate session tokens, storing passwords only as salted/hashed representations.
-- Replace principal-based authorization with session-token authorization for all user-protected and admin-protected backend operations.
-- Update order ownership to associate orders with the authenticated username-based identity; ensure user dashboards and order detail access only show/allow the current user’s orders unless the session is admin.
-- Add an admin role flag/concept to accounts and update frontend admin gating and navigation to rely on admin status derived from the session token.
-- Update routing and UI copy so the app no longer prompts for Internet Identity anywhere (including AuthGate and landing page “How It Works”), while keeping existing disclaimers/watermark behavior intact.
-- Add a conditional upgrade-safe migration (only if needed by current stored layout) so existing stable data upgrades without trapping and legacy orders remain readable via admin listing.
+- Update admin detection to be derived solely from the signed-in username being exactly "TravvyC", ignoring any stored/stale `isAdmin` flags in sessions or user records.
+- Apply the same admin determination consistently during sign-up, sign-in, and session restore from localStorage so existing "TravvyC" accounts gain admin automatically after the change.
+- Add a unique-username check during sign-up that blocks creating an account when the exact username string already exists, showing a clear English error message.
 
-**User-visible outcome:** Users can create an account with a username/password and sign in without Internet Identity or email steps; signed-in users only see their own orders, while admin users can sign in and access the Admin Panel to view/update all orders.
+**User-visible outcome:** Signing in as "TravvyC" shows admin access (including the Admin link and /admin access); signing in as any other username never grants admin access. Creating an account with a username that already exists is rejected with an English error.

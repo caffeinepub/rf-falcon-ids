@@ -37,7 +37,8 @@
   "frontend/.env.production": "Production environment variable template for backend canister ID and Internet Identity URL configuration.",
   "frontend/.env.example": "Example environment variables file documenting required configuration for local development and production deployment.",
   "frontend/DEPLOYMENT.md": "Comprehensive deployment guide with step-by-step instructions, post-deployment verification checklist for all core flows (auth, orders, admin, export/print), troubleshooting tips, and maintenance procedures.",
-  "frontend/src/hooks/auth/useSessionAuth.tsx": "Session-based authentication context provider managing username/password sign-in, sign-up, and sign-out with localStorage persistence for session tokens and user data; includes admin role detection.",
-  "frontend/src/pages/SignInPage.tsx": "Sign-in page with username/password form, error handling, and navigation to sign-up page for new users.",
-  "frontend/src/pages/SignUpPage.tsx": "Account creation page with username, password, and password confirmation fields, validation, and success state with redirect to sign-in."
+  "frontend/src/hooks/auth/useSessionAuth.tsx": "Session-based authentication context provider managing username/password sign-in, sign-up, and sign-out with localStorage persistence; admin status is derived solely from username being exactly \"TravvyC\", ignoring any stored isAdmin flags.",
+  "frontend/src/pages/SignInPage.tsx": "Sign-in page with username/password form that normalizes username input before authentication, with error handling and navigation to sign-up page for new users.",
+  "frontend/src/pages/SignUpPage.tsx": "Account creation page with username, password, and password confirmation fields that normalizes username input and enforces unique usernames with clear \"Username already exists\" error message.",
+  "frontend/src/utils/username.ts": "Shared username utility functions providing consistent normalization (trim whitespace) and fixed admin username check for \"TravvyC\"."
 }

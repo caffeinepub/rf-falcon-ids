@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useSessionAuth } from '../hooks/auth/useSessionAuth';
+import { normalizeUsername } from '@/utils/username';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,7 +37,8 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      await signUp(username, password);
+      const normalizedUsername = normalizeUsername(username);
+      await signUp(normalizedUsername, password);
       setSuccess(true);
       setTimeout(() => {
         navigate({ to: '/signin' });

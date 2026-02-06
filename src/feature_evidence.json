@@ -2,13 +2,33 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-a-native-authentication-system-no-google-no-internet-identity-that-lets-users-create-an-account-with-a-username-and-password-then-sign-in-using-those-credentials-with-no-email-verification-step",
-      "featureTitle": "Implement a native authentication system (no Google / no Internet Identity) that lets users create an account with a username and password, then sign in using those credentials, with no email verification step.",
+      "featureId": "feature-update-the-app-s-username-password-auth-so-the-only-admin-is-the-account-whose-username-is-exactly-travvyc-no-other-username-may-ever-have-admin-access-even-if-localstorage-contains-an-old-stale-isadmin-flag",
+      "featureTitle": "Update the app’s username/password auth so the ONLY admin is the account whose username is exactly \"TravvyC\"; no other username may ever have admin access, even if localStorage contains an old/stale `isAdmin` flag.",
       "files": [
-        "frontend/src/components/AuthStatusButton.tsx",
+        "frontend/src/hooks/auth/useSessionAuth.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-22"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-enforce-unique-usernames-during-sign-up-and-block-duplicate-usernames-from-being-created-showing-a-clear-error-in-english-when-a-duplicate-is-attempted",
+      "featureTitle": "Enforce unique usernames during sign-up and block duplicate usernames from being created, showing a clear error in English when a duplicate is attempted.",
+      "files": [
         "frontend/src/hooks/auth/useSessionAuth.tsx",
         "frontend/src/pages/SignInPage.tsx",
-        "frontend/src/pages/SignUpPage.tsx"
+        "frontend/src/pages/SignUpPage.tsx",
+        "frontend/src/utils/username.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -20,18 +40,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-17"
+        "REQ-23"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-order-ownership-model-and-queries-so-user-dashboards-show-only-the-signed-in-user-s-orders-under-the-new-username-password-identity-system-and-admins-can-still-view-update-all-orders",
-      "featureTitle": "Update the order ownership model and queries so user dashboards show only the signed-in user’s orders under the new username/password identity system, and admins can still view/update all orders.",
+      "featureId": "feature-ensure-the-admin-determination-is-applied-consistently-across-sign-up-sign-in-and-session-restore-loading-an-existing-session-from-localstorage-so-that-a-previously-created-travvyc-account-becomes-admin-after-this-change-without-requiring-manual-data-edits",
+      "featureTitle": "Ensure the admin determination is applied consistently across sign-up, sign-in, and session restore (loading an existing session from localStorage) so that a previously-created \"TravvyC\" account becomes admin after this change without requiring manual data edits.",
       "files": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/hooks/orders/useGetOrder.ts",
-        "frontend/src/hooks/orders/useUserOrders.ts",
-        "frontend/src/pages/OrderDetailPage.tsx"
+        "frontend/src/hooks/auth/useSessionAuth.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,51 +60,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-19"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-a-dedicated-sign-in-page-and-integrate-it-into-routing-and-ui-navigation-so-the-app-does-not-prompt-for-internet-identity-anywhere-including-authgate-copy-and-landing-page-messaging",
-      "featureTitle": "Create a dedicated Sign In page and integrate it into routing and UI navigation so the app does not prompt for Internet Identity anywhere (including AuthGate copy and landing page messaging).",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/AuthGate.tsx",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/pages/LandingPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-20"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-admin-login-works-under-the-same-username-password-system-by-adding-an-admin-role-concept-to-the-new-user-account-model-and-updating-the-admin-gating-logic-accordingly",
-      "featureTitle": "Ensure admin login works under the same username/password system by adding an admin role concept to the new user account model and updating the admin gating logic accordingly.",
-      "files": [
-        "frontend/src/components/AdminGate.tsx",
-        "frontend/src/components/BrandHeader.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-21"
+        "REQ-24"
       ],
       "confidence": "high"
     }
