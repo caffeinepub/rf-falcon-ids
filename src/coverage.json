@@ -1,0 +1,388 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-06T19:10:06.341Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 15,
+    "implemented": 13,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Add persistent, on-site disclaimers across the app stating the service is ROLEPLAY USE ONLY and NOT REAL IDENTIFICATION, and ensure the ID preview/export also includes a visible ROLEPLAY-ONLY / NOT VALID ID watermark.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+          "frontend/src/components/IdWatermark.tsx",
+          "frontend/src/components/IdCardPreview.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+          "frontend/src/components/IdWatermark.tsx",
+          "frontend/src/components/IdCardPreview.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-10",
+        "summary": "Create a live digital ID card preview component that updates as the user types and includes name, photo, state + seal, DOB, gender, height, eye color, ID number, and a subtle animated scan-line effect; ensure it visually resembles a secure ID card while remaining readable.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/IdCardPreview.tsx",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/index.css"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/IdCardPreview.tsx",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/index.css"
+        ]
+      },
+      {
+        "id": "REQ-11",
+        "summary": "Implement Export & Print: allow users to export the ID card preview as a PNG image and print the ID cleanly, ensuring exported/printed output contains only the card (no surrounding UI).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/package.json",
+          "frontend/src/utils/exportIdCard.ts",
+          "frontend/src/components/IdCardActions.tsx",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/index.css"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/exportIdCard.ts",
+          "frontend/src/components/IdCardActions.tsx",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/index.css"
+        ]
+      },
+      {
+        "id": "REQ-12",
+        "summary": "Implement admin access via Internet Identity (no password): configure a backend admin allowlist of principals; add an Admin Panel UI that is visible/accessible only to admin principals and allows viewing all orders and updating any order’s status to Pending/Approved/Shipped.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/auth/useIsAdmin.ts",
+          "frontend/src/components/AdminGate.tsx",
+          "frontend/src/hooks/orders/useAllOrders.ts",
+          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/auth/useIsAdmin.ts",
+          "frontend/src/components/AdminGate.tsx",
+          "frontend/src/hooks/orders/useAllOrders.ts",
+          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-13",
+        "summary": "Use React Query for data fetching/caching and ensure key flows invalidate/refetch appropriately (create order, update status) so UI stays in sync with backend state.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "frontend/src/hooks/useActor.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "frontend/src/hooks/useActor.ts"
+        ]
+      },
+      {
+        "id": "REQ-14",
+        "summary": "Add basic safety/clarity copy in English throughout the UI to avoid confusion with real identification (e.g., on order form and export/print screens) while keeping the “secure service” presentation style.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/content/copy.ts",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/pages/OrderDetailPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/content/copy.ts",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/pages/OrderDetailPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-15",
+        "summary": "Add a simple public landing page that introduces RF-FALCON-IDS as a ROLEPLAY-only service, shows the visual theme, and provides entry points to sign in and learn how the ordering process works (high-level).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/public/assets/generated/rf-falcon-ids-logo.dim_1200x300.png",
+          "frontend/src/components/BrandHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/public/assets/generated/rf-falcon-ids-logo.dim_1200x300.png",
+          "frontend/src/components/BrandHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Implement Internet Identity authentication for all users and gate all authenticated pages/actions behind login; show a signed-out landing screen with a clear call-to-action to sign in.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AuthGate.tsx",
+          "frontend/src/components/AuthStatusButton.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AuthGate.tsx",
+          "frontend/src/components/AuthStatusButton.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Create a coherent, dark futuristic government/military visual theme with neon cyan + purple accents, glow + scan-line animations, clean professional typography, and full responsiveness across desktop/Chromebook/mobile; apply the theme consistently across all pages and components.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/tailwind.config.js",
+          "frontend/src/index.css",
+          "frontend/src/components/AppShell.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/tailwind.config.js",
+          "frontend/src/index.css",
+          "frontend/src/components/AppShell.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Implement backend order persistence in the single Motoko actor: store orders keyed by authenticated user principal, enforce that users can only create/read their own orders, and support querying all orders only for admin principals.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Define an order data model that captures: ID details (first name, last name, DOB, gender, height, eye color, roleplay residential address, state, ID number), roleplay shipping info (full name, address, city, state, ZIP), a photo field (image-only), creation timestamp, and order status (Pending/Approved/Shipped) with default Pending.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Build the user dashboard UI: show the signed-in user’s order history list (order name/holder name, state, ID number, current status, created date) and provide navigation to create a new order and view an individual order’s details.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/orders/useUserOrders.ts",
+          "frontend/src/pages/DashboardPage.tsx",
+          "frontend/src/pages/OrderDetailPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/orders/useUserOrders.ts",
+          "frontend/src/pages/DashboardPage.tsx",
+          "frontend/src/pages/OrderDetailPage.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Build the ID ordering flow UI: an order form that collects all required ID fields and roleplay shipping fields, including a U.S. state dropdown, validates required inputs, and submits the order to the backend.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/constants/usStates.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/constants/usStates.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Implement state selection with state seal/logo support: selecting a state updates the ID card preview to show the chosen state name and corresponding seal image.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/stateSeals.ts",
+          "frontend/src/components/StateSeal.tsx",
+          "frontend/src/components/IdCardPreview.tsx",
+          "frontend/public/assets/generated/state-seals-pack.dim_256x256.png_each"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/stateSeals.ts",
+          "frontend/src/components/StateSeal.tsx",
+          "frontend/src/components/IdCardPreview.tsx",
+          "frontend/public/assets/generated/state-seals-pack.dim_256x256.png_each"
+        ]
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Add photo upload (image-only) with client-side validation and an auto-crop flow to an ID-photo aspect ratio; display the cropped photo in the live ID card preview and include it in export/print.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/PhotoUploader.tsx",
+          "frontend/src/components/PhotoCropModal.tsx",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/components/IdCardPreview.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/PhotoUploader.tsx",
+          "frontend/src/components/PhotoCropModal.tsx",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/components/IdCardPreview.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/authorization/MixinAuthorization.mo",
+    "backend/authorization/access-control.mo",
+    "backend/blob-storage/Mixin.mo",
+    "backend/blob-storage/Storage.mo",
+    "backend/main.mo",
+    "build-request.json",
+    "build-template/Dockerfile",
+    "build-template/LICENSE",
+    "build-template/README.md",
+    "build-template/deploy.sh",
+    "build-template/icp.yaml",
+    "build-template/package.json",
+    "build-template/pnpm-lock.yaml",
+    "build-template/pnpm-workspace.yaml",
+    "build-template/scripts/prune-unused-images.js",
+    "build-template/scripts/resize-images.js",
+    "build-template/src/backend/canister.yaml",
+    "build-template/src/backend/system-idl/aaaaa-aa.did",
+    "build-template/src/frontend/canister.yaml",
+    "build-template/src/frontend/components.json",
+    "build-template/src/frontend/env.json",
+    "build-template/src/frontend/eslint-rules/no-bigint-in-query-keys.js",
+    "build-template/src/frontend/eslint-rules/require-internet-identity-provider.js",
+    "build-template/src/frontend/eslint.config.js",
+    "build-template/src/frontend/package.json",
+    "build-template/src/frontend/postcss.config.js",
+    "build-template/src/frontend/src/components/ui/accordion.tsx",
+    "build-template/src/frontend/src/components/ui/alert-dialog.tsx",
+    "build-template/src/frontend/src/components/ui/alert.tsx",
+    "build-template/src/frontend/src/components/ui/aspect-ratio.tsx",
+    "build-template/src/frontend/src/components/ui/avatar.tsx",
+    "build-template/src/frontend/src/components/ui/badge.tsx",
+    "build-template/src/frontend/src/components/ui/breadcrumb.tsx",
+    "build-template/src/frontend/src/components/ui/button.tsx",
+    "build-template/src/frontend/src/components/ui/calendar.tsx",
+    "build-template/src/frontend/src/components/ui/card.tsx",
+    "build-template/src/frontend/src/components/ui/carousel.tsx",
+    "build-template/src/frontend/src/components/ui/chart.tsx",
+    "build-template/src/frontend/src/components/ui/checkbox.tsx",
+    "build-template/src/frontend/src/components/ui/collapsible.tsx",
+    "build-template/src/frontend/src/components/ui/command.tsx",
+    "build-template/src/frontend/src/components/ui/context-menu.tsx",
+    "build-template/src/frontend/src/components/ui/dialog.tsx",
+    "build-template/src/frontend/src/components/ui/drawer.tsx",
+    "build-template/src/frontend/src/components/ui/dropdown-menu.tsx",
+    "build-template/src/frontend/src/components/ui/form.tsx",
+    "build-template/src/frontend/src/components/ui/hover-card.tsx",
+    "build-template/src/frontend/src/components/ui/input-otp.tsx",
+    "build-template/src/frontend/src/components/ui/input.tsx",
+    "build-template/src/frontend/src/components/ui/label.tsx",
+    "build-template/src/frontend/src/components/ui/menubar.tsx",
+    "build-template/src/frontend/src/components/ui/navigation-menu.tsx",
+    "build-template/src/frontend/src/components/ui/pagination.tsx",
+    "build-template/src/frontend/src/components/ui/popover.tsx",
+    "build-template/src/frontend/src/components/ui/progress.tsx",
+    "build-template/src/frontend/src/components/ui/radio-group.tsx",
+    "build-template/src/frontend/src/components/ui/resizable.tsx",
+    "build-template/src/frontend/src/components/ui/scroll-area.tsx",
+    "build-template/src/frontend/src/components/ui/select.tsx",
+    "build-template/src/frontend/src/components/ui/separator.tsx",
+    "build-template/src/frontend/src/components/ui/sheet.tsx",
+    "build-template/src/frontend/src/components/ui/sidebar.tsx",
+    "build-template/src/frontend/src/components/ui/skeleton.tsx",
+    "build-template/src/frontend/src/components/ui/slider.tsx",
+    "build-template/src/frontend/src/components/ui/sonner.tsx",
+    "build-template/src/frontend/src/components/ui/switch.tsx",
+    "build-template/src/frontend/src/components/ui/table.tsx",
+    "build-template/src/frontend/src/components/ui/tabs.tsx",
+    "build-template/src/frontend/src/components/ui/textarea.tsx",
+    "build-template/src/frontend/src/components/ui/toggle-group.tsx",
+    "build-template/src/frontend/src/components/ui/toggle.tsx",
+    "build-template/src/frontend/src/components/ui/tooltip.tsx",
+    "build-template/src/frontend/src/hooks/use-mobile.tsx",
+    "build-template/src/frontend/src/lib/utils.ts",
+    "build-template/src/frontend/tsconfig.json",
+    "build-template/src/frontend/vite.config.js",
+    "build-template/tsconfig.json",
+    "caffeine.lock.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/public/assets/generated/rf-falcon-ids-logo.dim_1200x300.png",
+    "frontend/public/assets/generated/state-seals-pack.dim_256x256.png_each",
+    "frontend/src/@types/html2canvas.d.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/AdminGate.tsx",
+    "frontend/src/components/AppShell.tsx",
+    "frontend/src/components/AuthGate.tsx",
+    "frontend/src/components/AuthStatusButton.tsx",
+    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/components/IdCardActions.tsx",
+    "frontend/src/components/IdCardPreview.tsx",
+    "frontend/src/components/IdWatermark.tsx",
+    "frontend/src/components/PhotoCropModal.tsx",
+    "frontend/src/components/PhotoUploader.tsx",
+    "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+    "frontend/src/components/StateSeal.tsx",
+    "frontend/src/config.ts",
+    "frontend/src/constants/usStates.ts",
+    "frontend/src/content/copy.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/auth/useIsAdmin.ts",
+    "frontend/src/hooks/orders/queryKeys.ts",
+    "frontend/src/hooks/orders/useAllOrders.ts",
+    "frontend/src/hooks/orders/useCreateOrder.ts",
+    "frontend/src/hooks/orders/useGetOrder.ts",
+    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+    "frontend/src/hooks/orders/useUserOrders.ts",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/index.css",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/AdminPanelPage.tsx",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/LandingPage.tsx",
+    "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/src/pages/OrderDetailPage.tsx",
+    "frontend/src/ui-summary.json",
+    "frontend/src/utils/StorageClient.ts",
+    "frontend/src/utils/exportIdCard.ts",
+    "frontend/src/utils/formatters.ts",
+    "frontend/src/utils/stateSeals.ts",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

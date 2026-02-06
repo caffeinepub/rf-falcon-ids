@@ -1,0 +1,337 @@
+{
+  "kind": "build_request",
+  "title": "RF-FALCON-IDS (ROLEPLAY-only) ID ordering app with Internet Identity, live ID preview, export/print, and admin order management",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Add persistent, on-site disclaimers across the app stating the service is ROLEPLAY USE ONLY and NOT REAL IDENTIFICATION, and ensure the ID preview/export also includes a visible ROLEPLAY-ONLY / NOT VALID ID watermark.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8",
+          "msg-14"
+        ],
+        "quotes": [
+          "RF-FALCON-IDS is a high-end roleplay ID ordering and management website... It is ROLEPLAY ONLY and does not create real identification.",
+          "with clear on-site disclaimers stating ROLEPLAY USE ONLY and NOT REAL IDENTIFICATION."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A disclaimer is visible on the public landing page and on all authenticated pages (e.g., header/footer banner).",
+        "The ID card preview includes a watermark that clearly communicates ROLEPLAY ONLY / NOT REAL IDENTIFICATION.",
+        "Exported PNG and print output include the watermark (not just the on-page UI)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement Internet Identity authentication for all users and gate all authenticated pages/actions behind login; show a signed-out landing screen with a clear call-to-action to sign in.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-12",
+          "msg-13",
+          "msg-14",
+          "msg-16"
+        ],
+        "quotes": [
+          "Use Internet Identity for login (recommended, secure, easiest backend)."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Signed-out users cannot access the dashboard, order form, order history, or admin panel.",
+        "Signed-in users can access the user dashboard and place orders.",
+        "The UI clearly shows signed-in state (e.g., principal / session indicator) and supports sign out."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Create a coherent, dark futuristic government/military visual theme with neon cyan + purple accents, glow + scan-line animations, clean professional typography, and full responsiveness across desktop/Chromebook/mobile; apply the theme consistently across all pages and components.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Dark, futuristic, government / military aesthetic",
+          "Neon cyan + purple accents",
+          "Smooth animations (scan lines, glow effects)",
+          "Fully responsive (desktop, Chromebook, mobile)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All primary screens (landing, dashboard, new order, order detail, admin panel) share consistent colors, typography, spacing, and component styling.",
+        "Scan-line/glow effects are present but do not block usability (forms remain readable and accessible).",
+        "Layout adapts cleanly from mobile to desktop without horizontal overflow."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement backend order persistence in the single Motoko actor: store orders keyed by authenticated user principal, enforce that users can only create/read their own orders, and support querying all orders only for admin principals.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Orders are saved with a default status of Pending and appear in the user’s order history.",
+          "Users can only see their own orders",
+          "Admin panel to view all orders across users"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Creating an order persists it in canister state and returns an order ID.",
+        "A user querying their orders only receives orders they created (server-enforced).",
+        "Non-admin users cannot access the all-orders query (server-enforced)."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Define an order data model that captures: ID details (first name, last name, DOB, gender, height, eye color, roleplay residential address, state, ID number), roleplay shipping info (full name, address, city, state, ZIP), a photo field (image-only), creation timestamp, and order status (Pending/Approved/Shipped) with default Pending.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Users can place an order... First name... ID number... Photo upload",
+          "Shipping Information... Shipping full name... ZIP code",
+          "Order status starts as Pending",
+          "Admin can change order status: Pending / Approved / Shipped"
+        ]
+      },
+      "acceptanceCriteria": [
+        "New orders are stored with status = Pending by default.",
+        "Stored orders include all specified fields and can be returned to the frontend for display.",
+        "Status values are restricted to Pending/Approved/Shipped."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Build the user dashboard UI: show the signed-in user’s order history list (order name/holder name, state, ID number, current status, created date) and provide navigation to create a new order and view an individual order’s details.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Each user has: Their own dashboard / Their own order history",
+          "Users can see: Order name, State, ID number, Current status"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Dashboard renders an order list for the signed-in user and updates after creating an order or after admin status changes.",
+        "Selecting an order navigates to an order detail view that displays all captured fields (including shipping info) and the current status.",
+        "Users never see other users’ orders in the UI."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Build the ID ordering flow UI: an order form that collects all required ID fields and roleplay shipping fields, including a U.S. state dropdown, validates required inputs, and submits the order to the backend.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Users can place an order... by filling out a form",
+          "State selection (U.S. states only)",
+          "Shipping Information (Roleplay)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The order form includes inputs for every specified field and prevents submission when required fields are missing/invalid.",
+        "State dropdown includes all U.S. states.",
+        "Submitting creates a new backend order and redirects/updates the dashboard/order detail accordingly."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Implement state selection with state seal/logo support: selecting a state updates the ID card preview to show the chosen state name and corresponding seal image.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Each state has: A seal or logo (icon or image)",
+          "State seal updates automatically when selected"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Changing the selected state updates the preview’s displayed state and seal immediately.",
+        "All 50 U.S. states have an associated seal asset referenced by the app.",
+        "If a seal asset is missing, the UI shows a clear fallback (e.g., placeholder) without breaking the form."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Add photo upload (image-only) with client-side validation and an auto-crop flow to an ID-photo aspect ratio; display the cropped photo in the live ID card preview and include it in export/print.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Photo upload (image only)",
+          "Auto-crop to ID photo ratio",
+          "Displays directly on the ID card preview"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Non-image files are rejected with an English error message.",
+        "Users can crop the uploaded image to the required aspect ratio and confirm the crop.",
+        "The confirmed cropped photo renders in the ID preview, exported PNG, and print output."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Create a live digital ID card preview component that updates as the user types and includes name, photo, state + seal, DOB, gender, height, eye color, ID number, and a subtle animated scan-line effect; ensure it visually resembles a secure ID card while remaining readable.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Live preview updates as the user types",
+          "Animated scan line effect",
+          "Looks like a real secure ID card"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All specified fields appear in the preview and update in near real-time as form inputs change.",
+        "Scan-line animation is visible and smooth, and can be paused/disabled automatically for reduced-motion preferences if supported.",
+        "Preview remains legible on mobile and desktop."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Implement Export & Print: allow users to export the ID card preview as a PNG image and print the ID cleanly, ensuring exported/printed output contains only the card (no surrounding UI).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Export their ID card as a PNG image",
+          "Print the ID card cleanly",
+          "No UI elements visible on export/print"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A user can export a PNG that matches the card preview content (including photo + state seal + watermark).",
+        "Print view/output contains only the card content without app navigation or form controls.",
+        "Export/print works for at least one full order flow end-to-end in the UI."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Implement admin access via Internet Identity (no password): configure a backend admin allowlist of principals; add an Admin Panel UI that is visible/accessible only to admin principals and allows viewing all orders and updating any order’s status to Pending/Approved/Shipped.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8",
+          "msg-12",
+          "msg-14"
+        ],
+        "quotes": [
+          "An admin login ... unlocks an admin panel to view all orders... and update order statuses to Pending, Approved, or Shipped",
+          "Use Internet Identity for login (recommended, secure, easiest backend)."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Non-admin users cannot open the Admin Panel route and receive an authorization error if they attempt admin backend calls.",
+        "Admin can view a list/table of all orders including: username/principal (or display identifier), ID holder name, state, ID number, shipping info, and status.",
+        "Admin can change an order’s status; the change is persisted in the backend and reflected on the user’s dashboard/order detail after refresh/reload."
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Use React Query for data fetching/caching and ensure key flows invalidate/refetch appropriately (create order, update status) so UI stays in sync with backend state.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "Status updates instantly reflect for users"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After creating an order, the dashboard order list updates without requiring a manual hard refresh.",
+        "After admin updates an order status, the updated status is visible to the user after a normal reload and is reflected promptly in the admin panel list.",
+        "React Query keys are organized so user-orders and all-orders queries do not leak data between contexts."
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "text": "Add basic safety/clarity copy in English throughout the UI to avoid confusion with real identification (e.g., on order form and export/print screens) while keeping the “secure service” presentation style.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "clearly marked as not real identification",
+          "Looks like a real commercial service"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Key user touchpoints (order form, preview, export/print) include clear English text indicating ROLEPLAY ONLY / NOT REAL ID.",
+        "No UI text claims government issuance or real-world validity."
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "text": "Add a simple public landing page that introduces RF-FALCON-IDS as a ROLEPLAY-only service, shows the visual theme, and provides entry points to sign in and learn how the ordering process works (high-level).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-8"
+        ],
+        "quotes": [
+          "The site is meant to feel like a real government / secure service",
+          "Looks like a real commercial service"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Signed-out users see a landing page (not a blank screen) with disclaimers and a sign-in CTA.",
+        "Landing page is responsive and matches the app theme.",
+        "No ordering actions are available without signing in."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
+    "Do not edit files under frontend/src/components/ui or other immutable paths provided by the platform; compose them instead.",
+    "Use Internet Identity for authentication (no username/password auth).",
+    "All user-facing text must be English."
+  ],
+  "nonGoals": [
+    "Implementing real-world identification creation, validation, or claims of legality.",
+    "Integrating real shipping carriers, payments, email/SMS, or external databases/services.",
+    "Third-party authentication providers other than Internet Identity.",
+    "Real-time updates via websockets (polling/refetch via React Query is acceptable)."
+  ],
+  "imageRequirements": {
+    "required": [
+      "RF-FALCON-IDS wordmark/logo in a dark futuristic government/military style (rf-falcon-ids-logo.dim_1200x300.png)",
+      "Set of 50 minimalist state seal icons, one per U.S. state, monochrome/duotone to match neon cyan/purple theme, consistent style (state-seals-pack.dim_256x256.png_each)"
+    ],
+    "edits": []
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-06T19:10:06.335Z",
+  "summary": "Diff adds a Motoko backend actor with order creation/status update logic plus a React frontend scaffold with routing, Internet Identity gating components, admin gating, a persistent roleplay disclaimer banner, an ID card preview (with scan-line effect + watermark), photo upload/crop components, state list constants, and React Query hooks/query keys. Some acceptance-criteria-specific behaviors are not verifiable from the provided diff summary due to truncation/omitted files; one reduced-motion requirement is not evidenced.",
+  "missing_requirements": [
+    {
+      "id": "REQ-10",
+      "requirement": "Scan-line animation can be paused/disabled automatically for reduced-motion preferences (if supported).",
+      "reason": "The ID card preview includes a scan-line overlay, but there is no evidence of prefers-reduced-motion handling or an alternate non-animated mode in the shown component/CSS.",
+      "evidence": [
+        "frontend/src/components/IdCardPreview.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Footer branding/link to caffeine.ai and related icon/heart attribution",
+      "reason": "BuildRequest does not request or mention adding third-party platform branding/attribution links in the app UI.",
+      "evidence": [
+        "frontend/src/components/AppShell.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.56,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/@types/html2canvas.d.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/AdminGate.tsx",
+    "frontend/src/components/AppShell.tsx",
+    "frontend/src/components/AuthGate.tsx",
+    "frontend/src/components/AuthStatusButton.tsx",
+    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/components/IdCardActions.tsx",
+    "frontend/src/components/IdCardPreview.tsx",
+    "frontend/src/components/IdWatermark.tsx",
+    "frontend/src/components/PhotoCropModal.tsx",
+    "frontend/src/components/PhotoUploader.tsx",
+    "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+    "frontend/src/components/StateSeal.tsx",
+    "frontend/src/constants/usStates.ts",
+    "frontend/src/content/copy.ts",
+    "frontend/src/hooks/auth/useIsAdmin.ts",
+    "frontend/src/hooks/orders/queryKeys.ts",
+    "frontend/src/hooks/orders/useAllOrders.ts",
+    "frontend/src/hooks/orders/useCreateOrder.ts",
+    "frontend/src/hooks/orders/useGetOrder.ts",
+    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+    "frontend/src/hooks/orders/useUserOrders.ts",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/index.css",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/AdminPanelPage.tsx",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/LandingPage.tsx",
+    "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/src/pages/OrderDetailPage.tsx",
+    "frontend/src/utils/exportIdCard.ts",
+    "frontend/src/utils/formatters.ts",
+    "frontend/src/utils/stateSeals.ts",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

@@ -1,0 +1,419 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "RF-FALCON-IDS (ROLEPLAY-only) Frontend: Internet Identity auth, ordering flow, live preview, export/print, admin UI",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Add persistent ROLEPLAY-ONLY / NOT REAL ID disclaimers across the app and embed a visible watermark into the ID preview/export/print output.",
+      "acceptanceCriteria": [
+        "A disclaimer is visible on the public landing page and on all authenticated pages (e.g., header/footer banner).",
+        "The ID card preview includes a watermark that clearly communicates ROLEPLAY ONLY / NOT REAL IDENTIFICATION.",
+        "Exported PNG and print output include the watermark (not just the on-page UI)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+          "operation": "create",
+          "description": "Create a reusable, persistent disclaimer banner component with English copy stating ROLEPLAY USE ONLY / NOT REAL IDENTIFICATION; designed to be included on landing and all authenticated layouts."
+        },
+        {
+          "path": "frontend/src/components/IdWatermark.tsx",
+          "operation": "create",
+          "description": "Create a watermark overlay component (ROLEPLAY ONLY / NOT REAL IDENTIFICATION) intended to be rendered inside the ID card DOM so it is captured for export/print."
+        },
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "create",
+          "description": "Implement the ID card preview container and ensure it renders the IdWatermark overlay within the card boundaries (so watermark is present in exported PNG and print output)."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire the RoleplayDisclaimerBanner into the signed-out landing and all signed-in routes via shared layout wrappers so disclaimers remain visible across the app."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Implement Internet Identity authentication and gate all authenticated routes/actions behind login with a signed-out landing screen CTA and visible signed-in state + sign-out.",
+      "acceptanceCriteria": [
+        "Signed-out users cannot access the dashboard, order form, order history, or admin panel.",
+        "Signed-in users can access the user dashboard and place orders.",
+        "The UI clearly shows signed-in state (e.g., principal / session indicator) and supports sign out."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AuthGate.tsx",
+          "operation": "create",
+          "description": "Add a route/page guard that uses the selected component \"authorization\" guidance (Internet Identity identity presence) to block signed-out access to authenticated pages; show a signed-out call-to-action. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AuthStatusButton.tsx",
+          "operation": "create",
+          "description": "Create a login/logout control using useInternetIdentity with clear signed-in vs signed-out state, and on logout clear React Query cache per the selected component \"authorization\" guidance. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "create",
+          "description": "Implement the signed-out landing screen with sign-in CTA using AuthStatusButton and English copy explaining ROLEPLAY-only nature (no access to ordering without login)."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add routing and navigation wiring: landing route for signed-out users; wrap dashboard/order/admin routes with AuthGate to enforce login gating."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Apply a consistent dark futuristic theme (neon cyan/purple, glow, scan-line animations, responsive typography/layout) across all screens and components.",
+      "acceptanceCriteria": [
+        "All primary screens (landing, dashboard, new order, order detail, admin panel) share consistent colors, typography, spacing, and component styling.",
+        "Scan-line/glow effects are present but do not block usability (forms remain readable and accessible).",
+        "Layout adapts cleanly from mobile to desktop without horizontal overflow."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Extend Tailwind theme tokens (colors/shadows/animations) to support neon cyan + purple accents, glow utilities, and scan-line keyframes used across pages/components."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Define global dark theme CSS variables, base typography, background effects, and reduced-motion safe animation defaults; ensure app-wide responsiveness and no horizontal overflow."
+        },
+        {
+          "path": "frontend/src/components/AppShell.tsx",
+          "operation": "create",
+          "description": "Create a shared layout wrapper applying consistent container spacing, header/footer styling, and background treatment so all pages share the same theme."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wrap all routes with AppShell (or use it per-route) so the theme is applied consistently across landing, dashboard, order flow, order detail, and admin."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Build the signed-in user dashboard showing order history, with navigation to create a new order and view order details.",
+      "acceptanceCriteria": [
+        "Dashboard renders an order list for the signed-in user and updates after creating an order or after admin status changes.",
+        "Selecting an order navigates to an order detail view that displays all captured fields (including shipping info) and the current status.",
+        "Users never see other users’ orders in the UI."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/orders/useUserOrders.ts",
+          "operation": "create",
+          "description": "Create a React Query hook to fetch the signed-in user's orders via the actor, with stable query keys that are scoped to the current identity and do not leak across contexts."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "create",
+          "description": "Implement the user dashboard UI listing orders (holder name, state, ID number, status, created date) with links/buttons to 'New Order' and individual order details."
+        },
+        {
+          "path": "frontend/src/pages/OrderDetailPage.tsx",
+          "operation": "create",
+          "description": "Implement an order detail view that displays all captured fields (ID details + shipping info + current status) for a selected order; handle authorization errors gracefully."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register routes for dashboard and order detail pages and wire navigation from dashboard list to order detail view."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Implement the ID ordering flow UI with a validated form collecting all required fields (including US states dropdown) and submitting the order.",
+      "acceptanceCriteria": [
+        "The order form includes inputs for every specified field and prevents submission when required fields are missing/invalid.",
+        "State dropdown includes all U.S. states.",
+        "Submitting creates a new backend order and redirects/updates the dashboard/order detail accordingly."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/constants/usStates.ts",
+          "operation": "create",
+          "description": "Add a canonical list of all 50 U.S. states (code + name) for dropdown selection and consistent display across the form and preview."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
+          "operation": "create",
+          "description": "Create a React Query mutation hook to submit a new order through the actor; ensure it invalidates/refetches user-orders queries after success."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "create",
+          "description": "Build the order form page collecting all required ID and roleplay shipping fields, performing client-side validation in English, and submitting via useCreateOrder."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add and wire a 'New Order' route behind AuthGate; link to it from the dashboard."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Support state selection with seal/logo assets so the ID preview updates immediately with state name and corresponding seal; provide a robust fallback if missing.",
+      "acceptanceCriteria": [
+        "Changing the selected state updates the preview’s displayed state and seal immediately.",
+        "All 50 U.S. states have an associated seal asset referenced by the app.",
+        "If a seal asset is missing, the UI shows a clear fallback (e.g., placeholder) without breaking the form."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/stateSeals.ts",
+          "operation": "create",
+          "description": "Implement a frontend utility that resolves a selected state to a seal asset path, using the generated seal pack assets at frontend/public/assets/generated/state-seals-pack.dim_256x256.png_each and returning a safe fallback when an asset can't be resolved."
+        },
+        {
+          "path": "frontend/src/components/StateSeal.tsx",
+          "operation": "create",
+          "description": "Create a small UI component to render the state seal image for the selected state with an accessible fallback (e.g., placeholder icon/text) when missing."
+        },
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "modify",
+          "description": "Render the chosen state name and StateSeal in the card preview and ensure updates are immediate as the user changes the state dropdown."
+        },
+        {
+          "path": "frontend/public/assets/generated/state-seals-pack.dim_256x256.png_each",
+          "operation": "create",
+          "description": "Add the generated state seal icon pack to the public assets so the app can reference seals locally (static assets)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Add image-only photo upload with client-side validation and an auto-crop flow to an ID-photo aspect ratio; show cropped photo in preview and include in export/print.",
+      "acceptanceCriteria": [
+        "Non-image files are rejected with an English error message.",
+        "Users can crop the uploaded image to the required aspect ratio and confirm the crop.",
+        "The confirmed cropped photo renders in the ID preview, exported PNG, and print output."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/PhotoUploader.tsx",
+          "operation": "create",
+          "description": "Implement an image-only file picker with English validation errors and preview of the selected image; produce a blob/bytes suitable for constructing an ExternalBlob for createOrder (selected component \"blob-storage\" concept). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/PhotoCropModal.tsx",
+          "operation": "create",
+          "description": "Add a cropping UI flow constrained to an ID-photo aspect ratio; output a finalized cropped image for use in the live preview and submission."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Integrate PhotoUploader + PhotoCropModal into the order form; ensure the confirmed cropped result is used by IdCardPreview and included in the order submission payload."
+        },
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "modify",
+          "description": "Render the cropped photo in the ID card layout so it appears in on-screen preview and is captured during export/print."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Create a live digital ID card preview component that updates as the user types, includes required fields, and shows a subtle scan-line effect with reduced-motion support.",
+      "acceptanceCriteria": [
+        "All specified fields appear in the preview and update in near real-time as form inputs change.",
+        "Scan-line animation is visible and smooth, and can be paused/disabled automatically for reduced-motion preferences if supported.",
+        "Preview remains legible on mobile and desktop."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "modify",
+          "description": "Complete the ID card layout (name, photo, state+seal, DOB, gender, height, eye color, ID number) and ensure props/state wiring updates near real-time from form inputs; include scan-line effect while respecting reduced-motion preferences."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Wire form state to IdCardPreview so changes in inputs update the preview immediately, including state selection + seal and cropped photo."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add scan-line animation styles and reduced-motion overrides used by IdCardPreview, ensuring readability and accessibility."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Implement export-to-PNG and print functionality for the ID card only (no surrounding UI), including watermark, photo, and seal.",
+      "acceptanceCriteria": [
+        "A user can export a PNG that matches the card preview content (including photo + state seal + watermark).",
+        "Print view/output contains only the card content without app navigation or form controls.",
+        "Export/print works for at least one full order flow end-to-end in the UI."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/package.json",
+          "operation": "modify",
+          "description": "Add a client-side DOM-to-image library dependency (or equivalent) to support exporting the ID card DOM as a PNG, ensuring the exported output captures only the card container."
+        },
+        {
+          "path": "frontend/src/utils/exportIdCard.ts",
+          "operation": "create",
+          "description": "Implement utilities to export the rendered card element to PNG and to trigger a print flow scoped to the card only (no surrounding UI)."
+        },
+        {
+          "path": "frontend/src/components/IdCardActions.tsx",
+          "operation": "create",
+          "description": "Create UI controls for Export PNG and Print that operate on the IdCardPreview container and ensure only the card content is exported/printed (including watermark)."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Place IdCardActions adjacent to the IdCardPreview so users can export/print during the ordering flow, with clear English ROLEPLAY-only reminders near these actions."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add print-specific CSS rules to ensure print output contains only the card content and hides navigation/form controls while printing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Add an admin-only Admin Panel UI (Internet Identity-based) to view all orders and update any order status; hide/deny access for non-admin users.",
+      "acceptanceCriteria": [
+        "Non-admin users cannot open the Admin Panel route and receive an authorization error if they attempt admin backend calls.",
+        "Admin can view a list/table of all orders including: username/principal (or display identifier), ID holder name, state, ID number, shipping info, and status.",
+        "Admin can change an order’s status; the change is persisted in the backend and reflected on the user’s dashboard/order detail after refresh/reload."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/auth/useIsAdmin.ts",
+          "operation": "create",
+          "description": "Create a React Query hook that checks admin status via the actor and caches appropriately for the current identity, following the selected component \"authorization\" guidance for role-based gating. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AdminGate.tsx",
+          "operation": "create",
+          "description": "Implement an admin-only guard wrapper that uses useIsAdmin to protect the Admin Panel route and shows an Access Denied screen for unauthorized users (selected component \"authorization\" UI guidance). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useAllOrders.ts",
+          "operation": "create",
+          "description": "Create a React Query hook for the admin all-orders view with a dedicated query key namespace distinct from user-orders to prevent cross-context leakage."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "operation": "create",
+          "description": "Create a React Query mutation hook for admin status updates; invalidate/refetch all-orders and relevant per-order queries upon success."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "create",
+          "description": "Build an admin panel page listing all orders with required columns and a status control to change Pending/Approved/Shipped; handle authorization errors gracefully in English."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register and wire the Admin Panel route behind AuthGate + AdminGate, and conditionally show an Admin navigation entry only when the user is an admin."
+        }
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "summary": "Use React Query for data fetching/caching and ensure invalidation/refetch keeps UI in sync after create order and update status.",
+      "acceptanceCriteria": [
+        "After creating an order, the dashboard order list updates without requiring a manual hard refresh.",
+        "After admin updates an order status, the updated status is visible to the user after a normal reload and is reflected promptly in the admin panel list.",
+        "React Query keys are organized so user-orders and all-orders queries do not leak data between contexts."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "operation": "create",
+          "description": "Define centralized React Query key factories/namespaces for user orders, all orders, individual order, and auth/admin checks to prevent leakage and keep invalidation consistent."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
+          "operation": "modify",
+          "description": "Ensure create-order mutation invalidates/refetches the user-orders list and any relevant per-order queries using the shared query key helpers."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "operation": "modify",
+          "description": "Ensure update-status mutation invalidates/refetches all-orders, user-orders (where applicable), and the specific order detail query using the shared query key helpers."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Confirm actor/identity changes correctly invalidate downstream queries and do not reuse cached data across identities (keep React Query cache consistent with auth state)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "summary": "Add English safety/clarity copy throughout key UI touchpoints to avoid confusion with real identification while keeping a 'secure service' presentation style.",
+      "acceptanceCriteria": [
+        "Key user touchpoints (order form, preview, export/print) include clear English text indicating ROLEPLAY ONLY / NOT REAL ID.",
+        "No UI text claims government issuance or real-world validity."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/content/copy.ts",
+          "operation": "create",
+          "description": "Centralize English disclaimer and safety copy strings (ROLEPLAY-only, not valid identification) for consistent reuse across landing, forms, preview, and export/print."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Add clear English ROLEPLAY-only copy near the form submission and export/print actions; ensure no claims of real-world validity."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Add high-level explanation of the roleplay ordering process and clear disclaimers in English while maintaining the secure-service tone (no claims of real issuance)."
+        },
+        {
+          "path": "frontend/src/pages/OrderDetailPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the order detail screen includes clear ROLEPLAY-only / not valid ID language in English and avoids any real-ID implication."
+        }
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "summary": "Add a public landing page introducing RF-FALCON-IDS as a ROLEPLAY-only service with themed branding and sign-in CTA plus a high-level ordering explanation.",
+      "acceptanceCriteria": [
+        "Signed-out users see a landing page (not a blank screen) with disclaimers and a sign-in CTA.",
+        "Landing page is responsive and matches the app theme.",
+        "No ordering actions are available without signing in."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/rf-falcon-ids-logo.dim_1200x300.png",
+          "operation": "create",
+          "description": "Add the generated RF-FALCON-IDS logo asset to the public assets so it can be displayed on the landing page and in the signed-in header."
+        },
+        {
+          "path": "frontend/src/components/BrandHeader.tsx",
+          "operation": "create",
+          "description": "Create a branded header component that displays the generated logo at frontend/public/assets/generated/rf-falcon-ids-logo.dim_1200x300.png and includes the login/logout CTA; ensure ROLEPLAY-only framing is visible. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Implement/finish landing page content: themed hero, ROLEPLAY-only disclaimers, high-level 'how it works' steps, and sign-in CTA; ensure there are no ordering actions without login."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire landing route as the default for signed-out users and ensure navigation links/buttons do not expose order creation routes unless authenticated."
+        }
+      ]
+    }
+  ]
+}
