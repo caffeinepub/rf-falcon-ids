@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Ensure only the username "TravvyC" is treated as admin across the entire frontend auth flow, and prevent duplicate usernames during account creation.
+**Goal:** Update Falcon IDs branding by using a transparent logo and replacing all “role-play” wording with “novelty” across the site while keeping disclaimers clear that IDs are not valid identification.
 
 **Planned changes:**
-- Update admin detection to be derived solely from the signed-in username being exactly "TravvyC", ignoring any stored/stale `isAdmin` flags in sessions or user records.
-- Apply the same admin determination consistently during sign-up, sign-in, and session restore from localStorage so existing "TravvyC" accounts gain admin automatically after the change.
-- Add a unique-username check during sign-up that blocks creating an account when the exact username string already exists, showing a clear English error message.
+- Create a transparent-background version of the existing Falcon IDs logo and update all frontend references to use the new filename.
+- Replace all user-facing occurrences of “role-play”/“roleplay” (any casing) with “novelty” across centralized copy, landing page sections, banners/disclaimers, and ID watermark text.
+- Ensure the brand name is consistently shown as “Falcon IDs” (replacing mentions like “RF-FALCON-IDS”) in user-facing copy, alt text, and the browser tab title.
 
-**User-visible outcome:** Signing in as "TravvyC" shows admin access (including the Admin link and /admin access); signing in as any other username never grants admin access. Creating an account with a username that already exists is rejected with an English error.
+**User-visible outcome:** The site displays the Falcon IDs logo cleanly on dark backgrounds without a white box, and all wording describes the product as “novelty” (not “role-play”) with consistent Falcon IDs branding across pages and disclaimers.

@@ -1,74 +1,127 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Single fixed admin (TravvyC) + unique usernames in localStorage auth",
+  "title": "Falcon IDs: transparent logo + replace role-play wording with novelty",
   "requirements": [
     {
-      "id": "REQ-22",
-      "summary": "Make admin access impossible for any username except exactly \"TravvyC\", ignoring any stale localStorage isAdmin flags.",
+      "id": "REQ-1",
+      "summary": "Generate a transparent-background Falcon IDs logo asset and switch all logo renders to use it.",
       "acceptanceCriteria": [
-        "When signed in as username \"TravvyC\", the session/auth context `isAdmin` is true and the Admin link is visible in the header.",
-        "When signed in as any username other than \"TravvyC\", the session/auth context `isAdmin` is false and the Admin link is not visible.",
-        "Attempting to navigate to /admin while signed in as any username other than \"TravvyC\" shows the existing \"Access Denied\" state (AdminGate).",
-        "Changing any stored user record (e.g., `rf_falcon_users`) to include `isAdmin: true` does not grant admin access unless the signed-in username is \"TravvyC\"."
+        "A new transparent logo image exists under frontend/public/assets/generated and visually has no white background.",
+        "All pages/components that render the logo (e.g., header and landing hero) reference the new transparent logo filename.",
+        "The rendered logo blends correctly on dark backgrounds with no visible white box/padding artifact.",
+        "No broken image links occur in the header or landing page after the filename switch."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
-          "operation": "modify",
-          "description": "Update session auth so admin is computed solely from the signed-in username being exactly \"TravvyC\" (and never from stored user/session `isAdmin` fields). Ensure the context `isAdmin` value and any session object persisted to localStorage cannot grant admin for other usernames."
-        }
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "summary": "Block duplicate username creation during sign-up and display a clear English error when a duplicate is attempted.",
-      "acceptanceCriteria": [
-        "If a user attempts to sign up with a username that already exists, sign-up fails and shows an error message (e.g., \"Username already exists\").",
-        "A successful sign-up persists the new user such that a second sign-up attempt with the same username is rejected.",
-        "The duplicate-username check is applied consistently with the exact same username string the system stores/uses for sign-in."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/username.ts",
+          "path": "frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png",
           "operation": "create",
-          "description": "Add shared helpers (e.g., normalizeUsername and isFixedAdminUsername) used by both sign-up and sign-in so duplicate checks and lookups use the exact same stored/used username string."
+          "description": "Create a transparent-background version of the existing logo (per imageRequirements edit: falcon-ids-logo.dim_1200x300.png > falcon-ids-logo-transparent.dim_1200x300.png)."
         },
         {
-          "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "path": "frontend/src/components/BrandHeader.tsx",
           "operation": "modify",
-          "description": "Enforce uniqueness by applying the shared username normalization consistently when reading/writing `rf_falcon_users`, and throw a clear English error (\"Username already exists\") when a duplicate is attempted."
+          "description": "Update the header logo image src to reference frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png and ensure alt text remains correct for accessibility."
         },
         {
-          "path": "frontend/src/pages/SignUpPage.tsx",
+          "path": "frontend/src/pages/LandingPage.tsx",
           "operation": "modify",
-          "description": "Before calling signUp, apply the same username normalization as the auth layer (via the shared helper) so UI input matches what is stored/checked, and ensure any duplicate attempt surfaces the clear English error message."
-        },
-        {
-          "path": "frontend/src/pages/SignInPage.tsx",
-          "operation": "modify",
-          "description": "Before calling signIn, apply the same username normalization as the auth layer (via the shared helper) so sign-in uses the exact same username string the system stores/uses."
+          "description": "Update the landing hero logo image src to reference frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png and confirm it renders correctly on the page’s dark background."
         }
       ]
     },
     {
-      "id": "REQ-24",
-      "summary": "Apply the fixed \"TravvyC\" admin determination consistently on sign-up, sign-in, and session restore from localStorage so existing TravvyC accounts become admin automatically.",
+      "id": "REQ-2",
+      "summary": "Replace all user-facing 'role-play' wording with 'novelty' across the UI, including disclaimers and ID watermark text, while keeping the 'not real identification' meaning.",
       "acceptanceCriteria": [
-        "If localStorage already contains a valid session for username \"TravvyC\", reloading the page results in `isAdmin === true` and access to /admin is allowed.",
-        "If localStorage already contains a valid session for a non-\"TravvyC\" username (even if the stored session has `isAdmin: true`), reloading the page results in `isAdmin === false` and /admin is denied.",
-        "If localStorage contains user records created before this change, signing in as \"TravvyC\" still yields admin access after credential verification."
+        "All user-visible occurrences of \"role-play\"/\"roleplay\"/\"ROLEPLAY\" across the UI are replaced with \"novelty\"/\"NOVELTY\" as appropriate.",
+        "Centralized copy in frontend/src/content/copy.ts no longer contains \"roleplay\" wording and instead uses \"novelty\" wording.",
+        "The ID card watermark (frontend/src/components/IdWatermark.tsx) no longer says \"ROLEPLAY ONLY\" and instead uses \"NOVELTY\" wording while still stating it is not valid identification.",
+        "The disclaimer banner component (frontend/src/components/RoleplayDisclaimerBanner.tsx) no longer displays \"ROLEPLAY USE ONLY\" and is updated to \"NOVELTY USE ONLY\" (component may be renamed, but functionality and rendering remain intact).",
+        "Landing page hero and disclaimer sections (frontend/src/pages/LandingPage.tsx) no longer describe the service as \"roleplay\" and instead describe it as \"novelty\".",
+        "New order page copy (e.g., shipping section title and subtitle/disclaimer sourced from COPY) no longer includes \"Roleplay\" phrasing and instead uses \"Novelty\" phrasing."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "path": "frontend/src/content/copy.ts",
           "operation": "modify",
-          "description": "During session restore (initial localStorage load), recompute `isAdmin` from the restored username (exact match \"TravvyC\") and ignore any stored `isAdmin` value; optionally rewrite the stored session to reflect the corrected derived `isAdmin` so future restores remain consistent."
+          "description": "Replace all role-play/roleplay wording in centralized strings with novelty wording while preserving the meaning that IDs are not real identification (including updating any banner/disclaimer/order-form strings)."
         },
         {
-          "path": "frontend/src/hooks/auth/useSessionAuth.tsx",
+          "path": "frontend/src/components/IdWatermark.tsx",
           "operation": "modify",
-          "description": "During sign-in, after credential verification, set derived `isAdmin` based only on normalized username === \"TravvyC\" so previously-created TravvyC users gain admin immediately without any manual edits."
+          "description": "Update watermark text from \"ROLEPLAY ONLY\" to \"NOVELTY\" wording while still clearly stating \"NOT VALID IDENTIFICATION\" (or equivalent meaning)."
+        },
+        {
+          "path": "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+          "operation": "modify",
+          "description": "Update the banner copy from \"ROLEPLAY USE ONLY\" to \"NOVELTY USE ONLY\" while preserving the \"NOT REAL IDENTIFICATION\" meaning."
+        },
+        {
+          "path": "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+          "operation": "rename",
+          "description": "Optionally rename the component file to reflect the new terminology (e.g., NoveltyDisclaimerBanner) while keeping identical rendering behavior and ensuring all imports/usages are updated accordingly."
+        },
+        {
+          "path": "frontend/src/components/AppShell.tsx",
+          "operation": "modify",
+          "description": "Update the disclaimer banner import/usage if the component is renamed; ensure the banner still renders at the top of the shell."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Replace user-facing roleplay wording in the hero and disclaimer sections with novelty wording; ensure any displayed disclaimer text sourced from COPY reflects the updated terminology."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Replace any remaining roleplay wording in headings/labels (e.g., shipping section title) with novelty wording; ensure subtitle/disclaimer sourced from COPY reflects the updated terminology."
+        },
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "modify",
+          "description": "Replace the footer text \"ROLEPLAY IDENTIFICATION • NOT VALID FOR OFFICIAL USE\" with novelty wording while keeping the same 'not valid' meaning."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "modify",
+          "description": "Replace any remaining user-facing roleplay wording (e.g., dashboard subtitle and empty-state messaging) with novelty wording."
+        },
+        {
+          "path": "frontend/src/pages/OrderDetailPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the order detail page’s disclaimer/banner copy uses the updated novelty wording (primarily via COPY), and replace any direct roleplay text if present."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Ensure the brand name is consistently presented as “Falcon IDs” across user-facing text and metadata.",
+      "acceptanceCriteria": [
+        "Any long-form disclaimers/copy that mention \"RF-FALCON-IDS\" are updated to say \"Falcon IDs\" (or \"FALCON IDs\" if matching existing stylistic capitalization) consistently.",
+        "The logo alt text remains correct for accessibility and reflects the brand name (e.g., \"Falcon IDs\"/\"FALCON IDs\").",
+        "Browser tab title remains branded for Falcon IDs (frontend/index.html)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/content/copy.ts",
+          "operation": "modify",
+          "description": "Update any brand/company mentions in disclaimers and long-form copy (e.g., replacing \"RF-FALCON-IDS\" with \"Falcon IDs\") while preserving the non-real-ID disclaimer meaning."
+        },
+        {
+          "path": "frontend/src/components/BrandHeader.tsx",
+          "operation": "modify",
+          "description": "Ensure the logo alt text consistently reflects the brand name as \"Falcon IDs\" (or the chosen consistent capitalization) after the logo filename switch."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the landing logo alt text and any brand mentions in visible copy/disclaimers consistently use \"Falcon IDs\"."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Verify the document title remains correctly branded for Falcon IDs; adjust only if any non-matching variant is found."
         }
       ]
     }

@@ -134,60 +134,63 @@ export default function NewOrderPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">New ID Order</h1>
+        <h1 className="text-3xl font-bold tracking-wider">New ID Order</h1>
         <p className="text-muted-foreground mt-1">{COPY.ORDER_FORM_SUBTITLE}</p>
       </div>
 
-      <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-purple-200">{COPY.ORDER_FORM_DISCLAIMER}</p>
+      <div className="bg-card/80 border border-chrome-300/20 rounded p-4 flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-chrome-400 shrink-0 mt-0.5" />
+        <p className="text-sm text-chrome-300">{COPY.ORDER_FORM_DISCLAIMER}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-8">
         <div className="space-y-6">
           {/* ID Details */}
-          <Card className="bg-card/50 border-cyan-500/20">
+          <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle>ID Information</CardTitle>
+              <CardTitle className="tracking-wide">ID Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name *</Label>
+                  <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dob">Date of Birth *</Label>
+                <Label htmlFor="dob">Date of Birth</Label>
                 <Input
                   id="dob"
                   type="date"
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
+                  className="bg-background/50 border-chrome-300/30"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="gender">Gender *</Label>
+                  <Label htmlFor="gender">Gender</Label>
                   <Select value={gender} onValueChange={setGender} required>
-                    <SelectTrigger id="gender">
+                    <SelectTrigger className="bg-background/50 border-chrome-300/30">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -198,62 +201,73 @@ export default function NewOrderPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="height">Height *</Label>
+                  <Label htmlFor="height">Height</Label>
                   <Input
                     id="height"
-                    placeholder="e.g., 5'10&quot;"
+                    placeholder="5'10&quot;"
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="eyeColor">Eye Color *</Label>
-                <Input
-                  id="eyeColor"
-                  value={eyeColor}
-                  onChange={(e) => setEyeColor(e.target.value)}
-                  required
-                />
+                <Label htmlFor="eyeColor">Eye Color</Label>
+                <Select value={eyeColor} onValueChange={setEyeColor} required>
+                  <SelectTrigger className="bg-background/50 border-chrome-300/30">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BRN">Brown</SelectItem>
+                    <SelectItem value="BLU">Blue</SelectItem>
+                    <SelectItem value="GRN">Green</SelectItem>
+                    <SelectItem value="HZL">Hazel</SelectItem>
+                    <SelectItem value="GRY">Gray</SelectItem>
+                    <SelectItem value="BLK">Black</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Residential Address *</Label>
+                <Label htmlFor="address">Address</Label>
                 <Input
                   id="address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
+                  className="bg-background/50 border-chrome-300/30"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
+                  <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="zip">ZIP Code *</Label>
+                  <Label htmlFor="zip">ZIP Code</Label>
                   <Input
                     id="zip"
                     value={zip}
                     onChange={(e) => setZip(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="state">State *</Label>
+                <Label htmlFor="state">State</Label>
                 <Select value={state} onValueChange={setState} required>
-                  <SelectTrigger id="state">
+                  <SelectTrigger className="bg-background/50 border-chrome-300/30">
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
@@ -267,21 +281,107 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="idNumber">ID Number *</Label>
+                <Label htmlFor="idNumber">ID Number</Label>
                 <Input
                   id="idNumber"
+                  placeholder="e.g., 123456789"
                   value={idNumber}
                   onChange={(e) => setIdNumber(e.target.value)}
+                  className="bg-background/50 border-chrome-300/30"
                   required
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Photo Upload */}
-          <Card className="bg-card/50 border-cyan-500/20">
+          {/* Shipping Information */}
+          <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle>Photo Upload</CardTitle>
+              <CardTitle className="tracking-wide">Shipping Information</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Physical novelty ID will be shipped to this address
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="shipFirstName">First Name</Label>
+                  <Input
+                    id="shipFirstName"
+                    value={shipFirstName}
+                    onChange={(e) => setShipFirstName(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="shipLastName">Last Name</Label>
+                  <Input
+                    id="shipLastName"
+                    value={shipLastName}
+                    onChange={(e) => setShipLastName(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="shipAddress">Address</Label>
+                <Input
+                  id="shipAddress"
+                  value={shipAddress}
+                  onChange={(e) => setShipAddress(e.target.value)}
+                  className="bg-background/50 border-chrome-300/30"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="shipCity">City</Label>
+                  <Input
+                    id="shipCity"
+                    value={shipCity}
+                    onChange={(e) => setShipCity(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="shipZip">ZIP Code</Label>
+                  <Input
+                    id="shipZip"
+                    value={shipZip}
+                    onChange={(e) => setShipZip(e.target.value)}
+                    className="bg-background/50 border-chrome-300/30"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="shipState">State</Label>
+                <Select value={shipState} onValueChange={setShipState} required>
+                  <SelectTrigger className="bg-background/50 border-chrome-300/30">
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((s) => (
+                      <SelectItem key={s.code} value={s.name}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Photo Upload */}
+          <Card className="bg-card/80 border-chrome-300/20">
+            <CardHeader>
+              <CardTitle className="tracking-wide">ID Photo</CardTitle>
             </CardHeader>
             <CardContent>
               <PhotoUploader
@@ -291,89 +391,13 @@ export default function NewOrderPage() {
               />
             </CardContent>
           </Card>
-
-          {/* Shipping Info */}
-          <Card className="bg-card/50 border-cyan-500/20">
-            <CardHeader>
-              <CardTitle>Shipping Information (Roleplay)</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="shipFirstName">First Name *</Label>
-                  <Input
-                    id="shipFirstName"
-                    value={shipFirstName}
-                    onChange={(e) => setShipFirstName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="shipLastName">Last Name *</Label>
-                  <Input
-                    id="shipLastName"
-                    value={shipLastName}
-                    onChange={(e) => setShipLastName(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="shipAddress">Address *</Label>
-                <Input
-                  id="shipAddress"
-                  value={shipAddress}
-                  onChange={(e) => setShipAddress(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="shipCity">City *</Label>
-                  <Input
-                    id="shipCity"
-                    value={shipCity}
-                    onChange={(e) => setShipCity(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="shipZip">ZIP Code *</Label>
-                  <Input
-                    id="shipZip"
-                    value={shipZip}
-                    onChange={(e) => setShipZip(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="shipState">State *</Label>
-                <Select value={shipState} onValueChange={setShipState} required>
-                  <SelectTrigger id="shipState">
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {US_STATES.map((s) => (
-                      <SelectItem key={s.code} value={s.name}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Preview */}
+        {/* Preview Column */}
         <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          <Card className="bg-card/50 border-cyan-500/20">
+          <Card className="bg-card/80 border-chrome-300/20 shadow-glow">
             <CardHeader>
-              <CardTitle>Live Preview</CardTitle>
+              <CardTitle className="tracking-wide">Preview</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex justify-center">
@@ -395,7 +419,8 @@ export default function NewOrderPage() {
 
           <Button
             type="submit"
-            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+            size="lg"
+            className="w-full bg-chrome-300 hover:bg-chrome-200 text-black font-semibold"
             disabled={createOrder.isPending}
           >
             {createOrder.isPending ? (
@@ -404,20 +429,18 @@ export default function NewOrderPage() {
                 Creating Order...
               </>
             ) : (
-              'Submit Order'
+              'Create Order'
             )}
           </Button>
         </div>
       </form>
 
-      {showCropModal && rawPhotoUrl && (
-        <PhotoCropModal
-          open={showCropModal}
-          onClose={() => setShowCropModal(false)}
-          imageUrl={rawPhotoUrl}
-          onCropComplete={handleCropComplete}
-        />
-      )}
+      <PhotoCropModal
+        open={showCropModal}
+        imageUrl={rawPhotoUrl}
+        onCropComplete={handleCropComplete}
+        onClose={() => setShowCropModal(false)}
+      />
     </div>
   );
 }

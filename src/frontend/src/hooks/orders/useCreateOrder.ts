@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
-import { useSessionAuth } from '../auth/useSessionAuth';
+import { useInternetIdentity } from '../useInternetIdentity';
 import { orderKeys } from './queryKeys';
 import type { Details, Address, ExternalBlob } from '../../backend';
 
@@ -13,7 +13,7 @@ interface CreateOrderParams {
 
 export function useCreateOrder() {
   const { actor } = useActor();
-  const { username } = useSessionAuth();
+  const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -21,12 +21,13 @@ export function useCreateOrder() {
       if (!actor) throw new Error('Actor not available');
       await actor.createOrder(id, details, address, photo);
       
-      // Store order ID in localStorage for this user
-      if (username) {
-        const userOrderIds = JSON.parse(localStorage.getItem(`user_orders_${username}`) || '[]') as string[];
+      // Store order ID in localStorage keyed by principal
+      if (identity) {
+        const principalString = identity.getPrincipal().toString();
+        const userOrderIds = JSON.parse(localStorage.getItem(`user_orders_${principalString}`) || '[]') as string[];
         if (!userOrderIds.includes(id)) {
           userOrderIds.push(id);
-          localStorage.setItem(`user_orders_${username}`, JSON.stringify(userOrderIds));
+          localStorage.setItem(`user_orders_${principalString}`, JSON.stringify(userOrderIds));
         }
       }
     },

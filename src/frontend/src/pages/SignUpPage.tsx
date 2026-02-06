@@ -1,151 +1,69 @@
-import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useSessionAuth } from '../hooks/auth/useSessionAuth';
-import { normalizeUsername } from '@/utils/username';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
+import { Shield, CheckCircle, Lock, Smartphone } from 'lucide-react';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const { signUp } = useSessionAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess(false);
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const normalizedUsername = normalizeUsername(username);
-      await signUp(normalizedUsername, password);
-      setSuccess(true);
-      setTimeout(() => {
-        navigate({ to: '/signin' });
-      }, 1500);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create account');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-2xl">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
+          <div className="flex justify-center mb-4">
+            <Shield className="w-16 h-16 text-cyan-400" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">Get Started with Internet Identity</CardTitle>
           <CardDescription className="text-center">
-            Sign up to start creating roleplay ID orders
+            Secure, anonymous authentication without passwords
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">What is Internet Identity?</h3>
+            <p className="text-sm text-muted-foreground">
+              Internet Identity is a blockchain-based authentication system that lets you sign in securely without passwords. Your identity is cryptographically secured and never shared with applications.
+            </p>
+          </div>
 
-            {success && (
-              <Alert className="bg-green-900/20 border-green-500/30 text-green-200">
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>Account created! Redirecting to sign in...</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="Choose a username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoComplete="username"
-                disabled={success}
-              />
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg">Key Features</h3>
+            <div className="grid gap-3">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-sm">No Passwords</p>
+                  <p className="text-xs text-muted-foreground">Use biometrics or security keys instead</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Lock className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-sm">Privacy First</p>
+                  <p className="text-xs text-muted-foreground">Your identity is anonymous and secure</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Smartphone className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-sm">Multi-Device</p>
+                  <p className="text-xs text-muted-foreground">Access from any device you register</p>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Choose a password (min 6 characters)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                disabled={success}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Re-enter your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                disabled={success}
-              />
-            </div>
-
+          <div className="space-y-3 pt-4">
             <Button
-              type="submit"
+              onClick={() => navigate({ to: '/signin' })}
               className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
-              disabled={isLoading || success}
             >
-              {isLoading ? (
-                'Creating account...'
-              ) : success ? (
-                'Account created!'
-              ) : (
-                <>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Create Account
-                </>
-              )}
+              Continue to Sign In
             </Button>
-
-            <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={() => navigate({ to: '/signin' })}
-                className="text-cyan-400 hover:text-cyan-300 font-medium"
-                disabled={success}
-              >
-                Sign In
-              </button>
-            </div>
-          </form>
+            <p className="text-xs text-center text-muted-foreground">
+              You'll be guided through creating your Internet Identity if you don't have one yet
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

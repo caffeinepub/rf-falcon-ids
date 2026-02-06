@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-app-s-username-password-auth-so-the-only-admin-is-the-account-whose-username-is-exactly-travvyc-no-other-username-may-ever-have-admin-access-even-if-localstorage-contains-an-old-stale-isadmin-flag",
-      "featureTitle": "Update the app’s username/password auth so the ONLY admin is the account whose username is exactly \"TravvyC\"; no other username may ever have admin access, even if localStorage contains an old/stale `isAdmin` flag.",
+      "featureId": "feature-remove-the-white-background-from-the-existing-falcon-ids-logo-asset-by-generating-a-transparent-background-version-and-update-all-frontend-references-to-use-the-transparent-logo-file",
+      "featureTitle": "Remove the white background from the existing Falcon IDs logo asset by generating a transparent-background version and update all frontend references to use the transparent logo file.",
       "files": [
-        "frontend/src/hooks/auth/useSessionAuth.tsx"
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,18 +18,23 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-22"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-enforce-unique-usernames-during-sign-up-and-block-duplicate-usernames-from-being-created-showing-a-clear-error-in-english-when-a-duplicate-is-attempted",
-      "featureTitle": "Enforce unique usernames during sign-up and block duplicate usernames from being created, showing a clear error in English when a duplicate is attempted.",
+      "featureId": "feature-replace-the-term-role-play-including-variants-like-roleplay-roleplay-with-novelty-in-all-user-facing-website-copy-disclaimers-banners-and-id-card-watermark-text-while-keeping-the-meaning-that-the-ids-are-not-real-identification",
+      "featureTitle": "Replace the term \"role-play\" (including variants like \"roleplay\", \"ROLEPLAY\") with \"novelty\" in all user-facing website copy, disclaimers, banners, and ID card watermark text while keeping the meaning that the IDs are not real identification.",
       "files": [
-        "frontend/src/hooks/auth/useSessionAuth.tsx",
-        "frontend/src/pages/SignInPage.tsx",
-        "frontend/src/pages/SignUpPage.tsx",
-        "frontend/src/utils/username.ts"
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/components/IdCardPreview.tsx",
+        "frontend/src/components/IdWatermark.tsx",
+        "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+        "frontend/src/content/copy.ts",
+        "frontend/src/pages/DashboardPage.tsx",
+        "frontend/src/pages/LandingPage.tsx",
+        "frontend/src/pages/NewOrderPage.tsx",
+        "frontend/src/pages/OrderDetailPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -40,15 +46,18 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-23"
+        "REQ-2"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-admin-determination-is-applied-consistently-across-sign-up-sign-in-and-session-restore-loading-an-existing-session-from-localstorage-so-that-a-previously-created-travvyc-account-becomes-admin-after-this-change-without-requiring-manual-data-edits",
-      "featureTitle": "Ensure the admin determination is applied consistently across sign-up, sign-in, and session restore (loading an existing session from localStorage) so that a previously-created \"TravvyC\" account becomes admin after this change without requiring manual data edits.",
+      "featureId": "feature-ensure-the-brand-name-is-consistently-presented-as-falcon-ids-including-in-long-form-disclaimers-currently-referencing-rf-falcon-ids-across-user-facing-text-where-the-company-service-name-is-mentioned",
+      "featureTitle": "Ensure the brand name is consistently presented as \"Falcon IDs\" (including in long-form disclaimers currently referencing \"RF-FALCON-IDS\") across user-facing text where the company/service name is mentioned.",
       "files": [
-        "frontend/src/hooks/auth/useSessionAuth.tsx"
+        "frontend/index.html",
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/content/copy.ts",
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -60,7 +69,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-24"
+        "REQ-3"
       ],
       "confidence": "high"
     }

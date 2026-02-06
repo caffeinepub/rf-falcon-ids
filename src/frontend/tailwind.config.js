@@ -66,17 +66,22 @@ export default {
                     border: 'oklch(var(--sidebar-border))',
                     ring: 'oklch(var(--sidebar-ring))'
                 },
-                cyan: {
-                    400: 'oklch(0.8 0.15 195)',
-                    500: 'oklch(0.7 0.15 195)',
-                    600: 'oklch(0.6 0.15 195)',
-                    700: 'oklch(0.5 0.15 195)',
+                chrome: {
+                    50: 'oklch(0.98 0 0)',
+                    100: 'oklch(0.95 0 0)',
+                    200: 'oklch(0.90 0 0)',
+                    300: 'oklch(0.85 0 0)',
+                    400: 'oklch(0.75 0 0)',
+                    500: 'oklch(0.65 0 0)',
+                    600: 'oklch(0.55 0 0)',
+                    700: 'oklch(0.45 0 0)',
+                    800: 'oklch(0.35 0 0)',
+                    900: 'oklch(0.25 0 0)',
                 },
-                purple: {
-                    200: 'oklch(0.85 0.12 300)',
-                    400: 'oklch(0.7 0.18 300)',
-                    500: 'oklch(0.6 0.18 300)',
-                    900: 'oklch(0.25 0.1 300)',
+                steel: {
+                    400: 'oklch(0.70 0.01 240)',
+                    500: 'oklch(0.60 0.01 240)',
+                    600: 'oklch(0.50 0.01 240)',
                 },
             },
             borderRadius: {
@@ -86,7 +91,8 @@ export default {
             },
             boxShadow: {
                 xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
-                glow: '0 0 20px rgba(6, 182, 212, 0.3)',
+                glow: '0 0 24px rgba(192, 192, 192, 0.15), 0 0 48px rgba(192, 192, 192, 0.08)',
+                'chrome-glow': '0 0 16px rgba(192, 192, 192, 0.2)',
             },
             keyframes: {
                 'accordion-down': {
@@ -106,6 +112,10 @@ export default {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
                 'scan': 'scan 4s linear infinite'
+            },
+            fontFamily: {
+                serif: ['Cinzel', 'Playfair Display', 'Georgia', 'serif'],
+                sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
             }
         }
     },

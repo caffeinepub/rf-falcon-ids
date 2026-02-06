@@ -1,27 +1,28 @@
 import { useQuery } from '@tanstack/react-query';
 import { useActor } from '../useActor';
-import { useSessionAuth } from '../auth/useSessionAuth';
+import { useInternetIdentity } from '../useInternetIdentity';
 import { orderKeys } from './queryKeys';
 import type { Order } from '../../backend';
 
 export function useUserOrders() {
   const { actor, isFetching } = useActor();
-  const { username, isAuthenticated } = useSessionAuth();
+  const { identity } = useInternetIdentity();
+  const isAuthenticated = !!identity;
 
   return useQuery<Order[]>({
     queryKey: orderKeys.userOrders(),
     queryFn: async () => {
-      if (!actor || !isAuthenticated) return [];
+      if (!actor || !isAuthenticated || !identity) return [];
       
-      // Since backend doesn't have getUserOrders, we'll store order IDs in localStorage
-      // and fetch them individually, or return empty array for now
-      const userOrderIds = JSON.parse(localStorage.getItem(`user_orders_${username}`) || '[]') as string[];
+      // Retrieve order IDs from localStorage keyed by principal
+      const principalString = identity.getPrincipal().toString();
+      const userOrderIds = JSON.parse(localStorage.getItem(`user_orders_${principalString}`) || '[]') as string[];
       
       if (userOrderIds.length === 0) {
         return [];
       }
       
-      // Fetch orders by IDs if we have any
+      // Fetch orders by IDs
       try {
         const orders = await Promise.all(
           userOrderIds.map(async (id) => {

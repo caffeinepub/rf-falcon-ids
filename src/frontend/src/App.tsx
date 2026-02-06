@@ -1,5 +1,5 @@
 import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
-import { SessionAuthProvider, useSessionAuth } from './hooks/auth/useSessionAuth';
+import { useInternetIdentity } from './hooks/useInternetIdentity';
 import LandingPage from './pages/LandingPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
@@ -26,7 +26,9 @@ const rootRoute = createRootRoute({
 });
 
 function IndexComponent() {
-  const { isAuthenticated } = useSessionAuth();
+  const { identity } = useInternetIdentity();
+  const isAuthenticated = !!identity;
+  
   if (isAuthenticated) {
     return <DashboardPage />;
   }
@@ -123,9 +125,7 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-      <SessionAuthProvider>
-        <AppContent />
-      </SessionAuthProvider>
+      <AppContent />
     </ThemeProvider>
   );
 }

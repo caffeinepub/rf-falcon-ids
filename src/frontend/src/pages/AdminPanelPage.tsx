@@ -1,128 +1,164 @@
+import { useState } from 'react';
 import { useAllOrders } from '../hooks/orders/useAllOrders';
 import { useUpdateOrderStatus } from '../hooks/orders/useUpdateOrderStatus';
+import { useAdminResetAllData } from '../hooks/admin/useAdminResetAllData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Shield, Loader2, Trash2 } from 'lucide-react';
 import { formatOrderStatus } from '../utils/formatters';
-import type { Order, OrderStatus } from '../backend';
+import { OrderStatus } from '../backend';
 import { toast } from 'sonner';
 
 export default function AdminPanelPage() {
   const { data: orders, isLoading } = useAllOrders();
   const updateStatus = useUpdateOrderStatus();
+  const resetAllData = useAdminResetAllData();
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    setUpdatingOrderId(orderId);
     try {
-      await updateStatus.mutateAsync({ orderId, status: newStatus });
+      await updateStatus.mutateAsync({
+        orderId,
+        status: newStatus as OrderStatus,
+      });
       toast.success('Order status updated');
     } catch (error) {
       console.error('Status update error:', error);
-      toast.error('Failed to update order status');
+      toast.error('Failed to update status');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const handleResetAllData = async () => {
+    try {
+      await resetAllData.mutateAsync();
+      toast.success('All data has been reset');
+    } catch (error) {
+      console.error('Reset error:', error);
+      toast.error('Failed to reset data');
     }
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-chrome-300" />
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-3">
-        <Shield className="w-8 h-8 text-cyan-400" />
-        <div>
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground mt-1">Manage all roleplay ID orders</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-chrome-900/50 rounded-full flex items-center justify-center border border-chrome-300/20">
+            <Shield className="w-6 h-6 text-chrome-300" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-wider">Admin Panel</h1>
+            <p className="text-muted-foreground mt-1">Manage all orders and system data</p>
+          </div>
         </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="sm">
+              <Trash2 className="w-4 h-4 mr-2" />
+              Reset All Data
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="bg-card border-chrome-300/20">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete all orders and reset the system to its initial state.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-chrome-300/30">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleResetAllData}
+                disabled={resetAllData.isPending}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {resetAllData.isPending ? 'Resetting...' : 'Reset All Data'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
-      <Card className="bg-card/50 border-cyan-500/20">
-        <CardHeader>
-          <CardTitle>All Orders ({orders?.length || 0})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!orders || orders.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              No orders found
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>State</TableHead>
-                    <TableHead>ID Number</TableHead>
-                    <TableHead>Shipping</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders.map((order: Order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-xs">{order.id}</TableCell>
-                      <TableCell>
-                        {order.details.first_name} {order.details.last_name}
-                      </TableCell>
-                      <TableCell>{order.details.state_name}</TableCell>
-                      <TableCell className="font-mono text-xs">{order.details.id_number}</TableCell>
-                      <TableCell className="text-xs">
-                        <div>{order.address.first_name} {order.address.last_name}</div>
-                        <div className="text-muted-foreground">
-                          {order.address.city}, {order.address.state}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            order.status === 'shipped'
-                              ? 'default'
-                              : order.status === 'approved'
-                              ? 'secondary'
-                              : 'outline'
-                          }
-                          className={
-                            order.status === 'shipped'
-                              ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                              : order.status === 'approved'
-                              ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-                              : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                          }
-                        >
-                          {formatOrderStatus(order.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleStatusChange(order.id, value as OrderStatus)}
-                          disabled={updateStatus.isPending}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="approved">Approved</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {!orders || orders.length === 0 ? (
+        <Card className="bg-card/80 border-chrome-300/20">
+          <CardContent className="pt-12 pb-12 text-center">
+            <Shield className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2 tracking-wide">No Orders</h3>
+            <p className="text-muted-foreground">
+              No orders have been created yet
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {orders.map((order) => (
+            <Card key={order.id} className="bg-card/80 border-chrome-300/20">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg tracking-wide">
+                      {order.details.first_name} {order.details.last_name}
+                    </CardTitle>
+                    <div className="text-sm text-muted-foreground">
+                      {order.details.state_name} • ID #{order.details.id_number}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Order ID: {order.id}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      variant={
+                        order.status === 'shipped'
+                          ? 'default'
+                          : order.status === 'approved'
+                          ? 'secondary'
+                          : 'outline'
+                      }
+                      className={
+                        order.status === 'shipped'
+                          ? 'bg-green-900/30 text-green-400 border-green-500/30'
+                          : order.status === 'approved'
+                          ? 'bg-chrome-900/30 text-chrome-300 border-chrome-300/30'
+                          : 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30'
+                      }
+                    >
+                      {formatOrderStatus(order.status)}
+                    </Badge>
+                    <Select
+                      value={order.status}
+                      onValueChange={(value) => handleStatusChange(order.id, value)}
+                      disabled={updatingOrderId === order.id}
+                    >
+                      <SelectTrigger className="w-[140px] border-chrome-300/30">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="shipped">Shipped</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,108 +1,76 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useSessionAuth } from '../hooks/auth/useSessionAuth';
-import { normalizeUsername } from '@/utils/username';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { LogIn, AlertCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Shield, Lock, Key, Globe } from 'lucide-react';
 
 export default function SignInPage() {
   const navigate = useNavigate();
-  const { signIn } = useSessionAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { identity, login, loginStatus } = useInternetIdentity();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const normalizedUsername = normalizeUsername(username);
-      await signIn(normalizedUsername, password);
+  useEffect(() => {
+    if (identity) {
       navigate({ to: '/dashboard' });
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
-    } finally {
-      setIsLoading(false);
+    }
+  }, [identity, navigate]);
+
+  const handleSignIn = async () => {
+    try {
+      await login();
+    } catch (error: any) {
+      console.error('Login error:', error);
     }
   };
 
+  const isLoggingIn = loginStatus === 'logging-in';
+
   return (
-    <div className="flex items-center justify-center min-h-[70vh]">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
-          <CardDescription className="text-center">
-            Enter your username and password to access your account
+    <div className="min-h-[70vh] flex items-center justify-center">
+      <Card className="max-w-lg w-full bg-card/80 border-chrome-300/20 shadow-glow">
+        <CardHeader className="text-center space-y-4">
+          <div className="w-20 h-20 bg-chrome-900/50 rounded-full flex items-center justify-center mx-auto border border-chrome-300/20 shadow-chrome-glow">
+            <Shield className="w-10 h-10 text-chrome-300" />
+          </div>
+          <CardTitle className="text-3xl">Sign In</CardTitle>
+          <CardDescription className="text-base">
+            Authenticate securely with Internet Identity
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoComplete="username"
-              />
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 bg-chrome-900/30 rounded border border-chrome-300/10">
+              <Lock className="w-5 h-5 text-chrome-400 shrink-0 mt-0.5" />
+              <div className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Private & Secure:</strong> No passwords to remember or store
+              </div>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
+            <div className="flex items-start gap-3 p-3 bg-chrome-900/30 rounded border border-chrome-300/10">
+              <Key className="w-5 h-5 text-chrome-400 shrink-0 mt-0.5" />
+              <div className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Decentralized:</strong> You control your identity, not us
+              </div>
             </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                'Signing in...'
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
-                </>
-              )}
-            </Button>
-
-            <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => navigate({ to: '/signup' })}
-                className="text-cyan-400 hover:text-cyan-300 font-medium"
-              >
-                Create Account
-              </button>
+            <div className="flex items-start gap-3 p-3 bg-chrome-900/30 rounded border border-chrome-300/10">
+              <Globe className="w-5 h-5 text-chrome-400 shrink-0 mt-0.5" />
+              <div className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Universal:</strong> One identity across all Internet Computer apps
+              </div>
             </div>
-          </form>
+          </div>
+
+          <Button
+            onClick={handleSignIn}
+            disabled={isLoggingIn}
+            className="w-full bg-chrome-300 hover:bg-chrome-200 text-black font-semibold"
+            size="lg"
+          >
+            {isLoggingIn ? 'Connecting...' : 'Sign In with Internet Identity'}
+          </Button>
+
+          <p className="text-xs text-center text-muted-foreground">
+            New to Internet Identity? The sign-in process will guide you through creating your identity.
+          </p>
         </CardContent>
       </Card>
     </div>

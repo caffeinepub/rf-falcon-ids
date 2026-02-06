@@ -1,23 +1,26 @@
 import { useNavigate } from '@tanstack/react-router';
 import AuthStatusButton from './AuthStatusButton';
-import { useSessionAuth } from '../hooks/auth/useSessionAuth';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useIsAdmin } from '../hooks/auth/useIsAdmin';
 import { Shield } from 'lucide-react';
 
 export default function BrandHeader() {
   const navigate = useNavigate();
-  const { isAuthenticated, isAdmin } = useSessionAuth();
+  const { identity } = useInternetIdentity();
+  const { data: isAdmin } = useIsAdmin();
+  const isAuthenticated = !!identity;
 
   return (
-    <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+    <header className="border-b border-chrome-300/20 bg-card/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <button
           onClick={() => navigate({ to: '/' })}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
           <img
-            src="/assets/generated/rf-falcon-ids-logo.dim_1200x300.png"
-            alt="RF-FALCON-IDS"
-            className="h-10 w-auto"
+            src="/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png"
+            alt="Falcon IDs"
+            className="h-12 w-auto"
           />
         </button>
         <nav className="flex items-center gap-4">
@@ -25,14 +28,14 @@ export default function BrandHeader() {
             <>
               <button
                 onClick={() => navigate({ to: '/dashboard' })}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm text-muted-foreground hover:text-chrome-200 transition-colors font-medium tracking-wide"
               >
                 Dashboard
               </button>
               {isAdmin && (
                 <button
                   onClick={() => navigate({ to: '/admin' })}
-                  className="text-sm text-muted-foreground hover:text-cyan-400 transition-colors flex items-center gap-1"
+                  className="text-sm text-muted-foreground hover:text-chrome-200 transition-colors flex items-center gap-1 font-medium tracking-wide"
                 >
                   <Shield className="w-4 h-4" />
                   Admin

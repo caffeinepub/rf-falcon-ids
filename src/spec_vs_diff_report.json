@@ -1,17 +1,73 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T21:14:06.016Z",
-  "summary": "The diff implements fixed admin determination based solely on username === \"TravvyC\" (ignoring any stored isAdmin flag) across session restore and sign-in, and enforces unique usernames on sign-up with an English error message. No clear unrequested features or missing requirements are evident from the provided diff summary.",
-  "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.74,
+  "generatedAt": "2026-02-06T22:08:12.206Z",
+  "summary": "The diff implements many of the requested copy changes (role-play → novelty) and switches logo references to a new transparent filename in the header and landing page. However, the diff does not provide evidence that the new transparent logo asset file was actually added under frontend/public/assets/generated, and it is unclear whether the legacy RoleplayDisclaimerBanner component was updated to novelty wording as required. The diff also appears to introduce substantial unrequested UI/theme and footer branding changes.",
+  "missing_requirements": [
+    {
+      "id": "REQ-1",
+      "requirement": "Create a new transparent-background Falcon IDs logo image under frontend/public/assets/generated and update frontend references to use it.",
+      "reason": "Frontend components were updated to reference /assets/generated/falcon-ids-logo-transparent.dim_1200x300.png, but the diff summary does not show the new image asset being added under frontend/public/assets/generated (non-text/binary assets may be omitted from this summary). Without evidence of the file existing, the acceptance criteria about the new asset and no broken images cannot be verified from the diff.",
+      "evidence": [
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/pages/LandingPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Update the disclaimer banner component (frontend/src/components/RoleplayDisclaimerBanner.tsx) so it no longer displays ROLEPLAY wording and instead displays NOVELTY wording (component may be renamed but must still render).",
+      "reason": "A new NoveltyDisclaimerBanner component was added and used, but the diff provides no content for frontend/src/components/RoleplayDisclaimerBanner.tsx (it is listed as modified but not shown). Therefore it is not verifiable that the original banner component was updated to remove 'roleplay' wording per the requirement/AC.",
+      "evidence": [
+        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/components/RoleplayDisclaimerBanner.tsx"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Ensure all user-facing mentions of the company/service name are consistently presented as \"Falcon IDs\" (including replacing any \"RF-FALCON-IDS\" mentions).",
+      "reason": "Some brand mentions and alt text are updated to 'Falcon IDs', but the diff summary does not include evidence that any existing 'RF-FALCON-IDS' occurrences elsewhere in the UI/copy were found and replaced. With truncated/partial file coverage, this cannot be confirmed.",
+      "evidence": [
+        "frontend/src/content/copy.ts",
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/pages/LandingPage.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Added/changed site-wide styling/theme to a 'Gothic chrome' aesthetic and other broad UI restyling beyond the requested text/logo updates.",
+      "reason": "The BuildRequest explicitly lists a non-goal of a major redesign beyond text and logo asset updates, but multiple files include new/changed styling and theme-related adjustments per the file summaries and code changes.",
+      "evidence": [
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/pages/LandingPage.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Introduced a new footer credit linking to caffeine.ai (\"Built with caffeine.ai\") and updated copyright year.",
+      "reason": "This footer credit/link is not requested by any requirement and is outside the scope of 'text and logo asset updates' requested (and may be considered a branding/content addition).",
+      "evidence": [
+        "frontend/src/components/AppShell.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/hooks/auth/useSessionAuth.tsx",
-    "frontend/src/pages/SignInPage.tsx",
-    "frontend/src/pages/SignUpPage.tsx",
-    "frontend/src/utils/username.ts",
+    "frontend/index.html",
+    "frontend/src/components/AppShell.tsx",
+    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/components/IdCardPreview.tsx",
+    "frontend/src/components/IdWatermark.tsx",
+    "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+    "frontend/src/components/RoleplayDisclaimerBanner.tsx",
+    "frontend/src/content/copy.ts",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/LandingPage.tsx",
+    "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/src/pages/OrderDetailPage.tsx",
     "project_state.json"
   ]
 }

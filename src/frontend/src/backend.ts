@@ -158,7 +158,6 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
-    getOrdersByIds(orderIds: Array<string>): Promise<Array<Order>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
@@ -347,20 +346,6 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getOrder(arg0);
             return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getOrdersByIds(arg0: Array<string>): Promise<Array<Order>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getOrdersByIds(arg0);
-                return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getOrdersByIds(arg0);
-            return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {

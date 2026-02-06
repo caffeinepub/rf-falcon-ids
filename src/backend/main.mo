@@ -1,4 +1,3 @@
-import Array "mo:core/Array";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Order "mo:core/Order";
@@ -8,10 +7,9 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Storage "blob-storage/Storage";
 
-import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-
 
 actor {
   module State {
@@ -118,7 +116,7 @@ actor {
       Runtime.trap("Order ID already exists");
     };
 
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create orders");
     };
 
@@ -136,16 +134,13 @@ actor {
   };
 
   public shared ({ caller }) func updateOrderStatus(orderId : Text, status : OrderStatus) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update order status");
+    };
+
     switch (orders.get(orderId)) {
       case (null) { Runtime.trap("Order not found") };
       case (?order) {
-        if (
-          not (
-            (AccessControl.hasPermission(accessControlState, caller, #admin)) or isOrderOwner(caller, orderId)
-          )
-        ) {
-          Runtime.trap("Unauthorized: Only admins can update any order, users can update their own orders");
-        };
         orders.add(orderId, { order with status });
       };
     };
@@ -162,23 +157,8 @@ actor {
     orders.get(orderId);
   };
 
-  public query ({ caller }) func getOrdersByIds(orderIds : [Text]) : async [Order] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
-      Runtime.trap("Unauthorized: Only admins can fetch multiple orders");
-    };
-
-    orderIds.map(
-      func(id) {
-        switch (orders.get(id)) {
-          case (null) { Runtime.trap("Order not found with id " # id) };
-          case (?order) { order };
-        };
-      }
-    );
-  };
-
   public query ({ caller }) func getAllOrders() : async [Order] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #admin)) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can retrieve all orders");
     };
     orders.values().toArray().sort();

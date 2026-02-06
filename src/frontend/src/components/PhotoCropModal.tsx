@@ -97,14 +97,14 @@ export default function PhotoCropModal({ open, onClose, imageUrl, onCropComplete
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl bg-card border-chrome-300/20">
         <DialogHeader>
-          <DialogTitle>Crop Photo to ID Size</DialogTitle>
+          <DialogTitle className="tracking-wide">Crop Photo to ID Size</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           <div
-            className="relative bg-slate-900 rounded-lg overflow-hidden mx-auto"
+            className="relative bg-zinc-950 rounded-lg overflow-hidden mx-auto border border-chrome-300/20"
             style={{
               width: '400px',
               height: `${400 / ID_PHOTO_ASPECT_RATIO}px`,
@@ -128,7 +128,7 @@ export default function PhotoCropModal({ open, onClose, imageUrl, onCropComplete
                 }}
               />
             )}
-            <div className="absolute inset-0 border-2 border-cyan-500/50 pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-chrome-300/50 pointer-events-none" />
           </div>
 
           <div className="space-y-2">
@@ -145,10 +145,10 @@ export default function PhotoCropModal({ open, onClose, imageUrl, onCropComplete
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} className="border-chrome-300/30">
             Cancel
           </Button>
-          <Button onClick={handleCrop} className="bg-cyan-600 hover:bg-cyan-700">
+          <Button onClick={handleCrop} className="bg-chrome-300 hover:bg-chrome-200 text-black font-semibold">
             Crop & Confirm
           </Button>
         </DialogFooter>
