@@ -1,17 +1,18 @@
-import { type ReactNode } from 'react';
+import { ReactNode } from 'react';
+import { useAdminTheme } from '../hooks/admin/useAdminTheme';
 
 interface AdminThemeLayoutProps {
   children: ReactNode;
 }
 
 export default function AdminThemeLayout({ children }: AdminThemeLayoutProps) {
+  const { theme } = useAdminTheme();
+
   return (
-    <div className="admin-theme min-h-screen">
+    <div className={`admin-theme admin-theme-${theme} relative min-h-screen`}>
       <div className="cyber-grid-bg" />
       <div className="cyber-scan-line" />
-      <div className="relative z-10">
-        {children}
-      </div>
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }

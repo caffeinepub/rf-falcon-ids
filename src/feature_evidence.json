@@ -2,16 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-upgrade-the-frontend-admin-experience-into-a-more-advanced-panel-by-adding-a-dedicated-trey-c-security-section-within-the-existing-adminpanelpage-showing-security-metrics-recent-security-events-and-controls-to-manage-protections-toggle-thresholds-blocklist-allowlist-management",
-      "featureTitle": "Upgrade the frontend admin experience into a more advanced panel by adding a dedicated \"TREY C SECURITY\" section within the existing AdminPanelPage, showing security metrics, recent security events, and controls to manage protections (toggle, thresholds, blocklist/allowlist management).",
+      "featureId": "feature-remove-all-references-to-role-play-props-novelty-use-and-cosplay-from-all-user-facing-warnings-disclaimers-and-page-copy-across-the-site-rewriting-the-remaining-copy-so-it-reads-realistic-and-professional-while-keeping-a-concise-legality-validity-notice-where-appropriate",
+      "featureTitle": "Remove all references to role-play, props, novelty use, and cosplay from all user-facing warnings, disclaimers, and page copy across the site, rewriting the remaining copy so it reads realistic and professional while keeping a concise legality/validity notice where appropriate.",
       "files": [
-        "frontend/src/components/admin/TreyCSecuritySection.tsx",
-        "frontend/src/hooks/orders/queryKeys.ts",
-        "frontend/src/hooks/security/useSecurityConfig.ts",
-        "frontend/src/hooks/security/useSecurityEvents.ts",
-        "frontend/src/hooks/security/useSecurityMutations.ts",
-        "frontend/src/hooks/security/useSecurityStats.ts",
-        "frontend/src/pages/AdminPanelPage.tsx"
+        "frontend/src/components/IdCardPreview.tsx",
+        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+        "frontend/src/content/copy.ts",
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -23,21 +20,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-4"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-make-the-admin-panel-more-advanced-by-adding-high-value-admin-tools-beyond-the-current-order-list-bulk-order-actions-approve-ship-delete-data-export-csv-download-for-orders-and-an-admin-audit-log-view-for-critical-admin-actions-e-g-resets-deletes-security-config-changes",
-      "featureTitle": "Make the admin panel \"more advanced\" by adding high-value admin tools beyond the current order list: bulk order actions (approve/ship/delete), data export (CSV download) for orders, and an admin audit log view for critical admin actions (e.g., resets, deletes, security config changes).",
+      "featureId": "feature-replace-the-current-logo-everywhere-with-a-gothic-style-falcon-ids-wordmark-including-the-header-landing-page-hero-footer-branded-areas-if-any-and-any-other-visible-branded-placements",
+      "featureTitle": "Replace the current logo everywhere with a Gothic-style “Falcon IDs” wordmark, including the header, landing page hero, footer branded areas (if any), and any other visible branded placements.",
       "files": [
-        "frontend/src/components/admin/AuditLogSection.tsx",
-        "frontend/src/components/admin/BulkOrderActionsBar.tsx",
-        "frontend/src/hooks/admin/useAuditLog.ts",
-        "frontend/src/hooks/admin/useBulkOrderActions.ts",
-        "frontend/src/hooks/orders/queryKeys.ts",
-        "frontend/src/pages/AdminPanelPage.tsx",
-        "frontend/src/utils/exportOrdersCsv.ts"
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -49,7 +41,27 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-5"
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-site-icons-to-match-the-new-gothic-falcon-ids-branding-by-replacing-the-favicon-and-apple-touch-icon-references-in-frontend-index-html-with-the-new-branded-assets",
+      "featureTitle": "Update site icons to match the new Gothic “Falcon IDs” branding by replacing the favicon and apple-touch icon references in frontend/index.html with the new branded assets.",
+      "files": [
+        "frontend/index.html"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

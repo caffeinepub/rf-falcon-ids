@@ -13,6 +13,12 @@ export function useSecurityEvents(limit: number = 100) {
       return actor.getSecurityEvents(BigInt(limit));
     },
     enabled: !!actor && !actorFetching,
-    refetchInterval: 5000, // Refresh every 5 seconds
+    staleTime: 4000, // Consider data fresh for 4 seconds
+    refetchInterval: (query) => {
+      // Only refetch when document is visible
+      return document.hidden ? false : 5000;
+    },
+    refetchOnWindowFocus: false, // Disable refetch on window focus
+    refetchIntervalInBackground: false, // Stop polling when tab is hidden
   });
 }

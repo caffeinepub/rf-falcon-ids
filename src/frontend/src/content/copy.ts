@@ -1,14 +1,23 @@
 export const COPY = {
-  NOVELTY_DISCLAIMER: 'NOVELTY USE ONLY • NOT REAL IDENTIFICATION',
-  
-  LANDING_DISCLAIMER_1:
-    'Falcon IDs is a novelty identification ordering system designed for entertainment purposes only. All IDs created through this service are clearly marked as novelty items and are not valid for any official, legal, or real-world identification purposes.',
-  
-  LANDING_DISCLAIMER_2:
-    'By using this service, you acknowledge that these IDs are for entertainment and novelty purposes only and may not be used to misrepresent identity or for any fraudulent purposes.',
-  
-  ORDER_FORM_SUBTITLE: 'Create a new novelty identification card',
-  
+  // Landing page
+  LANDING_HERO_TITLE: 'Premium Identification Cards',
+  LANDING_HERO_SUBTITLE: 'High-quality identification cards with professional design and secure ordering',
+  LANDING_CTA: 'Create Your ID',
+  LANDING_FEATURE_1_TITLE: 'Professional Design',
+  LANDING_FEATURE_1_DESC: 'Authentic-looking IDs with attention to detail',
+  LANDING_FEATURE_2_TITLE: 'Fast Production',
+  LANDING_FEATURE_2_DESC: 'Quick turnaround time for your ID orders',
+  LANDING_FEATURE_3_TITLE: 'Secure Platform',
+  LANDING_FEATURE_3_DESC: 'Your information is protected with Internet Identity authentication',
+  LANDING_DISCLAIMER:
+    'These identification cards are not valid for official identification or legal use. For informational purposes only.',
+
+  // Order form
+  ORDER_FORM_SUBTITLE: 'Create your custom identification card',
   ORDER_FORM_DISCLAIMER:
-    'This form creates a novelty identification card for entertainment purposes only. The generated ID is not valid for official use and is clearly watermarked as novelty content.',
+    'Not valid for official identification or legal use.',
+
+  // Disclaimers
+  DISCLAIMER_BANNER:
+    'Not valid for official identification',
 };

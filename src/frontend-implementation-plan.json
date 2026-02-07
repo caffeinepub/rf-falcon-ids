@@ -1,99 +1,118 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Advanced Admin Panel: TREY C SECURITY dashboard + bulk management, CSV export, and audit log",
+  "title": "Professional copy refresh and Gothic Falcon IDs wordmark branding update",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "Add a dedicated TREY C SECURITY section inside AdminPanelPage with metrics, recent events, and admin controls wired via React Query.",
+      "id": "REQ-1",
+      "summary": "Remove role-play/cosplay/props/novelty language from all user-facing copy and replace with concise, professional legality/validity notices.",
       "acceptanceCriteria": [
-        "Admin panel includes a clearly labeled \"TREY C SECURITY\" area (tab/section) using the existing cyber admin theme styles.",
-        "The security area renders: (1) KPI cards/counters, (2) a recent-events table/list, (3) blocklist/allowlist management UI, and (4) configuration controls; all wired to backend endpoints via React Query hooks.",
-        "All security actions show success/error toasts and update the displayed data via query invalidation/refetch.",
-        "Non-admin users still cannot access the admin panel (AdminGate behavior unchanged)."
+        "No user-facing text contains the words/phrases: \"role-play\", \"roleplay\", \"cosplay\", \"props\", or \"novelty use\" (case-insensitive).",
+        "Update the following known locations so they comply: frontend/src/content/copy.ts (e.g., LANDING_DISCLAIMER, ORDER_FORM_DISCLAIMER), frontend/src/components/NoveltyDisclaimerBanner.tsx, frontend/src/pages/LandingPage.tsx (hero subtitle + disclaimer block), frontend/src/pages/NewOrderPage.tsx (disclaimer block), frontend/src/components/IdCardPreview.tsx (card footer line).",
+        "Any remaining disclaimer/notice text is written in clear, professional English and does not imply roleplay/cosplay/props/novelty usage."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "path": "frontend/src/content/copy.ts",
           "operation": "modify",
-          "description": "Extend React Query key helpers to include stable query keys for TREY C SECURITY (stats/config/events) so the admin UI can invalidate/refetch after security mutations."
+          "description": "Rewrite user-facing disclaimers and related marketing copy to remove any role-play/cosplay/props/novelty language, while keeping a concise, professional validity/legal-use notice (update at minimum: LANDING_HERO_SUBTITLE, LANDING_DISCLAIMER, ORDER_FORM_DISCLAIMER, DISCLAIMER_BANNER)."
         },
         {
-          "path": "frontend/src/hooks/security/useSecurityStats.ts",
-          "operation": "create",
-          "description": "Create a React Query hook that fetches TREY C SECURITY aggregated counters (allowed/denied/throttled) from the backend actor and supports refetching/invalidation. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/security/useSecurityEvents.ts",
-          "operation": "create",
-          "description": "Create a React Query hook that fetches recent TREY C SECURITY events (with a limit param) for rendering in an admin table/list. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/security/useSecurityConfig.ts",
-          "operation": "create",
-          "description": "Create a React Query hook to fetch current TREY C SECURITY configuration (enabled flag, thresholds, allow/blocklist sizes) for the admin controls UI. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/security/useSecurityMutations.ts",
-          "operation": "create",
-          "description": "Create React Query mutation hooks for TREY C SECURITY admin controls (toggle enabled, update rate limits, clear/reset counters, add/remove principals to allowlist/blocklist) with automatic query invalidation and toast-friendly error propagation. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/admin/TreyCSecuritySection.tsx",
-          "operation": "create",
-          "description": "Implement a TREY C SECURITY admin section component that renders KPI cards, a recent events table/list, and configuration + allowlist/blocklist management controls using existing shadcn/ui components (do not edit frontend/src/components/ui). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "path": "frontend/src/components/NoveltyDisclaimerBanner.tsx",
           "operation": "modify",
-          "description": "Add an in-page navigation (tab/section switch) to include a clearly labeled \"TREY C SECURITY\" area and render TreyCSecuritySection; wire to the new hooks, show success/error toasts, and invalidate/refetch security queries after actions (AdminGate behavior remains unchanged). Verify the component's usage instructions before implementing."
+          "description": "Update the banner message so it remains concise and professional, and does not reference role-play/cosplay/props/novelty; prefer sourcing the banner string from frontend/src/content/copy.ts (e.g., COPY.DISCLAIMER_BANNER) to keep disclaimer copy consistent site-wide."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Remove/replace any hero subtitle and disclaimer-block phrasing that implies role-play/cosplay/props/novelty usage; ensure the landing page hero subtitle reads realistic/professional and the disclaimer block uses the updated COPY text."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the order-page disclaimer block renders updated professional notice text (via COPY.ORDER_FORM_DISCLAIMER) and does not contain any role-play/cosplay/props/novelty language."
+        },
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "modify",
+          "description": "Replace the ID card footer disclaimer line so it is professional and validity-focused (no role-play/cosplay/props/novelty references), while remaining concise."
         }
       ]
     },
     {
-      "id": "REQ-5",
-      "summary": "Enhance the admin panel with bulk order actions, CSV export of filtered orders, and an admin audit log view.",
+      "id": "REQ-2",
+      "summary": "Replace all visible logo placements with the new Gothic “Falcon IDs” wordmark asset.",
       "acceptanceCriteria": [
-        "Admin can select multiple orders and apply bulk actions with confirmation prompts; UI clearly shows progress and per-action outcomes.",
-        "Admin can export the currently filtered order list to a CSV file from the UI (frontend-generated CSV is acceptable).",
-        "Backend records critical admin actions in an audit log that is admin-readable; admin panel provides a view to browse/filter recent audit entries.",
-        "Existing single-order actions continue to work as before."
+        "All pages that currently render the logo image (e.g., frontend/src/components/BrandHeader.tsx and frontend/src/pages/LandingPage.tsx) are updated to use the new Gothic “Falcon IDs” wordmark asset(s).",
+        "No old logo asset filenames remain referenced in the frontend codebase (e.g., /assets/generated/falcon-ids-logo-transparent.dim_1200x300.png is no longer used).",
+        "The displayed brand text reads exactly “Falcon IDs” (spacing/case) in all branded placements."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "path": "frontend/public/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png",
+          "operation": "create",
+          "description": "Add the generated Gothic-style wordmark asset (transparent background) at this exact path and filename for use in header/hero branding."
+        },
+        {
+          "path": "frontend/src/components/BrandHeader.tsx",
           "operation": "modify",
-          "description": "Add React Query keys for admin audit log queries (and any bulk-operation-related invalidations) to keep cache management consistent across admin tools."
+          "description": "Update the header branding to use the new wordmark asset at frontend/public/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png, ensure alt text/brand label renders as exactly “Falcon IDs”, and remove any references to prior logo filenames."
         },
         {
-          "path": "frontend/src/hooks/admin/useBulkOrderActions.ts",
-          "operation": "create",
-          "description": "Create React Query mutation hooks for bulk order actions (approve/ship/delete) that call backend bulk functions, track progress state suitable for per-order outcome UI, and invalidate order queries on success/failure. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/admin/useAuditLog.ts",
-          "operation": "create",
-          "description": "Create a React Query hook to fetch the admin audit log (with a limit param) for display in the admin panel, with filtering handled client-side. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/utils/exportOrdersCsv.ts",
-          "operation": "create",
-          "description": "Add a utility to generate and trigger download of a CSV for the currently filtered orders list (including key order fields); ensure safe escaping/quoting and a deterministic filename."
-        },
-        {
-          "path": "frontend/src/components/admin/AuditLogSection.tsx",
-          "operation": "create",
-          "description": "Create an Audit Log section component that renders a searchable/filterable list/table of recent audit entries using existing shadcn/ui components (do not edit frontend/src/components/ui) and the useAuditLog hook. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/admin/BulkOrderActionsBar.tsx",
-          "operation": "create",
-          "description": "Create a bulk-actions toolbar component for the orders list (selection count, actions: approve/ship/delete, confirmation prompts, progress/outcome display) that integrates with the bulk action hooks and order query invalidation. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "path": "frontend/src/pages/LandingPage.tsx",
           "operation": "modify",
-          "description": "Add multi-select UI to the existing orders list (without breaking single-order actions), render BulkOrderActionsBar, add a CSV export button that exports the currently filtered list via exportOrdersCsv, and add an Audit Log section/view wired to useAuditLog."
+          "description": "Update the landing hero logo to use the new wordmark asset at frontend/public/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png, ensure displayed brand text reads exactly “Falcon IDs”, and remove any references to prior logo filenames."
+        },
+        {
+          "path": "frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png",
+          "operation": "delete",
+          "description": "Remove the old transparent logo asset to prevent accidental reuse and help ensure it is no longer referenced anywhere."
+        },
+        {
+          "path": "frontend/public/assets/generated/falcon-ids-logo.dim_1200x300.png",
+          "operation": "delete",
+          "description": "Remove the old non-transparent logo asset to prevent accidental reuse and help ensure it is no longer referenced anywhere."
+        },
+        {
+          "path": "frontend/public/assets/generated/rf-falcon-ids-logo.dim_1200x300.png",
+          "operation": "delete",
+          "description": "Remove the old alternate logo asset to prevent accidental reuse and help ensure it is no longer referenced anywhere."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Update favicon and apple-touch icon references to new Gothic “Falcon IDs” branded assets.",
+      "acceptanceCriteria": [
+        "frontend/index.html <link rel=\"icon\"> points to the new favicon asset.",
+        "frontend/index.html <link rel=\"apple-touch-icon\"> points to the new apple-touch icon asset.",
+        "The browser tab icon and iOS home-screen icon reflect the updated Gothic “Falcon IDs” branding."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.png",
+          "operation": "create",
+          "description": "Add the generated Gothic-style favicon asset at this exact path and filename so frontend/index.html can reference it."
+        },
+        {
+          "path": "frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.png",
+          "operation": "create",
+          "description": "Add the generated Gothic-style apple touch icon asset at this exact path and filename so frontend/index.html can reference it."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Update <link rel=\"icon\"> to reference frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.png and update <link rel=\"apple-touch-icon\"> to reference frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.png; ensure the document title remains “Falcon IDs”."
+        },
+        {
+          "path": "frontend/public/assets/generated/falcon-ids-favicon.dim_32x32.png",
+          "operation": "delete",
+          "description": "Remove the old favicon asset to prevent accidental reuse after frontend/index.html is updated."
+        },
+        {
+          "path": "frontend/public/assets/generated/falcon-ids-apple-touch-icon.dim_180x180.png",
+          "operation": "delete",
+          "description": "Remove the old apple-touch icon asset to prevent accidental reuse after frontend/index.html is updated."
         }
       ]
     }

@@ -68,7 +68,21 @@ export const AuditLogEntry = IDL.Record({
   'timestamp' : Time,
   'details' : IDL.Text,
 });
-export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const UserProfile = IDL.Record({
+  'name' : IDL.Text,
+  'email' : IDL.Opt(IDL.Text),
+});
+export const SecurityStats = IDL.Record({
+  'deniedCalls' : IDL.Nat,
+  'allowedCalls' : IDL.Nat,
+  'throttledCalls' : IDL.Nat,
+});
+export const AdminDashboardData = IDL.Record({
+  'orders' : IDL.Vec(Order),
+  'auditLog' : IDL.Vec(AuditLogEntry),
+  'userProfiles' : IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile)),
+  'securityStats' : SecurityStats,
+});
 export const OrderStatus = IDL.Variant({
   'shipped' : IDL.Null,
   'pending' : IDL.Null,
@@ -84,11 +98,6 @@ export const SecurityEvent = IDL.Record({
   'action' : IDL.Text,
   'timestamp' : Time,
   'reason' : IDL.Text,
-});
-export const SecurityStats = IDL.Record({
-  'deniedCalls' : IDL.Nat,
-  'allowedCalls' : IDL.Nat,
-  'throttledCalls' : IDL.Nat,
 });
 
 export const idlService = IDL.Service({
@@ -134,6 +143,7 @@ export const idlService = IDL.Service({
     ),
   'deleteOrder' : IDL.Func([IDL.Text], [], []),
   'exportOrdersCSV' : IDL.Func([], [IDL.Text], ['query']),
+  'getAdminDashboard' : IDL.Func([], [AdminDashboardData], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAuditLog' : IDL.Func([IDL.Nat], [IDL.Vec(AuditLogEntry)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -164,11 +174,15 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'grantAdminAccess' : IDL.Func([IDL.Text], [], []),
+  'isAdminEmail' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'isOrderOwner' : IDL.Func([IDL.Principal, IDL.Text], [IDL.Bool], ['query']),
+  'isOrderOwner' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  'listAdminEmails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'removeFromAllowlist' : IDL.Func([IDL.Principal], [], []),
   'removeFromBlocklist' : IDL.Func([IDL.Principal], [], []),
   'resetAllData' : IDL.Func([], [], []),
+  'revokeAdminAccess' : IDL.Func([IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setSecurityEnabled' : IDL.Func([IDL.Bool], [], []),
   'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
@@ -239,7 +253,21 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : Time,
     'details' : IDL.Text,
   });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const UserProfile = IDL.Record({
+    'name' : IDL.Text,
+    'email' : IDL.Opt(IDL.Text),
+  });
+  const SecurityStats = IDL.Record({
+    'deniedCalls' : IDL.Nat,
+    'allowedCalls' : IDL.Nat,
+    'throttledCalls' : IDL.Nat,
+  });
+  const AdminDashboardData = IDL.Record({
+    'orders' : IDL.Vec(Order),
+    'auditLog' : IDL.Vec(AuditLogEntry),
+    'userProfiles' : IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile)),
+    'securityStats' : SecurityStats,
+  });
   const OrderStatus = IDL.Variant({
     'shipped' : IDL.Null,
     'pending' : IDL.Null,
@@ -255,11 +283,6 @@ export const idlFactory = ({ IDL }) => {
     'action' : IDL.Text,
     'timestamp' : Time,
     'reason' : IDL.Text,
-  });
-  const SecurityStats = IDL.Record({
-    'deniedCalls' : IDL.Nat,
-    'allowedCalls' : IDL.Nat,
-    'throttledCalls' : IDL.Nat,
   });
   
   return IDL.Service({
@@ -309,6 +332,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'deleteOrder' : IDL.Func([IDL.Text], [], []),
     'exportOrdersCSV' : IDL.Func([], [IDL.Text], ['query']),
+    'getAdminDashboard' : IDL.Func([], [AdminDashboardData], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAuditLog' : IDL.Func([IDL.Nat], [IDL.Vec(AuditLogEntry)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -339,11 +363,15 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'grantAdminAccess' : IDL.Func([IDL.Text], [], []),
+    'isAdminEmail' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'isOrderOwner' : IDL.Func([IDL.Principal, IDL.Text], [IDL.Bool], ['query']),
+    'isOrderOwner' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'listAdminEmails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'removeFromAllowlist' : IDL.Func([IDL.Principal], [], []),
     'removeFromBlocklist' : IDL.Func([IDL.Principal], [], []),
     'resetAllData' : IDL.Func([], [], []),
+    'revokeAdminAccess' : IDL.Func([IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setSecurityEnabled' : IDL.Func([IDL.Bool], [], []),
     'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),

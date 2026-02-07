@@ -1,91 +1,53 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T04:11:50.267Z",
-  "summary": "Diff adds substantial frontend admin upgrades (TREY C SECURITY section, audit log view, bulk actions bar, CSV export utility, React Query hooks) and begins backend TREY C SECURITY state/types with a rate-limit check function. However, key backend requirements (stable persistence/migration, applying protections to all mutating update calls, and clearly admin-gated observability/control endpoints + audit logging of critical actions) are not evidenced in the truncated backend diff summary.",
+  "generatedAt": "2026-02-07T23:30:52.813Z",
+  "summary": "REQ-2 (logo wordmark) and REQ-3 (favicon/apple-touch links) appear implemented in the shown diffs. REQ-1 (remove role-play/cosplay/props/novelty language everywhere) is not fully satisfied because the diff summary indicates remaining user-facing text containing forbidden terms (e.g., “Roleplay” component and “NOVELTY” watermark). The diff summary also indicates additional feature/UI work (e.g., expanded admin panel sections, audit log/security dashboard, watermark overlay, responsive refactors) that was not requested and conflicts with stated non-goals.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Apply TREY C SECURITY protections to all state-mutating update calls (e.g., createOrder, updateOrderStatus, setTrackingNumber, deleteOrder, resetAllData, saveCallerUserProfile) and reject over-limit calls with a clear error mentioning TREY C SECURITY.",
-      "reason": "backend/main.mo shows a checkRateLimit(caller, action) helper and security state, but the diff summary does not show protected update methods calling it, nor any rejection/trap/error message containing “TREY C SECURITY”.",
+      "requirement": "Remove all references to role-play, props, novelty use, and cosplay from all user-facing warnings, disclaimers, and page copy across the site (no occurrences of \"role-play\", \"roleplay\", \"cosplay\", \"props\", or \"novelty use\"; professional legality/validity notice remains).",
+      "reason": "The diff summary indicates at least one component still explicitly references \"Roleplay\" and another renders \"NOVELTY\" text in a user-visible watermark, which violates the acceptance criteria banning these terms (case-insensitive) in user-facing text.",
       "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "Rate-limit state and blocklist/allowlist must persist across upgrades using stable storage (and add/adjust migration logic if needed).",
-      "reason": "The diff summary shows security-related vars (callHistory, blocklist, allowlist, securityEvents, stats) but does not show stable variables, preupgrade/postupgrade hooks, or migration logic persisting this data across upgrades.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "Backend exposes admin-only observability endpoints: aggregated counters, recent security events, and current configuration; non-admins denied.",
-      "reason": "Frontend hooks call actor.getSecurityStats/getSecurityEvents/getSecurityConfig, but the backend diff excerpt does not show these methods or their admin authorization checks.",
-      "evidence": [
-        "frontend/src/hooks/security/useSecurityStats.ts",
-        "frontend/src/hooks/security/useSecurityEvents.ts",
-        "frontend/src/hooks/security/useSecurityConfig.ts",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Backend exposes admin-only controls to enable/disable protections, update thresholds, clear counters, and manage blocklist/allowlist; non-admins denied.",
-      "reason": "Frontend mutations call actor.setSecurityEnabled/updateRateLimits/clearSecurityCounters/addToBlocklist/removeFromBlocklist/addToAllowlist/removeFromAllowlist, but the backend diff excerpt does not show these methods or admin gating.",
-      "evidence": [
-        "frontend/src/hooks/security/useSecurityMutations.ts",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Admin actions that change security configuration are recorded in the security event log (or dedicated admin audit log) with timestamp and admin Principal.",
-      "reason": "backend/main.mo defines AuditLogEntry and an auditLog list, but the diff summary does not show any code that appends audit entries for security config changes (or any admin actions).",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Backend records critical admin actions in an audit log that is admin-readable; admin panel can browse/filter entries.",
-      "reason": "Frontend includes an AuditLogSection and useAuditLog hook calling actor.getAuditLog, but the backend diff excerpt does not show getAuditLog implementation, admin gating, or recording of critical actions (resets/deletes/security changes).",
-      "evidence": [
-        "frontend/src/components/admin/AuditLogSection.tsx",
-        "frontend/src/hooks/admin/useAuditLog.ts",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Bulk order actions (approve/ship/delete) should exist end-to-end with confirmation prompts and per-action outcomes.",
-      "reason": "Frontend implements bulk action UI and hooks calling actor.bulkApproveOrders/bulkShipOrders/bulkDeleteOrders, but the backend diff excerpt does not show these endpoints or their behavior/authorization.",
-      "evidence": [
-        "frontend/src/components/admin/BulkOrderActionsBar.tsx",
-        "frontend/src/hooks/admin/useBulkOrderActions.ts",
-        "backend/main.mo"
+        "frontend-file-summaries.txt (mentions \"frontend/src/components/RoleplayDisclaimerBanner.tsx\")",
+        "frontend-file-summaries.txt (mentions \"frontend/src/components/IdWatermark.tsx\" renders \"NOVELTY / NOT VALID IDENTIFICATION\")"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.64,
+  "hallucinated_features": [
+    {
+      "description": "Expanded/advanced admin panel with multiple tabs including Security Dashboard, Audit Log, and Admin Access, with lazy-loading and Suspense behavior.",
+      "reason": "BuildRequest explicitly scopes changes to branding/copy updates and lists non-goals like not adding support/admin response systems and not doing broad refactors; this admin-panel expansion is not requested by REQ-1/2/3.",
+      "evidence": [
+        "frontend-file-summaries.txt (\"frontend/src/pages/AdminPanelPage.tsx\": \"Advanced admin panel with tabbed interface for Orders, Security Dashboard, Audit Log, and Admin Access sections; ... lazy-loaded\")"
+      ]
+    },
+    {
+      "description": "Adding an ID watermark overlay component that renders large diagonal text (\"NOVELTY / NOT VALID IDENTIFICATION\").",
+      "reason": "Not requested by any requirement; additionally, it introduces banned \"novelty\" terminology conflicting with REQ-1 acceptance criteria.",
+      "evidence": [
+        "frontend-file-summaries.txt (\"frontend/src/components/IdWatermark.tsx\": \"rendering \\\"NOVELTY / NOT VALID IDENTIFICATION\\\"\")"
+      ]
+    },
+    {
+      "description": "Broad UX/layout refactors across multiple pages (mobile-first responsive layouts, step progression changes, two-column stacking behavior, search param typing) beyond branding/copy changes.",
+      "reason": "Non-goals state to avoid broad performance/optimization refactors beyond what is necessary for branding/copy; these changes are not part of REQ-1/2/3 as stated.",
+      "evidence": [
+        "frontend-file-summaries.txt (\"frontend/src/pages/DashboardPage.tsx\": responsive layout + typed search params)",
+        "frontend-file-summaries.txt (\"frontend/src/pages/NewOrderPage.tsx\": responsive single-column layout, numbered step progression, prop name corrections)",
+        "frontend-file-summaries.txt (\"frontend/src/pages/OrderDetailPage.tsx\": responsive two-column layout changes)"
+      ]
+    }
+  ],
+  "confidence": 0.72,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/admin/AuditLogSection.tsx",
-    "frontend/src/components/admin/BulkOrderActionsBar.tsx",
-    "frontend/src/components/admin/TreyCSecuritySection.tsx",
-    "frontend/src/hooks/admin/useAuditLog.ts",
-    "frontend/src/hooks/admin/useBulkOrderActions.ts",
-    "frontend/src/hooks/orders/queryKeys.ts",
-    "frontend/src/hooks/security/useSecurityConfig.ts",
-    "frontend/src/hooks/security/useSecurityEvents.ts",
-    "frontend/src/hooks/security/useSecurityMutations.ts",
-    "frontend/src/hooks/security/useSecurityStats.ts",
-    "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/utils/exportOrdersCsv.ts",
+    "frontend/index.html",
+    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/components/IdCardPreview.tsx",
+    "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+    "frontend/src/content/copy.ts",
+    "frontend/src/pages/LandingPage.tsx",
     "project_state.json"
   ]
 }

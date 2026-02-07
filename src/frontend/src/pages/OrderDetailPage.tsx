@@ -1,14 +1,14 @@
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { useGetOrder } from '../hooks/orders/useGetOrder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, ArrowLeft, Package } from 'lucide-react';
 import IdCardPreview from '../components/IdCardPreview';
 import IdCardActions from '../components/IdCardActions';
-import { ArrowLeft, Loader2, AlertCircle, Package } from 'lucide-react';
-import { formatOrderStatus } from '../utils/formatters';
-import { useEffect, useState } from 'react';
-import { COPY } from '../content/copy';
+import { formatDOB } from '../utils/dob';
+import { normalizeStateName } from '../utils/stateFormat';
 
 export default function OrderDetailPage() {
   const { orderId } = useParams({ from: '/orders/$orderId' });
@@ -17,19 +17,51 @@ export default function OrderDetailPage() {
   const [photoUrl, setPhotoUrl] = useState<string>('');
 
   useEffect(() => {
+    let mounted = true;
+    let objectUrl: string | null = null;
+
     if (order?.photo) {
-      order.photo.getBytes().then((bytes) => {
-        const blob = new Blob([bytes], { type: 'image/jpeg' });
-        const url = URL.createObjectURL(blob);
-        setPhotoUrl(url);
-        return () => URL.revokeObjectURL(url);
-      });
+      order.photo
+        .getBytes()
+        .then((bytes) => {
+          if (!mounted) return;
+          const blob = new Blob([bytes], { type: 'image/jpeg' });
+          objectUrl = URL.createObjectURL(blob);
+          setPhotoUrl(objectUrl);
+        })
+        .catch((error) => {
+          console.error('Failed to load photo:', error);
+        });
     }
-  }, [order]);
+
+    return () => {
+      mounted = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [order?.photo]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      case 'approved':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'shipped':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
+      default:
+        return 'bg-chrome-300/20 text-chrome-300 border-chrome-300/30';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-chrome-300" />
       </div>
     );
@@ -37,197 +69,161 @@ export default function OrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Order not found</p>
+      <div className="space-y-6">
         <Button
+          variant="ghost"
           onClick={() => navigate({ to: '/dashboard' })}
-          variant="outline"
-          className="mt-4 border-chrome-300/30"
+          className="text-chrome-300 hover:text-chrome-200"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
         </Button>
+        <Card className="bg-card/80 border-chrome-300/20">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Package className="w-16 h-16 text-chrome-400/30 mb-4" />
+            <h3 className="text-xl font-semibold text-chrome-300 mb-2">Order not found</h3>
+            <p className="text-muted-foreground text-center px-4">
+              The order you're looking for doesn't exist or you don't have access to it.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Button
+          variant="ghost"
           onClick={() => navigate({ to: '/dashboard' })}
-          variant="outline"
-          size="sm"
-          className="border-chrome-300/30"
+          className="text-chrome-300 hover:text-chrome-200 w-fit"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          Back to Dashboard
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-wider">Order Details</h1>
-          <p className="text-muted-foreground mt-1">ID #{order.details.id_number}</p>
-        </div>
-        <Badge
-          variant={
-            order.status === 'shipped'
-              ? 'default'
-              : order.status === 'approved'
-              ? 'secondary'
-              : 'outline'
-          }
-          className={
-            order.status === 'shipped'
-              ? 'bg-green-900/30 text-green-400 border-green-500/30'
-              : order.status === 'approved'
-              ? 'bg-chrome-900/30 text-chrome-300 border-chrome-300/30'
-              : 'bg-yellow-900/30 text-yellow-400 border-yellow-500/30'
-          }
-        >
-          {formatOrderStatus(order.status)}
+        <Badge className={getStatusColor(order.status)}>
+          {getStatusLabel(order.status)}
         </Badge>
       </div>
 
-      <div className="bg-card/80 border border-chrome-300/20 rounded p-4 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-chrome-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-chrome-300">{COPY.NOVELTY_DISCLAIMER}</p>
-      </div>
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* ID Preview */}
+        <Card className="bg-card/80 border-chrome-300/20">
+          <CardHeader>
+            <CardTitle className="tracking-wide text-lg sm:text-xl">ID Preview</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-center">
+              <IdCardPreview
+                firstName={order.details.first_name}
+                lastName={order.details.last_name}
+                dob={order.details.dob}
+                gender={order.details.gender}
+                height={order.details.height}
+                eyeColor={order.details.eye_color}
+                idNumber={order.details.id_number}
+                state={order.details.state_name}
+                photoUrl={photoUrl}
+              />
+            </div>
+            <IdCardActions
+              firstName={order.details.first_name}
+              lastName={order.details.last_name}
+              dob={order.details.dob}
+              gender={order.details.gender}
+              height={order.details.height}
+              eyeColor={order.details.eye_color}
+              idNumber={order.details.id_number}
+              state={order.details.state_name}
+              photoUrl={photoUrl}
+            />
+          </CardContent>
+        </Card>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Order Details */}
         <div className="space-y-6">
           <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle className="tracking-wide">ID Information</CardTitle>
+              <CardTitle className="tracking-wide text-lg sm:text-xl">ID Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">First Name</div>
-                  <div className="font-medium">{order.details.first_name}</div>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Name:</span>
+                <span className="text-chrome-300 font-semibold text-right break-words">
+                  {order.details.first_name} {order.details.last_name}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Date of Birth:</span>
+                <span className="text-chrome-300">{formatDOB(order.details.dob)}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Gender:</span>
+                <span className="text-chrome-300">{order.details.gender}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Height:</span>
+                <span className="text-chrome-300">{order.details.height}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Eye Color:</span>
+                <span className="text-chrome-300">{order.details.eye_color}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">ID Number:</span>
+                <span className="text-chrome-300 font-mono break-all">{order.details.id_number}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">State:</span>
+                <span className="text-chrome-300">{normalizeStateName(order.details.state_name)}</span>
+              </div>
+              <div className="pt-2 border-t border-chrome-300/10">
+                <div className="text-muted-foreground mb-1">Address:</div>
+                <div className="text-chrome-300 break-words">
+                  {order.details.address}
+                  <br />
+                  {order.details.city}, {normalizeStateName(order.details.state_name)} {order.details.zip}
                 </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Last Name</div>
-                  <div className="font-medium">{order.details.last_name}</div>
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">Date of Birth</div>
-                <div className="font-medium">{order.details.dob}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Gender</div>
-                  <div className="font-medium">{order.details.gender}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Height</div>
-                  <div className="font-medium">{order.details.height}</div>
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">Eye Color</div>
-                <div className="font-medium">{order.details.eye_color}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">Address</div>
-                <div className="font-medium">{order.details.address}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">City</div>
-                  <div className="font-medium">{order.details.city}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">ZIP</div>
-                  <div className="font-medium">{order.details.zip}</div>
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">State</div>
-                <div className="font-medium">{order.details.state_name}</div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">ID Number</div>
-                <div className="font-medium font-mono">{order.details.id_number}</div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle className="tracking-wide">Shipping Information</CardTitle>
+              <CardTitle className="tracking-wide text-lg sm:text-xl">Shipping Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">First Name</div>
-                  <div className="font-medium">{order.address.first_name}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Last Name</div>
-                  <div className="font-medium">{order.address.last_name}</div>
-                </div>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Name:</span>
+                <span className="text-chrome-300 font-semibold text-right break-words">
+                  {order.address.first_name} {order.address.last_name}
+                </span>
               </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">Address</div>
-                <div className="font-medium">{order.address.address}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">City</div>
-                  <div className="font-medium">{order.address.city}</div>
+              <div className="pt-2 border-t border-chrome-300/10">
+                <div className="text-muted-foreground mb-1">Shipping Address:</div>
+                <div className="text-chrome-300 break-words">
+                  {order.address.address}
+                  <br />
+                  {order.address.city}, {normalizeStateName(order.address.state)} {order.address.zip}
                 </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">ZIP</div>
-                  <div className="font-medium">{order.address.zip}</div>
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">State</div>
-                <div className="font-medium">{order.address.state}</div>
               </div>
             </CardContent>
           </Card>
 
           {order.trackingNumber && (
-            <Card className="bg-card/80 border-chrome-300/20">
+            <Card className="bg-green-500/10 border-green-500/30">
               <CardHeader>
-                <CardTitle className="tracking-wide flex items-center gap-2">
-                  <Package className="w-5 h-5 text-chrome-300" />
-                  Tracking Information
-                </CardTitle>
+                <CardTitle className="tracking-wide text-green-300 text-lg sm:text-xl">Tracking Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tracking Number</div>
-                  <div className="font-medium font-mono text-chrome-300">{order.trackingNumber}</div>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-sm text-green-200/80">Tracking Number:</span>
+                  <span className="text-green-300 font-mono font-semibold break-all">{order.trackingNumber}</span>
                 </div>
               </CardContent>
             </Card>
           )}
-        </div>
-
-        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          <Card className="bg-card/80 border-chrome-300/20 shadow-glow">
-            <CardHeader>
-              <CardTitle className="tracking-wide">ID Card Preview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex justify-center">
-                <IdCardPreview
-                  firstName={order.details.first_name}
-                  lastName={order.details.last_name}
-                  dob={order.details.dob}
-                  gender={order.details.gender}
-                  height={order.details.height}
-                  eyeColor={order.details.eye_color}
-                  idNumber={order.details.id_number}
-                  state={order.details.state_name}
-                  photoUrl={photoUrl}
-                />
-              </div>
-              <IdCardActions />
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

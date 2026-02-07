@@ -3,12 +3,14 @@ import { useAuditLog } from '../../hooks/admin/useAuditLog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Loader2, Search } from 'lucide-react';
+import { FileText, Loader2, Search, RefreshCw } from 'lucide-react';
 
 export default function AuditLogSection() {
-  const { data: auditLog, isLoading } = useAuditLog(100);
+  const { data: auditLog, isLoading, error, refetch } = useAuditLog(100);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredLog = useMemo(() => {
@@ -62,14 +64,40 @@ export default function AuditLogSection() {
       {/* Audit Log Table */}
       <Card className="bg-cyber-card border-cyber-primary/30 shadow-cyber">
         <CardHeader>
-          <CardTitle className="text-cyber-primary font-mono uppercase tracking-wider">
+          <CardTitle className="text-cyber-primary font-mono uppercase tracking-wider flex items-center gap-2">
             Recent Admin Actions
+            {error && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => refetch()}
+                className="ml-auto text-xs font-mono"
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                Retry
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-cyber-primary" />
+            <div className="space-y-2">
+              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
+              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
+              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
+              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 space-y-4">
+              <p className="text-red-400 font-mono text-sm">Failed to load audit log</p>
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                className="font-mono"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry
+              </Button>
             </div>
           ) : !filteredLog || filteredLog.length === 0 ? (
             <div className="text-center py-12 text-cyber-muted font-mono text-sm">

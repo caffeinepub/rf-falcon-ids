@@ -13,6 +13,12 @@ export function useAuditLog(limit: number = 100) {
       return actor.getAuditLog(BigInt(limit));
     },
     enabled: !!actor && !actorFetching,
-    refetchInterval: 10000, // Refresh every 10 seconds
+    staleTime: 8000, // Consider data fresh for 8 seconds
+    refetchInterval: (query) => {
+      // Only refetch when document is visible
+      return document.hidden ? false : 10000;
+    },
+    refetchOnWindowFocus: false, // Disable refetch on window focus
+    refetchIntervalInBackground: false, // Stop polling when tab is hidden
   });
 }

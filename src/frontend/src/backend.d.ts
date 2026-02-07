@@ -46,6 +46,12 @@ export interface Order {
     details: Details;
     photo: ExternalBlob;
 }
+export interface AdminDashboardData {
+    orders: Array<Order>;
+    auditLog: Array<AuditLogEntry>;
+    userProfiles: Array<[Principal, UserProfile]>;
+    securityStats: SecurityStats;
+}
 export interface Details {
     dob: string;
     zip: string;
@@ -66,6 +72,7 @@ export interface SecurityStats {
 }
 export interface UserProfile {
     name: string;
+    email?: string;
 }
 export enum OrderStatus {
     shipped = "shipped",
@@ -94,6 +101,7 @@ export interface backendInterface {
     createOrderWithCallback(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<Order>;
     deleteOrder(orderId: string): Promise<void>;
     exportOrdersCSV(): Promise<string>;
+    getAdminDashboard(): Promise<AdminDashboardData>;
     getAllOrders(): Promise<Array<Order>>;
     getAuditLog(limit: bigint): Promise<Array<AuditLogEntry>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -110,11 +118,15 @@ export interface backendInterface {
     getSecurityEvents(limit: bigint): Promise<Array<SecurityEvent>>;
     getSecurityStats(): Promise<SecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    grantAdminAccess(admin_email: string): Promise<void>;
+    isAdminEmail(email: string): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
-    isOrderOwner(caller: Principal, orderId: string): Promise<boolean>;
+    isOrderOwner(orderId: string): Promise<boolean>;
+    listAdminEmails(): Promise<Array<string>>;
     removeFromAllowlist(principal: Principal): Promise<void>;
     removeFromBlocklist(principal: Principal): Promise<void>;
     resetAllData(): Promise<void>;
+    revokeAdminAccess(admin_email: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setSecurityEnabled(enabled: boolean): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;

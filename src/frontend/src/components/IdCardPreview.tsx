@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import IdWatermark from './IdWatermark';
 import StateSeal from './StateSeal';
+import { formatDOB } from '../utils/dob';
 
 interface IdCardPreviewProps {
   firstName: string;
@@ -33,30 +33,29 @@ export default function IdCardPreview({
   }, [firstName, lastName]);
 
   const displayIdNumber = idNumber || '00000000';
+  const displayDOB = formatDOB(dob) || 'MM/DD/YYYY';
 
   return (
     <div
       id="id-card-preview"
       className="relative w-full max-w-[420px] aspect-[1.586/1] bg-gradient-to-br from-black via-zinc-950 to-black rounded overflow-hidden border-2 border-chrome-300/30 shadow-2xl shadow-chrome-300/10"
     >
-      <IdWatermark />
-      
       {/* Scan line effect */}
       <div className="absolute inset-0 scan-line pointer-events-none z-20" />
       
       {/* Subtle metallic sheen */}
       <div className="absolute inset-0 bg-gradient-to-br from-chrome-300/5 via-transparent to-chrome-300/5 pointer-events-none" />
       
-      <div className="relative z-10 p-6 h-full flex flex-col">
+      <div className="relative z-10 p-4 sm:p-6 h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <StateSeal state={state} className="w-12 h-12" />
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <StateSeal state={state} className="w-10 h-10 sm:w-12 sm:h-12" />
             <div>
-              <div className="text-chrome-300 text-xs font-semibold tracking-widest">
+              <div className="text-chrome-300 text-[10px] sm:text-xs font-semibold tracking-widest">
                 {state || 'STATE'}
               </div>
-              <div className="text-chrome-400 text-[10px] tracking-wider">
+              <div className="text-chrome-400 text-[8px] sm:text-[10px] tracking-wider">
                 IDENTIFICATION
               </div>
             </div>
@@ -64,52 +63,52 @@ export default function IdCardPreview({
         </div>
 
         {/* Main Content */}
-        <div className="flex gap-4 flex-1">
+        <div className="flex gap-3 sm:gap-4 flex-1">
           {/* Photo */}
-          <div className="w-24 h-28 bg-zinc-900 border border-chrome-300/20 rounded flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-20 h-24 sm:w-24 sm:h-28 bg-zinc-900 border border-chrome-300/20 rounded flex items-center justify-center overflow-hidden shrink-0">
             {photoUrl ? (
               <img src={photoUrl} alt="ID Photo" className="w-full h-full object-cover" />
             ) : (
-              <div className="text-chrome-400/30 text-xs text-center px-2">
+              <div className="text-chrome-400/30 text-[10px] sm:text-xs text-center px-2">
                 PHOTO
               </div>
             )}
           </div>
 
           {/* Details */}
-          <div className="flex-1 space-y-2 text-xs">
+          <div className="flex-1 space-y-1.5 sm:space-y-2 text-[10px] sm:text-xs min-w-0">
             <div>
-              <div className="text-chrome-400 text-[9px] tracking-wider">NAME</div>
+              <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">NAME</div>
               <div className="text-chrome-300 font-semibold tracking-wide truncate">
                 {displayName}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
               <div>
-                <div className="text-chrome-400 text-[9px] tracking-wider">DOB</div>
-                <div className="text-chrome-300 text-[11px]">{dob || 'MM/DD/YYYY'}</div>
+                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">DOB</div>
+                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{displayDOB}</div>
               </div>
               <div>
-                <div className="text-chrome-400 text-[9px] tracking-wider">SEX</div>
-                <div className="text-chrome-300 text-[11px]">{gender || 'X'}</div>
+                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">SEX</div>
+                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{gender || 'X'}</div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
               <div>
-                <div className="text-chrome-400 text-[9px] tracking-wider">HGT</div>
-                <div className="text-chrome-300 text-[11px]">{height || "0'0\""}</div>
+                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">HGT</div>
+                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{height || "0'0\""}</div>
               </div>
               <div>
-                <div className="text-chrome-400 text-[9px] tracking-wider">EYES</div>
-                <div className="text-chrome-300 text-[11px]">{eyeColor || 'XXX'}</div>
+                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">EYES</div>
+                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{eyeColor || 'XXX'}</div>
               </div>
             </div>
 
             <div>
-              <div className="text-chrome-400 text-[9px] tracking-wider">ID NUMBER</div>
-              <div className="text-chrome-300 text-[11px] font-mono tracking-wider">
+              <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">ID NUMBER</div>
+              <div className="text-chrome-300 text-[10px] sm:text-[11px] font-mono tracking-wider">
                 {displayIdNumber}
               </div>
             </div>
@@ -117,9 +116,9 @@ export default function IdCardPreview({
         </div>
 
         {/* Footer */}
-        <div className="mt-auto pt-3 border-t border-chrome-300/10">
-          <div className="text-chrome-400/60 text-[8px] tracking-widest text-center">
-            NOVELTY IDENTIFICATION • NOT VALID FOR OFFICIAL USE
+        <div className="mt-auto pt-2 sm:pt-3 border-t border-chrome-300/10">
+          <div className="text-chrome-400/60 text-[7px] sm:text-[8px] tracking-widest text-center">
+            NOT VALID FOR OFFICIAL IDENTIFICATION
           </div>
         </div>
       </div>

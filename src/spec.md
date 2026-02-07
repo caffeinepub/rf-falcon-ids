@@ -1,16 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add “TREY C SECURITY” anti-abuse protections to state-mutating backend calls and expand the admin panel with security monitoring and higher-value management tools.
+**Goal:** Make site copy fully professional (removing role-play/cosplay/novelty language) and update all Falcon IDs branding to a Gothic “Falcon IDs” wordmark, including site icons.
 
 **Planned changes:**
-- Implement a TREY C SECURITY backend protection layer that rate-limits protected state-mutating update methods per-caller (Principal), with configurable thresholds and clear TREY C SECURITY error messaging when limits are exceeded.
-- Add admin-managed allowlist/blocklist controls for Principals that deny blocked callers from protected endpoints, without weakening existing admin-only authorization.
-- Persist security configuration, counters, and lists across upgrades using stable storage (including migration updates only if needed).
-- Add admin-only TREY C SECURITY observability endpoints for aggregated counters, recent security events (timestamp, caller Principal, method/action, decision, reason), and current configuration summary.
-- Add admin-only TREY C SECURITY administrative endpoints to enable/disable protections, tune rate-limit thresholds, clear/reset counters, and manage allowlist/blocklist entries, with admin actions recorded to an audit trail.
-- Upgrade the existing AdminPanelPage with a dedicated “TREY C SECURITY” section (tab/section) showing KPIs, recent-events list/table, allowlist/blocklist management, and configuration controls, wired via React Query hooks with toasts and query refetch/invalidation.
-- Enhance admin order management with bulk order actions (approve/ship/delete) including confirmations and per-action outcomes, and add CSV export for the currently filtered orders.
-- Add a backend admin audit log for critical admin actions (e.g., resets, deletes, security config changes) and a corresponding admin UI view to browse/filter recent entries.
+- Remove/rewrite all user-facing warnings, disclaimers, and page copy to eliminate any references to role-play, roleplay, cosplay, props, or novelty use while keeping a concise legality/validity notice where appropriate.
+- Update known copy locations to comply, including copy constants and disclaimer/banner placements, landing/new order disclaimers, and the ID card preview footer line.
+- Replace the current logo across all visible branded placements (header, landing hero, footer/branded areas, and anywhere else the logo appears) with the new Gothic “Falcon IDs” wordmark assets.
+- Update `frontend/index.html` icon links to point to the new Gothic-branded favicon and apple-touch icon assets, ensuring old logo/icon references are removed.
 
-**User-visible outcome:** Admins get a new “TREY C SECURITY” area in the admin panel to monitor and tune anti-abuse protections (including event history and allow/block lists), plus bulk order tools, CSV export, and an audit log view; abusive callers are throttled/blocked on protected state-changing operations.
+**User-visible outcome:** All pages present realistic, professional copy without role-play/cosplay/novelty language, and the site shows a consistent Gothic “Falcon IDs” wordmark (including updated browser/favicon and iOS home-screen icons).

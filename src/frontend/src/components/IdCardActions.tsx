@@ -1,12 +1,34 @@
 import { Button } from '@/components/ui/button';
 import { Download, Printer } from 'lucide-react';
-import { exportIdCardToPng, printIdCard } from '../utils/exportIdCard';
+import { exportIdCardToPNG, printIdCard } from '../utils/exportIdCard';
 import { toast } from 'sonner';
 
-export default function IdCardActions() {
+interface IdCardActionsProps {
+  firstName: string;
+  lastName: string;
+  dob: string;
+  gender: string;
+  height: string;
+  eyeColor: string;
+  idNumber: string;
+  state: string;
+  photoUrl?: string;
+}
+
+export default function IdCardActions({
+  firstName,
+  lastName,
+  dob,
+  gender,
+  height,
+  eyeColor,
+  idNumber,
+  state,
+  photoUrl,
+}: IdCardActionsProps) {
   const handleExport = async () => {
     try {
-      await exportIdCardToPng();
+      await exportIdCardToPNG(firstName, lastName, dob, gender, height, eyeColor, idNumber, state, photoUrl);
       toast.success('ID card exported successfully');
     } catch (error) {
       console.error('Export error:', error);
@@ -17,6 +39,7 @@ export default function IdCardActions() {
   const handlePrint = () => {
     try {
       printIdCard();
+      toast.success('Preparing to print...');
     } catch (error) {
       console.error('Print error:', error);
       toast.error('Failed to print ID card');

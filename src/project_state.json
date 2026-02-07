@@ -1,26 +1,33 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project to build and deploy an application with an advanced admin panel and a dedicated anti-DDoS/security system branded as \"TREY C SECURITY\".",
-  "architectural_notes": [
-    "Security system component should be branded/named \"TREY C SECURITY\"."
-  ],
+  "summary": "Website branding/content updates for “Falcon IDs,” including removal of role-play/novelty/cosplay disclaimer language and replacing the logo with Gothic-style “Falcon IDs” branding across the site.",
+  "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Gothic-style wordmark reading “Falcon IDs”, transparent background (falcon-ids-wordmark-gothic-transparent.dim_1200x300.png)\n- Gothic-style “Falcon IDs” favicon, high-contrast, legible at small sizes (falcon-ids-favicon-gothic.dim_32x32.png)\n- Gothic-style “Falcon IDs” apple touch icon, centered with padding (falcon-ids-apple-touch-gothic.dim_180x180.png)",
   "existing_features": [
     {
-      "id": "feature-upgrade-the-frontend-admin-experience-into-a-more-advanced-panel-by-adding-a-dedicated-trey-c-security-section-within-the-existing-adminpanelpage-showing-security-metrics-recent-security-events-and-controls-to-manage-protections-toggle-thresholds-blocklist-allowlist-management",
-      "title": "Upgrade the frontend admin experience into a more advanced panel by adding a dedicated \"TREY C SECURITY\" section within the existing AdminPanelPage, showing security metrics, recent security events, and controls to manage protections (toggle, thresholds, blocklist/allowlist management).",
+      "id": "feature-remove-all-references-to-role-play-props-novelty-use-and-cosplay-from-all-user-facing-warnings-disclaimers-and-page-copy-across-the-site-rewriting-the-remaining-copy-so-it-reads-realistic-and-professional-while-keeping-a-concise-legality-validity-notice-where-appropriate",
+      "title": "Remove all references to role-play, props, novelty use, and cosplay from all user-facing warnings, disclaimers, and page copy across the site, rewriting the remaining copy so it reads realistic and professional while keeping a concise legality/validity notice where appropriate.",
       "reqIds": [
-        "REQ-4"
+        "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-make-the-admin-panel-more-advanced-by-adding-high-value-admin-tools-beyond-the-current-order-list-bulk-order-actions-approve-ship-delete-data-export-csv-download-for-orders-and-an-admin-audit-log-view-for-critical-admin-actions-e-g-resets-deletes-security-config-changes",
-      "title": "Make the admin panel \"more advanced\" by adding high-value admin tools beyond the current order list: bulk order actions (approve/ship/delete), data export (CSV download) for orders, and an admin audit log view for critical admin actions (e.g., resets, deletes, security config changes).",
+      "id": "feature-replace-the-current-logo-everywhere-with-a-gothic-style-falcon-ids-wordmark-including-the-header-landing-page-hero-footer-branded-areas-if-any-and-any-other-visible-branded-placements",
+      "title": "Replace the current logo everywhere with a Gothic-style “Falcon IDs” wordmark, including the header, landing page hero, footer branded areas (if any), and any other visible branded placements.",
       "reqIds": [
-        "REQ-5"
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-site-icons-to-match-the-new-gothic-falcon-ids-branding-by-replacing-the-favicon-and-apple-touch-icon-references-in-frontend-index-html-with-the-new-branded-assets",
+      "title": "Update site icons to match the new Gothic “Falcon IDs” branding by replacing the favicon and apple-touch icon references in frontend/index.html with the new branded assets.",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
@@ -28,42 +35,37 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Implement a super advanced anti-DDoS/security system branded as \"TREY C SECURITY\".",
+      "summary": "Remove all references to role-play, props, novelty use, or cosplay from warnings, disclaimers, and page text to make the brand feel realistic and professional",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Make the admin panel more advanced by adding comprehensive improvements and features deemed necessary.",
+      "summary": "Replace the current logo everywhere with Gothic-style lettering that says “Falcon IDs” in the header, footer, favicon, and all branded areas",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Implement a backend anti-abuse/anti-DDoS protection layer branded as \"TREY C SECURITY\" that rate-limits and blocks abusive callers in a way compatible with Internet Computer constraints (no IP address access), applying protections to all update calls that mutate state (e.g., createOrder, updateOrderStatus, setTrackingNumber, deleteOrder, resetAllData, saveCallerUserProfile).",
-      "reqIds": [
-        "REQ-1"
-      ],
+      "summary": "Add a main-page support/ticket section where customers can submit tickets and admins can respond",
+      "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Add backend TREY C SECURITY observability endpoints for administrators to view security posture: aggregated counters (allowed/denied/throttled), recent security events, and current configuration (rate-limit parameters, blocklist/allowlist sizes), all admin-gated.",
-      "reqIds": [
-        "REQ-2"
-      ],
+      "summary": "Create a helper feature called “Falcon” for answering customer questions with admin response capability",
+      "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Add backend TREY C SECURITY administrative controls for tuning and response: enable/disable protections, update rate-limit thresholds, clear/reset security counters, and add/remove principals from blocklist/allowlist, all admin-gated and auditable.",
-      "reqIds": [
-        "REQ-3"
-      ],
+      "summary": "Improve code for speed/performance and overall user satisfaction (general optimization pass)",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Add TREY C SECURITY anti-abuse protections and expand the admin panel with security + management tools",
+  "gameProjectType": "none",
+  "projectName": "Falcon IDs",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

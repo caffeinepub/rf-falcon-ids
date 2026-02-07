@@ -18,6 +18,12 @@ export interface Address {
   'first_name' : string,
   'last_name' : string,
 }
+export interface AdminDashboardData {
+  'orders' : Array<Order>,
+  'auditLog' : Array<AuditLogEntry>,
+  'userProfiles' : Array<[Principal, UserProfile]>,
+  'securityStats' : SecurityStats,
+}
 export interface AuditLogEntry {
   'action' : string,
   'admin' : Principal,
@@ -69,7 +75,7 @@ export type Status = { 'shipped' : null } |
   { 'pending' : null } |
   { 'approved' : null };
 export type Time = bigint;
-export interface UserProfile { 'name' : string }
+export interface UserProfile { 'name' : string, 'email' : [] | [string] }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -118,6 +124,7 @@ export interface _SERVICE {
   >,
   'deleteOrder' : ActorMethod<[string], undefined>,
   'exportOrdersCSV' : ActorMethod<[], string>,
+  'getAdminDashboard' : ActorMethod<[], AdminDashboardData>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
   'getAuditLog' : ActorMethod<[bigint], Array<AuditLogEntry>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
@@ -137,11 +144,15 @@ export interface _SERVICE {
   'getSecurityEvents' : ActorMethod<[bigint], Array<SecurityEvent>>,
   'getSecurityStats' : ActorMethod<[], SecurityStats>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'grantAdminAccess' : ActorMethod<[string], undefined>,
+  'isAdminEmail' : ActorMethod<[string], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'isOrderOwner' : ActorMethod<[Principal, string], boolean>,
+  'isOrderOwner' : ActorMethod<[string], boolean>,
+  'listAdminEmails' : ActorMethod<[], Array<string>>,
   'removeFromAllowlist' : ActorMethod<[Principal], undefined>,
   'removeFromBlocklist' : ActorMethod<[Principal], undefined>,
   'resetAllData' : ActorMethod<[], undefined>,
+  'revokeAdminAccess' : ActorMethod<[string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setSecurityEnabled' : ActorMethod<[boolean], undefined>,
   'setTrackingNumber' : ActorMethod<[string, string], undefined>,

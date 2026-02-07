@@ -1,20 +1,24 @@
 import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useIsAdmin } from './hooks/auth/useIsAdmin';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import LandingPage from './pages/LandingPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import DashboardPage from './pages/DashboardPage';
 import NewOrderPage from './pages/NewOrderPage';
 import OrderDetailPage from './pages/OrderDetailPage';
-import AdminPanelPage from './pages/AdminPanelPage';
 import AppShell from './components/AppShell';
 import AuthGate from './components/AuthGate';
 import AdminGate from './components/AdminGate';
+import { AdminThemeProvider } from './hooks/admin/AdminThemeProvider';
 import AdminThemeLayout from './components/AdminThemeLayout';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
+import { Terminal } from 'lucide-react';
+
+// Lazy load admin panel for code splitting
+const AdminPanelPage = lazy(() => import('./pages/AdminPanelPage'));
 
 function Layout() {
   return (
@@ -107,15 +111,33 @@ const orderDetailRoute = createRoute({
   ),
 });
 
+// Admin loading fallback
+function AdminLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-center space-y-4">
+        <Terminal className="w-12 h-12 mx-auto text-cyber-primary animate-pulse" />
+        <div className="text-cyber-primary font-mono text-sm tracking-wider">
+          [LOADING ADMIN INTERFACE...]
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
   component: () => (
     <AuthGate>
       <AdminGate>
-        <AdminThemeLayout>
-          <AdminPanelPage />
-        </AdminThemeLayout>
+        <AdminThemeProvider>
+          <AdminThemeLayout>
+            <Suspense fallback={<AdminLoadingFallback />}>
+              <AdminPanelPage />
+            </Suspense>
+          </AdminThemeLayout>
+        </AdminThemeProvider>
       </AdminGate>
     </AuthGate>
   ),

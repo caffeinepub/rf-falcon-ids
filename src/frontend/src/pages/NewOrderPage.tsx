@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useCreateOrder } from '../hooks/orders/useCreateOrder';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -13,9 +13,10 @@ import PhotoCropModal from '../components/PhotoCropModal';
 import { US_STATES } from '../constants/usStates';
 import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, Info, CheckCircle2 } from 'lucide-react';
 import { COPY } from '../content/copy';
 import { generateIdNumber } from '../utils/generateIdNumber';
+import { isValidDOB, dateInputToDOB, dobToDateInput } from '../utils/dob';
 
 export default function NewOrderPage() {
   const navigate = useNavigate();
@@ -76,9 +77,16 @@ export default function NewOrderPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation (no longer checking idNumber)
+    // Validation
     if (!firstName || !lastName || !dob || !gender || !height || !eyeColor || !address || !city || !state || !zip) {
       toast.error('Please fill in all ID details');
+      return;
+    }
+
+    // Validate DOB format
+    const formattedDOB = dateInputToDOB(dob);
+    if (!isValidDOB(formattedDOB)) {
+      toast.error('Please enter a valid date of birth');
       return;
     }
 
@@ -105,7 +113,7 @@ export default function NewOrderPage() {
         details: {
           first_name: firstName,
           last_name: lastName,
-          dob,
+          dob: formattedDOB,
           gender,
           height,
           eye_color: eyeColor,
@@ -128,36 +136,45 @@ export default function NewOrderPage() {
 
       toast.success('Order created successfully');
       toast.info('Please contact the owner for payment methods');
-      navigate({ to: '/dashboard' });
+      navigate({ to: '/dashboard', search: { orderCreated: 'true' } });
     } catch (error) {
       console.error('Order creation error:', error);
       toast.error('Failed to create order');
     }
   };
 
+  // Preview DOB in MM/DD/YYYY format
+  const previewDOB = dob ? dateInputToDOB(dob) : '';
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-wider">New ID Order</h1>
-        <p className="text-muted-foreground mt-1">{COPY.ORDER_FORM_SUBTITLE}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-wider">Create Your ID</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">Follow the steps below to place your order</p>
       </div>
 
-      <div className="bg-card/80 border border-chrome-300/20 rounded p-4 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-chrome-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-chrome-300">{COPY.ORDER_FORM_DISCLAIMER}</p>
+      <div className="bg-card/60 border border-chrome-300/10 rounded p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
+        <Info className="w-4 h-4 sm:w-5 sm:h-5 text-chrome-400 shrink-0 mt-0.5" />
+        <p className="text-xs sm:text-sm text-chrome-300">{COPY.ORDER_FORM_DISCLAIMER}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-8">
+      <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-6">
-          {/* ID Details */}
+          {/* Step 1: ID Details */}
           <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle className="tracking-wide">ID Information</CardTitle>
+              <CardTitle className="tracking-wide flex items-center gap-2 text-lg sm:text-xl">
+                <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-chrome-300/20 text-chrome-300 text-sm font-bold">1</span>
+                ID Information
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                Enter the details as you want them to appear on your ID
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName" className="text-sm">First Name *</Label>
                   <Input
                     id="firstName"
                     value={firstName}
@@ -167,7 +184,7 @@ export default function NewOrderPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-sm">Last Name *</Label>
                   <Input
                     id="lastName"
                     value={lastName}
@@ -179,7 +196,7 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dob">Date of Birth</Label>
+                <Label htmlFor="dob" className="text-sm">Date of Birth (MM/DD/YYYY) *</Label>
                 <Input
                   id="dob"
                   type="date"
@@ -188,11 +205,14 @@ export default function NewOrderPage() {
                   className="bg-background/50 border-chrome-300/30"
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Will appear as: {previewDOB || 'MM/DD/YYYY'}
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
+                  <Label htmlFor="gender" className="text-sm">Gender *</Label>
                   <Select value={gender} onValueChange={setGender} required>
                     <SelectTrigger className="bg-background/50 border-chrome-300/30">
                       <SelectValue placeholder="Select" />
@@ -205,7 +225,7 @@ export default function NewOrderPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="height">Height</Label>
+                  <Label htmlFor="height" className="text-sm">Height *</Label>
                   <Input
                     id="height"
                     placeholder="5'10&quot;"
@@ -218,7 +238,7 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="eyeColor">Eye Color</Label>
+                <Label htmlFor="eyeColor" className="text-sm">Eye Color *</Label>
                 <Select value={eyeColor} onValueChange={setEyeColor} required>
                   <SelectTrigger className="bg-background/50 border-chrome-300/30">
                     <SelectValue placeholder="Select" />
@@ -235,19 +255,20 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address" className="text-sm">Address *</Label>
                 <Input
                   id="address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="bg-background/50 border-chrome-300/30"
+                  placeholder="123 Main St"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
+                  <Label htmlFor="city" className="text-sm">City *</Label>
                   <Input
                     id="city"
                     value={city}
@@ -257,7 +278,7 @@ export default function NewOrderPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="zip">ZIP Code</Label>
+                  <Label htmlFor="zip" className="text-sm">ZIP Code *</Label>
                   <Input
                     id="zip"
                     value={zip}
@@ -269,7 +290,7 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
+                <Label htmlFor="state" className="text-sm">State *</Label>
                 <Select value={state} onValueChange={setState} required>
                   <SelectTrigger className="bg-background/50 border-chrome-300/30">
                     <SelectValue placeholder="Select state" />
@@ -286,18 +307,41 @@ export default function NewOrderPage() {
             </CardContent>
           </Card>
 
-          {/* Shipping Information */}
+          {/* Step 2: Photo Upload */}
           <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle className="tracking-wide">Shipping Information</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Physical novelty ID will be shipped to this address
-              </p>
+              <CardTitle className="tracking-wide flex items-center gap-2 text-lg sm:text-xl">
+                <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-chrome-300/20 text-chrome-300 text-sm font-bold">2</span>
+                Photo Upload
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                Upload a clear photo for your ID card
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PhotoUploader
+                onPhotoSelected={handlePhotoSelected}
+                currentPhotoUrl={croppedPhotoUrl}
+                onClear={handleClearPhoto}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Step 3: Shipping Info */}
+          <Card className="bg-card/80 border-chrome-300/20">
+            <CardHeader>
+              <CardTitle className="tracking-wide flex items-center gap-2 text-lg sm:text-xl">
+                <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-chrome-300/20 text-chrome-300 text-sm font-bold">3</span>
+                Shipping Information
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                Where should we send your ID card?
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="shipFirstName">First Name</Label>
+                  <Label htmlFor="shipFirstName" className="text-sm">First Name *</Label>
                   <Input
                     id="shipFirstName"
                     value={shipFirstName}
@@ -307,7 +351,7 @@ export default function NewOrderPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="shipLastName">Last Name</Label>
+                  <Label htmlFor="shipLastName" className="text-sm">Last Name *</Label>
                   <Input
                     id="shipLastName"
                     value={shipLastName}
@@ -319,19 +363,20 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="shipAddress">Address</Label>
+                <Label htmlFor="shipAddress" className="text-sm">Address *</Label>
                 <Input
                   id="shipAddress"
                   value={shipAddress}
                   onChange={(e) => setShipAddress(e.target.value)}
                   className="bg-background/50 border-chrome-300/30"
+                  placeholder="123 Main St"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="shipCity">City</Label>
+                  <Label htmlFor="shipCity" className="text-sm">City *</Label>
                   <Input
                     id="shipCity"
                     value={shipCity}
@@ -341,7 +386,7 @@ export default function NewOrderPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="shipZip">ZIP Code</Label>
+                  <Label htmlFor="shipZip" className="text-sm">ZIP Code *</Label>
                   <Input
                     id="shipZip"
                     value={shipZip}
@@ -353,7 +398,7 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="shipState">State</Label>
+                <Label htmlFor="shipState" className="text-sm">State *</Label>
                 <Select value={shipState} onValueChange={setShipState} required>
                   <SelectTrigger className="bg-background/50 border-chrome-300/30">
                     <SelectValue placeholder="Select state" />
@@ -370,36 +415,37 @@ export default function NewOrderPage() {
             </CardContent>
           </Card>
 
-          {/* Photo Upload */}
-          <Card className="bg-card/80 border-chrome-300/20">
-            <CardHeader>
-              <CardTitle className="tracking-wide">Photo</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Upload a photo for your novelty ID
-              </p>
-            </CardHeader>
-            <CardContent>
-              <PhotoUploader
-                onPhotoSelected={handlePhotoSelected}
-                currentPhotoUrl={croppedPhotoUrl}
-                onClear={handleClearPhoto}
-              />
-            </CardContent>
-          </Card>
+          <Button
+            type="submit"
+            disabled={createOrder.isPending}
+            className="w-full bg-chrome-300 hover:bg-chrome-200 text-black font-semibold text-base py-6"
+          >
+            {createOrder.isPending ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Creating Order...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+                Create Order
+              </>
+            )}
+          </Button>
         </div>
 
-        {/* Preview Column */}
-        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          <Card className="bg-card/80 border-chrome-300/20 shadow-glow">
+        {/* Preview - Sticky on large screens */}
+        <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
+          <Card className="bg-card/80 border-chrome-300/20">
             <CardHeader>
-              <CardTitle className="tracking-wide">Preview</CardTitle>
+              <CardTitle className="tracking-wide text-lg sm:text-xl">Preview</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               <div className="flex justify-center">
                 <IdCardPreview
                   firstName={firstName}
                   lastName={lastName}
-                  dob={dob}
+                  dob={previewDOB}
                   gender={gender}
                   height={height}
                   eyeColor={eyeColor}
@@ -408,33 +454,27 @@ export default function NewOrderPage() {
                   photoUrl={croppedPhotoUrl}
                 />
               </div>
-              <IdCardActions />
+              <IdCardActions
+                firstName={firstName}
+                lastName={lastName}
+                dob={previewDOB}
+                gender={gender}
+                height={height}
+                eyeColor={eyeColor}
+                idNumber={generatedIdNumber.current}
+                state={state}
+                photoUrl={croppedPhotoUrl}
+              />
             </CardContent>
           </Card>
-
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full bg-chrome-900/50 hover:bg-chrome-900/70 border border-chrome-300/30 shadow-glow"
-            disabled={createOrder.isPending}
-          >
-            {createOrder.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating Order...
-              </>
-            ) : (
-              'Submit Order'
-            )}
-          </Button>
         </div>
       </form>
 
       <PhotoCropModal
         open={showCropModal}
+        onClose={() => setShowCropModal(false)}
         imageUrl={rawPhotoUrl}
         onCropComplete={handleCropComplete}
-        onClose={() => setShowCropModal(false)}
       />
     </div>
   );
