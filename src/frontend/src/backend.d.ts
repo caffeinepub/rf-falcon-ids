@@ -23,6 +23,29 @@ export interface Address {
     last_name: string;
 }
 export type Time = bigint;
+export interface SecurityEvent {
+    result: Variant_allowed_denied_throttled;
+    principal: Principal;
+    action: string;
+    timestamp: Time;
+    reason: string;
+}
+export interface AuditLogEntry {
+    action: string;
+    admin: Principal;
+    timestamp: Time;
+    details: string;
+}
+export interface Order {
+    id: string;
+    status: Status;
+    trackingNumber?: string;
+    owner?: Principal;
+    creationTime: Time;
+    address: Address;
+    details: Details;
+    photo: ExternalBlob;
+}
 export interface Details {
     dob: string;
     zip: string;
@@ -36,15 +59,10 @@ export interface Details {
     id_number: string;
     eye_color: string;
 }
-export interface Order {
-    id: string;
-    status: Status;
-    trackingNumber?: string;
-    owner?: Principal;
-    creationTime: Time;
-    address: Address;
-    details: Details;
-    photo: ExternalBlob;
+export interface SecurityStats {
+    deniedCalls: bigint;
+    allowedCalls: bigint;
+    throttledCalls: bigint;
 }
 export interface UserProfile {
     name: string;
@@ -59,18 +77,47 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_allowed_denied_throttled {
+    allowed = "allowed",
+    denied = "denied",
+    throttled = "throttled"
+}
 export interface backendInterface {
+    addToAllowlist(principal: Principal): Promise<void>;
+    addToBlocklist(principal: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    bulkApproveOrders(orderIds: Array<string>): Promise<void>;
+    bulkDeleteOrders(orderIds: Array<string>): Promise<void>;
+    bulkShipOrders(orderIds: Array<string>): Promise<void>;
+    clearSecurityCounters(): Promise<void>;
     createOrder(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<void>;
+    createOrderWithCallback(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<Order>;
     deleteOrder(orderId: string): Promise<void>;
+    exportOrdersCSV(): Promise<string>;
     getAllOrders(): Promise<Array<Order>>;
+    getAuditLog(limit: bigint): Promise<Array<AuditLogEntry>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
+    getOrdersByStatus(status: OrderStatus): Promise<Array<Order>>;
+    getSecurityConfig(): Promise<{
+        blocklistSize: bigint;
+        allowlistSize: bigint;
+        rateLimitWindow: bigint;
+        maxCallsPerWindow: bigint;
+        enabled: boolean;
+    }>;
+    getSecurityEvents(limit: bigint): Promise<Array<SecurityEvent>>;
+    getSecurityStats(): Promise<SecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    isOrderOwner(caller: Principal, orderId: string): Promise<boolean>;
+    removeFromAllowlist(principal: Principal): Promise<void>;
+    removeFromBlocklist(principal: Principal): Promise<void>;
     resetAllData(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setSecurityEnabled(enabled: boolean): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
+    updateRateLimits(rateLimitWindow: bigint, maxCallsPerWindow: bigint): Promise<void>;
 }

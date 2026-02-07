@@ -9,3 +9,15 @@ export const authKeys = {
   all: ['auth'] as const,
   isAdmin: () => [...authKeys.all, 'isAdmin'] as const,
 };
+
+export const securityKeys = {
+  all: ['security'] as const,
+  stats: () => [...securityKeys.all, 'stats'] as const,
+  events: (limit: number) => [...securityKeys.all, 'events', limit] as const,
+  config: () => [...securityKeys.all, 'config'] as const,
+};
+
+export const auditKeys = {
+  all: ['audit'] as const,
+  log: (limit: number) => [...auditKeys.all, 'log', limit] as const,
+};

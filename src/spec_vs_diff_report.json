@@ -1,74 +1,91 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T00:02:03.046Z",
-  "summary": "Frontend changes implement improved admin detection/loading behavior, admin redirect, distinct admin cyber theme wrapper, and expanded admin panel UI controls (search/filter/sort/stats/quick actions) plus hooks for delete/reset. However, the diff summary does not provide evidence that the backend actually implements the required admin-check query method and the admin-only delete/reset methods; those backend portions are truncated/absent from the provided backend diff excerpt. A migration module was added despite no clearly evidenced stable-state schema change.",
+  "generatedAt": "2026-02-07T04:11:50.267Z",
+  "summary": "Diff adds substantial frontend admin upgrades (TREY C SECURITY section, audit log view, bulk actions bar, CSV export utility, React Query hooks) and begins backend TREY C SECURITY state/types with a rate-limit check function. However, key backend requirements (stable persistence/migration, applying protections to all mutating update calls, and clearly admin-gated observability/control endpoints + audit logging of critical actions) are not evidenced in the truncated backend diff summary.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Backend exposes a reliable admin-check method used by the frontend (e.g., isCallerAdmin : query () -> async Bool) and admin-only backend methods enforce server-side checks.",
-      "reason": "Frontend now calls actor.isCallerAdmin() (useIsAdmin), but the backend diff excerpt for backend/main.mo is truncated and does not show an isCallerAdmin query method implementation or its authorization behavior.",
+      "id": "REQ-1",
+      "requirement": "Apply TREY C SECURITY protections to all state-mutating update calls (e.g., createOrder, updateOrderStatus, setTrackingNumber, deleteOrder, resetAllData, saveCallerUserProfile) and reject over-limit calls with a clear error mentioning TREY C SECURITY.",
+      "reason": "backend/main.mo shows a checkRateLimit(caller, action) helper and security state, but the diff summary does not show protected update methods calling it, nor any rejection/trap/error message containing “TREY C SECURITY”.",
       "evidence": [
-        "frontend/src/hooks/auth/useIsAdmin.ts",
-        "backend/main.mo (truncated; no isCallerAdmin shown)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-1",
+      "requirement": "Rate-limit state and blocklist/allowlist must persist across upgrades using stable storage (and add/adjust migration logic if needed).",
+      "reason": "The diff summary shows security-related vars (callHistory, blocklist, allowlist, securityEvents, stats) but does not show stable variables, preupgrade/postupgrade hooks, or migration logic persisting this data across upgrades.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Backend exposes admin-only observability endpoints: aggregated counters, recent security events, and current configuration; non-admins denied.",
+      "reason": "Frontend hooks call actor.getSecurityStats/getSecurityEvents/getSecurityConfig, but the backend diff excerpt does not show these methods or their admin authorization checks.",
+      "evidence": [
+        "frontend/src/hooks/security/useSecurityStats.ts",
+        "frontend/src/hooks/security/useSecurityEvents.ts",
+        "frontend/src/hooks/security/useSecurityConfig.ts",
+        "backend/main.mo"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Backend exposes an admin-only method to delete an order by orderId; deleting a non-existent order returns a clear error; non-admins are rejected.",
-      "reason": "Frontend added a delete hook calling actor.deleteOrder(orderId), but the backend diff excerpt does not show a deleteOrder method or its authorization/error handling.",
+      "requirement": "Backend exposes admin-only controls to enable/disable protections, update thresholds, clear counters, and manage blocklist/allowlist; non-admins denied.",
+      "reason": "Frontend mutations call actor.setSecurityEnabled/updateRateLimits/clearSecurityCounters/addToBlocklist/removeFromBlocklist/addToAllowlist/removeFromAllowlist, but the backend diff excerpt does not show these methods or admin gating.",
       "evidence": [
-        "frontend/src/hooks/orders/useDeleteOrder.ts",
-        "backend/main.mo (truncated; no deleteOrder shown)",
-        "frontend/src/pages/AdminPanelPage.tsx (truncated; UI references delete hook but backend support not evidenced)"
+        "frontend/src/hooks/security/useSecurityMutations.ts",
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-4",
-      "requirement": "Replace 'Reset All Data' with a correct, admin-only backend reset that deletes persisted orders and results in getAllOrders() returning an empty list.",
-      "reason": "Frontend calls actor.resetAllData(), but the backend diff excerpt does not show resetAllData implementation that clears canister-stored orders or enforces admin-only access.",
+      "id": "REQ-3",
+      "requirement": "Admin actions that change security configuration are recorded in the security event log (or dedicated admin audit log) with timestamp and admin Principal.",
+      "reason": "backend/main.mo defines AuditLogEntry and an auditLog list, but the diff summary does not show any code that appends audit entries for security config changes (or any admin actions).",
       "evidence": [
-        "frontend/src/hooks/admin/useAdminResetAllData.ts",
-        "backend/main.mo (truncated; no resetAllData shown)"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Added backend/migration.mo and wired data migration on upgrade with placeholder OldState/NewState types despite no clearly evidenced stable-state schema change requirement in the diff.",
-      "reason": "BuildRequest allows generating backend/migration.mo only if a stable-state schema change is required; the migration file shows no concrete schema change (NewOrder = OldOrder; state types are placeholders).",
-      "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (\"import Migration\" and \"(with migration = Migration.run)\")"
+        "backend/main.mo"
       ]
     },
     {
-      "description": "Reset workflow additionally clears localStorage keys (user_orders_*) client-side.",
-      "reason": "REQ-4 specifically requests replacing localStorage-only reset with a canister-backed reset; clearing localStorage may be helpful but is not requested as part of the required behavior and could mask backend issues if backend reset is missing.",
+      "id": "REQ-5",
+      "requirement": "Backend records critical admin actions in an audit log that is admin-readable; admin panel can browse/filter entries.",
+      "reason": "Frontend includes an AuditLogSection and useAuditLog hook calling actor.getAuditLog, but the backend diff excerpt does not show getAuditLog implementation, admin gating, or recording of critical actions (resets/deletes/security changes).",
       "evidence": [
-        "frontend/src/hooks/admin/useAdminResetAllData.ts"
+        "frontend/src/components/admin/AuditLogSection.tsx",
+        "frontend/src/hooks/admin/useAuditLog.ts",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Bulk order actions (approve/ship/delete) should exist end-to-end with confirmation prompts and per-action outcomes.",
+      "reason": "Frontend implements bulk action UI and hooks calling actor.bulkApproveOrders/bulkShipOrders/bulkDeleteOrders, but the backend diff excerpt does not show these endpoints or their behavior/authorization.",
+      "evidence": [
+        "frontend/src/components/admin/BulkOrderActionsBar.tsx",
+        "frontend/src/hooks/admin/useBulkOrderActions.ts",
+        "backend/main.mo"
       ]
     }
   ],
+  "hallucinated_features": [],
   "confidence": 0.64,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/AdminGate.tsx",
-    "frontend/src/components/AdminThemeLayout.tsx",
-    "frontend/src/components/BrandHeader.tsx",
-    "frontend/src/hooks/admin/useAdminResetAllData.ts",
-    "frontend/src/hooks/auth/useIsAdmin.ts",
-    "frontend/src/hooks/orders/useAllOrders.ts",
-    "frontend/src/hooks/orders/useDeleteOrder.ts",
-    "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-    "frontend/src/index.css",
+    "frontend/src/components/admin/AuditLogSection.tsx",
+    "frontend/src/components/admin/BulkOrderActionsBar.tsx",
+    "frontend/src/components/admin/TreyCSecuritySection.tsx",
+    "frontend/src/hooks/admin/useAuditLog.ts",
+    "frontend/src/hooks/admin/useBulkOrderActions.ts",
+    "frontend/src/hooks/orders/queryKeys.ts",
+    "frontend/src/hooks/security/useSecurityConfig.ts",
+    "frontend/src/hooks/security/useSecurityEvents.ts",
+    "frontend/src/hooks/security/useSecurityMutations.ts",
+    "frontend/src/hooks/security/useSecurityStats.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/utils/formatters.ts",
-    "frontend/tailwind.config.js",
+    "frontend/src/utils/exportOrdersCsv.ts",
     "project_state.json"
   ]
 }

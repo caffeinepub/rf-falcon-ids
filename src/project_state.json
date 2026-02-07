@@ -1,59 +1,26 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Build an e-commerce/admin-enabled site with an advanced, responsive admin panel (auto-detect admin login), customizable admin theming, order management (including deletion/cancellation), and improved stability/bug reduction.",
-  "architectural_notes": [],
-  "known_issues": [
-    "Admin system is described as glitchy and does not pop up immediately when an admin is logged in.",
-    "Site is reported as buggy/glitchy overall."
+  "summary": "Project to build and deploy an application with an advanced admin panel and a dedicated anti-DDoS/security system branded as \"TREY C SECURITY\".",
+  "architectural_notes": [
+    "Security system component should be branded/named \"TREY C SECURITY\"."
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-and-harden-admin-detection-so-admin-only-ui-appears-immediately-after-an-admin-logs-in-no-missing-late-admin-button-no-flicker-no-incorrect-access-denied-while-permissions-are-still-being-determined",
-      "title": "Fix and harden admin detection so admin-only UI appears immediately after an admin logs in (no missing/late admin button, no flicker, no incorrect Access Denied while permissions are still being determined).",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-admin-only-order-deletion-workflow-so-admins-can-delete-an-order-when-a-customer-cancels-with-a-confirmation-step-and-immediate-ui-refresh",
-      "title": "Add an admin-only order deletion workflow so admins can delete an order when a customer cancels (with a confirmation step and immediate UI refresh).",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-current-reset-all-data-behavior-with-a-correct-admin-only-backend-reset-that-actually-deletes-stored-orders-and-keep-the-frontend-confirmation-dialog-aligned-with-the-real-behavior",
-      "title": "Replace the current 'Reset All Data' behavior with a correct, admin-only backend reset that actually deletes stored orders (and keep the frontend confirmation dialog aligned with the real behavior).",
+      "id": "feature-upgrade-the-frontend-admin-experience-into-a-more-advanced-panel-by-adding-a-dedicated-trey-c-security-section-within-the-existing-adminpanelpage-showing-security-metrics-recent-security-events-and-controls-to-manage-protections-toggle-thresholds-blocklist-allowlist-management",
+      "title": "Upgrade the frontend admin experience into a more advanced panel by adding a dedicated \"TREY C SECURITY\" section within the existing AdminPanelPage, showing security metrics, recent security events, and controls to manage protections (toggle, thresholds, blocklist/allowlist management).",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-create-a-distinct-advanced-hacker-cool-theme-for-admin-users-routes-visually-separate-from-the-regular-site-theme-and-apply-it-consistently-across-admin-screens-and-admin-only-components",
-      "title": "Create a distinct, advanced 'hacker/cool' theme for admin users/routes, visually separate from the regular site theme, and apply it consistently across /admin screens and admin-only components.",
+      "id": "feature-make-the-admin-panel-more-advanced-by-adding-high-value-admin-tools-beyond-the-current-order-list-bulk-order-actions-approve-ship-delete-data-export-csv-download-for-orders-and-an-admin-audit-log-view-for-critical-admin-actions-e-g-resets-deletes-security-config-changes",
+      "title": "Make the admin panel \"more advanced\" by adding high-value admin tools beyond the current order list: bulk order actions (approve/ship/delete), data export (CSV download) for orders, and an admin audit log view for critical admin actions (e.g., resets, deletes, security config changes).",
       "reqIds": [
         "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-additional-advanced-admin-panel-features-that-improve-operational-control-without-changing-the-user-ordering-flow-searching-filtering-sorting-quick-actions-and-lightweight-order-insights",
-      "title": "Add additional advanced admin panel features that improve operational control without changing the user ordering flow: searching, filtering, sorting, quick actions, and lightweight order insights.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-perform-a-focused-bugfix-stability-pass-on-admin-flow-and-order-management-ui-to-reduce-glitches-loading-states-error-handling-query-invalidation-and-empty-unauthorized-states",
-      "title": "Perform a focused bugfix/stability pass on admin flow and order management UI to reduce glitches (loading states, error handling, query invalidation, and empty/unauthorized states).",
-      "reqIds": [
-        "REQ-7"
       ],
       "version": 1
     }
@@ -61,44 +28,42 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Improve admin panel reliability and ensure it appears immediately when an admin is logged in (auto-detect/admin gating).",
+      "summary": "Implement a super advanced anti-DDoS/security system branded as \"TREY C SECURITY\".",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Add a custom 'hacker/cool' advanced theme for admin users (separate from regular user UI).",
+      "summary": "Make the admin panel more advanced by adding comprehensive improvements and features deemed necessary.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Add admin capability to delete/cancel orders (order deletion workflow for cancellations).",
-      "reqIds": [],
+      "summary": "Implement a backend anti-abuse/anti-DDoS protection layer branded as \"TREY C SECURITY\" that rate-limits and blocks abusive callers in a way compatible with Internet Computer constraints (no IP address access), applying protections to all update calls that mutate state (e.g., createOrder, updateOrderStatus, setTrackingNumber, deleteOrder, resetAllData, saveCallerUserProfile).",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Expand admin panel with additional advanced features (enhanced tools/controls beyond current baseline).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Reduce site bugs/glitches and improve overall stability (bugfix pass, especially around admin flow).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Ensure the backend exposes a reliable admin-check method used by the frontend (e.g., `isCallerAdmin : query () -> async Bool`) and that admin gating does not depend on missing/unstable methods.",
+      "summary": "Add backend TREY C SECURITY observability endpoints for administrators to view security posture: aggregated counters (allowed/denied/throttled), recent security events, and current configuration (rate-limit parameters, blocklist/allowlist sizes), all admin-gated.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Add backend TREY C SECURITY administrative controls for tuning and response: enable/disable protections, update rate-limit thresholds, clear/reset security counters, and add/remove principals from blocklist/allowlist, all admin-gated and auditable.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Upgrade admin system reliability, add hacker-themed admin UI, and enable order deletion",
+  "projectName": "Add TREY C SECURITY anti-abuse protections and expand the admin panel with security + management tools",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

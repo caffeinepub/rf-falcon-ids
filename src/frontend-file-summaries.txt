@@ -16,8 +16,8 @@
   "frontend/src/pages/DashboardPage.tsx": "Dashboard page with Gothic chrome styling using metallic silver accents, chrome glow hover effects, refined status badges, and novelty ID order management.",
   "frontend/src/pages/NewOrderPage.tsx": "Order creation form with Gothic chrome theme that auto-generates stable ID numbers, includes photo upload/crop with correct prop names (currentPhotoUrl, onClear), and shows payment instruction toast (\"Please contact the owner for payment methods\") after successful submission.",
   "frontend/src/pages/OrderDetailPage.tsx": "Order detail view with Gothic chrome styling that displays order information, ID card preview, and conditionally renders tracking number card when trackingNumber exists.",
-  "frontend/src/pages/AdminPanelPage.tsx": "Advanced admin panel with cyber/hacker theme featuring stats dashboard, search/filter/sort controls, quick action buttons (approve/ship), order deletion with confirmation, tracking number management, and system reset functionality with consistent error handling and loading states.",
-  "frontend/src/hooks/orders/queryKeys.ts": "Centralized React Query key factory functions for orders (user orders, all orders, individual order) and auth (isAdmin) to prevent cache leakage and enable consistent invalidation.",
+  "frontend/src/pages/AdminPanelPage.tsx": "Advanced admin panel with tabbed interface for Orders, TREY C SECURITY, and Audit Log sections, featuring multi-select orders, bulk actions, CSV export, and comprehensive order management with cyber theme.",
+  "frontend/src/hooks/orders/queryKeys.ts": "Centralized React Query key factory functions for orders, auth, security (stats/config/events), and audit log to enable consistent cache invalidation across the admin panel.",
   "frontend/src/hooks/orders/useUserOrders.ts": "React Query hook fetching user's orders by retrieving order IDs from localStorage keyed by Internet Identity principal and fetching each order individually.",
   "frontend/src/hooks/orders/useAllOrders.ts": "React Query hook for admin to fetch all orders with improved error handling that surfaces unauthorized access messages clearly.",
   "frontend/src/hooks/orders/useGetOrder.ts": "React Query hook fetching a single order by ID via actor.getOrder() with proper nullable Order type handling.",
@@ -52,5 +52,15 @@
   "frontend/src/utils/generateIdNumber.ts": "Utility function that generates an 8-digit random numeric ID number string for novelty identification cards.",
   "frontend/src/hooks/orders/useSetTrackingNumber.ts": "React Query mutation hook for admin to set/update tracking numbers with robust error handling and cache invalidation.",
   "frontend/src/components/AdminThemeLayout.tsx": "Lightweight wrapper component that applies cyber/hacker theme scope with grid background and scan-line effects for admin routes without modifying Shadcn components.",
-  "frontend/src/hooks/orders/useDeleteOrder.ts": "React Query mutation hook for admin to delete orders via actor.deleteOrder() with proper error handling and cache invalidation."
+  "frontend/src/hooks/orders/useDeleteOrder.ts": "React Query mutation hook for admin to delete orders via actor.deleteOrder() with proper error handling and cache invalidation.",
+  "frontend/src/hooks/security/useSecurityStats.ts": "React Query hook fetching TREY C SECURITY aggregated counters (allowed/denied/throttled calls) with 10-second auto-refresh for real-time monitoring.",
+  "frontend/src/hooks/security/useSecurityEvents.ts": "React Query hook fetching recent TREY C SECURITY events with configurable limit and 5-second auto-refresh for live event monitoring.",
+  "frontend/src/hooks/security/useSecurityConfig.ts": "React Query hook fetching current TREY C SECURITY configuration including enabled status, rate limits, and blocklist/allowlist sizes.",
+  "frontend/src/hooks/security/useSecurityMutations.ts": "React Query mutation hooks for all TREY C SECURITY admin controls (toggle enabled, update rate limits, clear counters, manage blocklist/allowlist) with automatic query invalidation.",
+  "frontend/src/hooks/admin/useBulkOrderActions.ts": "React Query mutation hooks for bulk order operations (approve/ship/delete multiple orders) with automatic cache invalidation.",
+  "frontend/src/hooks/admin/useAuditLog.ts": "React Query hook fetching admin audit log entries with configurable limit and 10-second auto-refresh for activity monitoring.",
+  "frontend/src/utils/exportOrdersCsv.ts": "Utility function to generate and download CSV export of filtered orders with proper escaping, quoting, and deterministic filename including timestamp.",
+  "frontend/src/components/admin/TreyCSecuritySection.tsx": "TREY C SECURITY admin section with KPI cards, real-time event monitoring, configuration controls, and blocklist/allowlist management using cyber theme styling.",
+  "frontend/src/components/admin/AuditLogSection.tsx": "Admin audit log viewer with searchable/filterable table of recent admin actions, timestamps, and details using cyber theme styling.",
+  "frontend/src/components/admin/BulkOrderActionsBar.tsx": "Fixed bottom toolbar for bulk order actions (approve/ship/delete) with selection count, confirmation dialogs, and progress indicators."
 }

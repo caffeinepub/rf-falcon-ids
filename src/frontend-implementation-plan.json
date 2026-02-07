@@ -1,182 +1,99 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Harden admin gating, add hacker-themed admin UI, and improve admin order operations",
+  "title": "Advanced Admin Panel: TREY C SECURITY dashboard + bulk management, CSV export, and audit log",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Harden admin detection and gating to eliminate flicker, stale state, and delayed admin affordances; add reliable admin entry redirect behavior.",
+      "id": "REQ-4",
+      "summary": "Add a dedicated TREY C SECURITY section inside AdminPanelPage with metrics, recent events, and admin controls wired via React Query.",
       "acceptanceCriteria": [
-        "When a user logs in as an admin, the header renders an admin affordance (e.g., Admin link/button) as soon as the admin check completes, and does not remain hidden due to stale/undefined state.",
-        "AdminGate shows a clear loading state while checking admin status and does not briefly show Access Denied for an actual admin.",
-        "If the user is authenticated and confirmed admin, navigating to / redirects them to /admin (or an equivalent immediate admin entry flow) without requiring manual refresh.",
-        "If the user is not an admin, /admin reliably shows Access Denied (and never shows admin data)."
+        "Admin panel includes a clearly labeled \"TREY C SECURITY\" area (tab/section) using the existing cyber admin theme styles.",
+        "The security area renders: (1) KPI cards/counters, (2) a recent-events table/list, (3) blocklist/allowlist management UI, and (4) configuration controls; all wired to backend endpoints via React Query hooks.",
+        "All security actions show success/error toasts and update the displayed data via query invalidation/refetch.",
+        "Non-admin users still cannot access the admin panel (AdminGate behavior unchanged)."
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/hooks/auth/useIsAdmin.ts",
-          "operation": "modify",
-          "description": "Make admin-check state deterministic by aligning React Query loading/fetched flags with actor/identity readiness (avoid returning false while permissions are still being determined); keep calling the backend capability isCallerAdmin and handle errors consistently."
-        },
-        {
-          "path": "frontend/src/components/AdminGate.tsx",
-          "operation": "modify",
-          "description": "Update gating logic to use the hardened admin-check state (loading vs resolved) so it shows a clear loading view during checks and never flashes Access Denied for real admins; ensure it reliably blocks non-admins."
-        },
-        {
-          "path": "frontend/src/components/BrandHeader.tsx",
-          "operation": "modify",
-          "description": "Ensure the Admin link/button behavior is stable: show it immediately after admin status resolves true; avoid flicker/missing admin affordance due to undefined/stale admin state; optionally render a disabled/placeholder admin affordance while admin status is being checked for authenticated users."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Adjust the index (/) routing behavior so authenticated confirmed admins are immediately routed into the admin entry flow (/admin) after the admin check completes, while non-admin authenticated users go to the dashboard; preserve existing AuthGate/AdminGate protections for /admin."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add an admin-only order deletion workflow in the admin UI with confirmation and immediate list refresh.",
-      "acceptanceCriteria": [
-        "Backend exposes an admin-only method to delete an order by orderId; deleting a non-existent order returns a clear error.",
-        "Admin Panel UI includes a per-order Delete/Cancel action with a confirmation dialog.",
-        "After deletion, the order disappears from the admin orders list without requiring a full page refresh (React Query cache invalidation/refetch works).",
-        "Non-admins cannot delete orders (frontend hides controls; backend rejects calls)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/orders/useDeleteOrder.ts",
-          "operation": "create",
-          "description": "Create a React Query mutation hook that calls the backend capability to delete an order and invalidates admin/user order queries to refresh UI immediately."
-        },
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
-          "operation": "modify",
-          "description": "Add a per-order Delete/Cancel action that opens a confirmation dialog and triggers the delete mutation; disable controls during in-flight deletion and show success/error feedback; ensure list updates via query invalidation without full refresh."
-        },
         {
           "path": "frontend/src/hooks/orders/queryKeys.ts",
           "operation": "modify",
-          "description": "If needed, refine/extend query keys to ensure consistent invalidation for admin list + any related order detail/user order queries after deletion."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Align 'Reset All Data' in the admin UI with the real backend reset behavior and keep confirmations/loading states correct.",
-      "acceptanceCriteria": [
-        "Admin Panel 'Reset All Data' triggers a backend admin-only reset that clears persisted order data in the canister (not only localStorage).",
-        "After reset, getAllOrders() returns an empty list and the UI shows the 'No Orders' state.",
-        "The reset action still uses a confirmation dialog and shows pending/loading state while running.",
-        "Non-admin callers cannot invoke reset; backend enforces authorization."
-      ],
-      "file_operations": [
+          "description": "Extend React Query key helpers to include stable query keys for TREY C SECURITY (stats/config/events) so the admin UI can invalidate/refetch after security mutations."
+        },
         {
-          "path": "frontend/src/hooks/admin/useAdminResetAllData.ts",
-          "operation": "modify",
-          "description": "Replace the current local-only reset with a call to the backend capability resetAllData; keep local cleanup (e.g., user_orders_* keys) but ensure the backend reset runs; keep robust invalidation for all order/admin-related queries."
+          "path": "frontend/src/hooks/security/useSecurityStats.ts",
+          "operation": "create",
+          "description": "Create a React Query hook that fetches TREY C SECURITY aggregated counters (allowed/denied/throttled) from the backend actor and supports refetching/invalidation. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/security/useSecurityEvents.ts",
+          "operation": "create",
+          "description": "Create a React Query hook that fetches recent TREY C SECURITY events (with a limit param) for rendering in an admin table/list. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/security/useSecurityConfig.ts",
+          "operation": "create",
+          "description": "Create a React Query hook to fetch current TREY C SECURITY configuration (enabled flag, thresholds, allow/blocklist sizes) for the admin controls UI. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/security/useSecurityMutations.ts",
+          "operation": "create",
+          "description": "Create React Query mutation hooks for TREY C SECURITY admin controls (toggle enabled, update rate limits, clear/reset counters, add/remove principals to allowlist/blocklist) with automatic query invalidation and toast-friendly error propagation. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/admin/TreyCSecuritySection.tsx",
+          "operation": "create",
+          "description": "Implement a TREY C SECURITY admin section component that renders KPI cards, a recent events table/list, and configuration + allowlist/blocklist management controls using existing shadcn/ui components (do not edit frontend/src/components/ui). Verify the component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/pages/AdminPanelPage.tsx",
           "operation": "modify",
-          "description": "Keep the existing confirmation dialog but ensure copy, pending state, and result handling match the true behavior (backend reset + UI refresh to 'No Orders'); prevent double-submit while resetting and show actionable errors."
+          "description": "Add an in-page navigation (tab/section switch) to include a clearly labeled \"TREY C SECURITY\" area and render TreyCSecuritySection; wire to the new hooks, show success/error toasts, and invalidate/refetch security queries after actions (AdminGate behavior remains unchanged). Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Implement a distinct hacker/cyber admin theme for /admin routes and admin-only components without modifying Shadcn component sources.",
+      "summary": "Enhance the admin panel with bulk order actions, CSV export of filtered orders, and an admin audit log view.",
       "acceptanceCriteria": [
-        "Admin routes render with a clearly distinct visual style (e.g., terminal/cyber aesthetic) while non-admin pages keep the existing site theme.",
-        "Theming is implemented without modifying immutable Shadcn component sources; styling is applied via composition, Tailwind classes, and/or CSS variables at the page/layout level.",
-        "Admin theme remains readable and accessible (sufficient contrast for primary text and controls)."
+        "Admin can select multiple orders and apply bulk actions with confirmation prompts; UI clearly shows progress and per-action outcomes.",
+        "Admin can export the currently filtered order list to a CSV file from the UI (frontend-generated CSV is acceptable).",
+        "Backend records critical admin actions in an audit log that is admin-readable; admin panel provides a view to browse/filter recent audit entries.",
+        "Existing single-order actions continue to work as before."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AdminThemeLayout.tsx",
+          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "operation": "modify",
+          "description": "Add React Query keys for admin audit log queries (and any bulk-operation-related invalidations) to keep cache management consistent across admin tools."
+        },
+        {
+          "path": "frontend/src/hooks/admin/useBulkOrderActions.ts",
           "operation": "create",
-          "description": "Create a lightweight wrapper/layout that applies an admin-only theme scope (e.g., a root class for CSS variable overrides + background effects) for /admin screens; compose existing components instead of modifying Shadcn sources."
+          "description": "Create React Query mutation hooks for bulk order actions (approve/ship/delete) that call backend bulk functions, track progress state suitable for per-order outcome UI, and invalidate order queries on success/failure. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/index.css",
-          "operation": "modify",
-          "description": "Add a scoped admin theme (e.g., .admin-theme) using CSS variables and/or utility-friendly base styles to create a terminal/cyber aesthetic while keeping contrast/readability; ensure non-admin theme remains unchanged."
+          "path": "frontend/src/hooks/admin/useAuditLog.ts",
+          "operation": "create",
+          "description": "Create a React Query hook to fetch the admin audit log (with a limit param) for display in the admin panel, with filtering handled client-side. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wrap the /admin route content with AdminThemeLayout so the hacker theme is applied consistently across admin screens and admin-only components."
+          "path": "frontend/src/utils/exportOrdersCsv.ts",
+          "operation": "create",
+          "description": "Add a utility to generate and trigger download of a CSV for the currently filtered orders list (including key order fields); ensure safe escaping/quoting and a deterministic filename."
         },
         {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
-          "operation": "modify",
-          "description": "Adjust admin page composition/classes where needed so the new admin theme looks cohesive across cards, headers, controls, and empty states without editing files under frontend/src/components/ui."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Add advanced admin panel controls (search/filter/sort, quick actions, and order insights) without changing the customer ordering flow.",
-      "acceptanceCriteria": [
-        "Admin can filter orders by status (pending/approved/shipped) and search by name, order ID, or ID number.",
-        "Admin can sort orders at least by creation time (newest/oldest).",
-        "Admin has one-click quick actions per order for common status transitions (e.g., Approve, Mark Shipped) with clear success/error feedback.",
-        "Admin panel shows basic summary stats (e.g., counts by status) that update when data changes.",
-        "All new admin controls are disabled appropriately during in-flight mutations to prevent double-submits."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
-          "operation": "modify",
-          "description": "Add UI + derived client-side logic for search (name/order ID/ID number), status filter, and sort (creation time newest/oldest); add summary stats (counts by status) that update based on the displayed dataset; add one-click quick action buttons per order for common status transitions using existing mutation hooks; ensure all controls disable appropriately during in-flight mutations and show clear feedback."
+          "path": "frontend/src/components/admin/AuditLogSection.tsx",
+          "operation": "create",
+          "description": "Create an Audit Log section component that renders a searchable/filterable list/table of recent audit entries using existing shadcn/ui components (do not edit frontend/src/components/ui) and the useAuditLog hook. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/utils/formatters.ts",
-          "operation": "modify",
-          "description": "If needed, add small, reusable formatting helpers for admin insights (e.g., time display) used by AdminPanelPage while keeping user-facing text in English."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Stabilize admin flow and order management UI with better loading/error handling, consistent invalidation, and safe handling of missing values.",
-      "acceptanceCriteria": [
-        "All admin mutations (status update, tracking save, delete, reset) surface actionable error messages and do not leave the UI in a stuck loading state.",
-        "React Query cache invalidation is consistent so lists/details stay in sync after admin actions.",
-        "Unauthorized backend calls trap with clear messages and do not expose data.",
-        "Admin UI handles empty states and null/undefined values (e.g., trackingNumber) without console errors."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/orders/useAllOrders.ts",
-          "operation": "modify",
-          "description": "Improve resilience for admin order loading: ensure query enablement aligns with actor readiness, handle and surface errors cleanly (including unauthorized), and avoid console errors on transient states."
-        },
-        {
-          "path": "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-          "operation": "modify",
-          "description": "Ensure consistent query invalidation and robust error propagation for status updates so admin list and any user/order views remain in sync after mutations."
-        },
-        {
-          "path": "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-          "operation": "modify",
-          "description": "Harden tracking save mutation behavior: consistent invalidation, clear error propagation, and ensure UI can safely handle missing trackingNumber values without crashes."
-        },
-        {
-          "path": "frontend/src/hooks/admin/useAdminResetAllData.ts",
-          "operation": "modify",
-          "description": "Ensure reset mutation never leaves UI stuck: propagate errors, invalidate all relevant queries consistently, and keep local cleanup aligned with backend reset behavior."
+          "path": "frontend/src/components/admin/BulkOrderActionsBar.tsx",
+          "operation": "create",
+          "description": "Create a bulk-actions toolbar component for the orders list (selection count, actions: approve/ship/delete, confirmation prompts, progress/outcome display) that integrates with the bulk action hooks and order query invalidation. Verify the component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/pages/AdminPanelPage.tsx",
           "operation": "modify",
-          "description": "Add focused UI stability improvements: show clear loading/error/empty states, prevent double-submits across all mutations (status, tracking, delete, reset), and ensure null/undefined values render safely without console errors."
-        },
-        {
-          "path": "frontend/src/components/AdminGate.tsx",
-          "operation": "modify",
-          "description": "Ensure unauthorized state is stable and never leaks admin data; keep a clear loading state during permission checks and handle failed admin checks gracefully."
+          "description": "Add multi-select UI to the existing orders list (without breaking single-order actions), render BulkOrderActionsBar, add a CSV export button that exports the currently filtered list via exportOrdersCsv, and add an Audit Log section/view wired to useAuditLog."
         }
       ]
     }

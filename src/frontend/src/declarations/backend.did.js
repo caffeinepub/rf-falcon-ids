@@ -62,11 +62,33 @@ export const Order = IDL.Record({
   'details' : Details,
   'photo' : ExternalBlob,
 });
+export const AuditLogEntry = IDL.Record({
+  'action' : IDL.Text,
+  'admin' : IDL.Principal,
+  'timestamp' : Time,
+  'details' : IDL.Text,
+});
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const OrderStatus = IDL.Variant({
   'shipped' : IDL.Null,
   'pending' : IDL.Null,
   'approved' : IDL.Null,
+});
+export const SecurityEvent = IDL.Record({
+  'result' : IDL.Variant({
+    'allowed' : IDL.Null,
+    'denied' : IDL.Null,
+    'throttled' : IDL.Null,
+  }),
+  'principal' : IDL.Principal,
+  'action' : IDL.Text,
+  'timestamp' : Time,
+  'reason' : IDL.Text,
+});
+export const SecurityStats = IDL.Record({
+  'deniedCalls' : IDL.Nat,
+  'allowedCalls' : IDL.Nat,
+  'throttledCalls' : IDL.Nat,
 });
 
 export const idlService = IDL.Service({
@@ -97,23 +119,61 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addToAllowlist' : IDL.Func([IDL.Principal], [], []),
+  'addToBlocklist' : IDL.Func([IDL.Principal], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'bulkApproveOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
+  'bulkDeleteOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
+  'bulkShipOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
+  'clearSecurityCounters' : IDL.Func([], [], []),
   'createOrder' : IDL.Func([IDL.Text, Details, Address, ExternalBlob], [], []),
+  'createOrderWithCallback' : IDL.Func(
+      [IDL.Text, Details, Address, ExternalBlob],
+      [Order],
+      [],
+    ),
   'deleteOrder' : IDL.Func([IDL.Text], [], []),
+  'exportOrdersCSV' : IDL.Func([], [IDL.Text], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+  'getAuditLog' : IDL.Func([IDL.Nat], [IDL.Vec(AuditLogEntry)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
+  'getOrdersByStatus' : IDL.Func([OrderStatus], [IDL.Vec(Order)], ['query']),
+  'getSecurityConfig' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'blocklistSize' : IDL.Nat,
+          'allowlistSize' : IDL.Nat,
+          'rateLimitWindow' : IDL.Nat,
+          'maxCallsPerWindow' : IDL.Nat,
+          'enabled' : IDL.Bool,
+        }),
+      ],
+      ['query'],
+    ),
+  'getSecurityEvents' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(SecurityEvent)],
+      ['query'],
+    ),
+  'getSecurityStats' : IDL.Func([], [SecurityStats], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'isOrderOwner' : IDL.Func([IDL.Principal, IDL.Text], [IDL.Bool], ['query']),
+  'removeFromAllowlist' : IDL.Func([IDL.Principal], [], []),
+  'removeFromBlocklist' : IDL.Func([IDL.Principal], [], []),
   'resetAllData' : IDL.Func([], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setSecurityEnabled' : IDL.Func([IDL.Bool], [], []),
   'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
+  'updateRateLimits' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
 });
 
 export const idlInitArgs = [];
@@ -173,11 +233,33 @@ export const idlFactory = ({ IDL }) => {
     'details' : Details,
     'photo' : ExternalBlob,
   });
+  const AuditLogEntry = IDL.Record({
+    'action' : IDL.Text,
+    'admin' : IDL.Principal,
+    'timestamp' : Time,
+    'details' : IDL.Text,
+  });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const OrderStatus = IDL.Variant({
     'shipped' : IDL.Null,
     'pending' : IDL.Null,
     'approved' : IDL.Null,
+  });
+  const SecurityEvent = IDL.Record({
+    'result' : IDL.Variant({
+      'allowed' : IDL.Null,
+      'denied' : IDL.Null,
+      'throttled' : IDL.Null,
+    }),
+    'principal' : IDL.Principal,
+    'action' : IDL.Text,
+    'timestamp' : Time,
+    'reason' : IDL.Text,
+  });
+  const SecurityStats = IDL.Record({
+    'deniedCalls' : IDL.Nat,
+    'allowedCalls' : IDL.Nat,
+    'throttledCalls' : IDL.Nat,
   });
   
   return IDL.Service({
@@ -208,27 +290,65 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addToAllowlist' : IDL.Func([IDL.Principal], [], []),
+    'addToBlocklist' : IDL.Func([IDL.Principal], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'bulkApproveOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
+    'bulkDeleteOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
+    'bulkShipOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
+    'clearSecurityCounters' : IDL.Func([], [], []),
     'createOrder' : IDL.Func(
         [IDL.Text, Details, Address, ExternalBlob],
         [],
         [],
       ),
+    'createOrderWithCallback' : IDL.Func(
+        [IDL.Text, Details, Address, ExternalBlob],
+        [Order],
+        [],
+      ),
     'deleteOrder' : IDL.Func([IDL.Text], [], []),
+    'exportOrdersCSV' : IDL.Func([], [IDL.Text], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+    'getAuditLog' : IDL.Func([IDL.Nat], [IDL.Vec(AuditLogEntry)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
+    'getOrdersByStatus' : IDL.Func([OrderStatus], [IDL.Vec(Order)], ['query']),
+    'getSecurityConfig' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'blocklistSize' : IDL.Nat,
+            'allowlistSize' : IDL.Nat,
+            'rateLimitWindow' : IDL.Nat,
+            'maxCallsPerWindow' : IDL.Nat,
+            'enabled' : IDL.Bool,
+          }),
+        ],
+        ['query'],
+      ),
+    'getSecurityEvents' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(SecurityEvent)],
+        ['query'],
+      ),
+    'getSecurityStats' : IDL.Func([], [SecurityStats], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'isOrderOwner' : IDL.Func([IDL.Principal, IDL.Text], [IDL.Bool], ['query']),
+    'removeFromAllowlist' : IDL.Func([IDL.Principal], [], []),
+    'removeFromBlocklist' : IDL.Func([IDL.Principal], [], []),
     'resetAllData' : IDL.Func([], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setSecurityEnabled' : IDL.Func([IDL.Bool], [], []),
     'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
+    'updateRateLimits' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   });
 };
 

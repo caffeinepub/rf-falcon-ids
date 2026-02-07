@@ -1,143 +1,106 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T00:02:03.049Z",
+  "generatedAt": "2026-02-07T04:11:50.270Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 7,
-    "implemented": 6,
+    "total": 5,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix and harden admin detection so admin-only UI appears immediately after an admin logs in (no missing/late admin button, no flicker, no incorrect Access Denied while permissions are still being determined).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/auth/useIsAdmin.ts",
-          "frontend/src/components/AdminGate.tsx",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/auth/useIsAdmin.ts",
-          "frontend/src/components/AdminGate.tsx",
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/App.tsx"
-        ]
+        "summary": "Implement a backend anti-abuse/anti-DDoS protection layer branded as \"TREY C SECURITY\" that rate-limits and blocks abusive callers in a way compatible with Internet Computer constraints (no IP address access), applying protections to all update calls that mutate state (e.g., createOrder, updateOrderStatus, setTrackingNumber, deleteOrder, resetAllData, saveCallerUserProfile).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure the backend exposes a reliable admin-check method used by the frontend (e.g., `isCallerAdmin : query () -> async Bool`) and that admin gating does not depend on missing/unstable methods.",
+        "summary": "Add backend TREY C SECURITY observability endpoints for administrators to view security posture: aggregated counters (allowed/denied/throttled), recent security events, and current configuration (rate-limit parameters, blocklist/allowlist sizes), all admin-gated.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Add an admin-only order deletion workflow so admins can delete an order when a customer cancels (with a confirmation step and immediate UI refresh).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/orders/useDeleteOrder.ts",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/hooks/orders/queryKeys.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/orders/useDeleteOrder.ts",
-          "frontend/src/pages/AdminPanelPage.tsx"
-        ]
+        "summary": "Add backend TREY C SECURITY administrative controls for tuning and response: enable/disable protections, update rate-limit thresholds, clear/reset security counters, and add/remove principals from blocklist/allowlist, all admin-gated and auditable.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-4",
-        "summary": "Replace the current 'Reset All Data' behavior with a correct, admin-only backend reset that actually deletes stored orders (and keep the frontend confirmation dialog aligned with the real behavior).",
+        "summary": "Upgrade the frontend admin experience into a more advanced panel by adding a dedicated \"TREY C SECURITY\" section within the existing AdminPanelPage, showing security metrics, recent security events, and controls to manage protections (toggle, thresholds, blocklist/allowlist management).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/admin/useAdminResetAllData.ts",
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/security/useSecurityStats.ts",
+          "frontend/src/hooks/security/useSecurityEvents.ts",
+          "frontend/src/hooks/security/useSecurityConfig.ts",
+          "frontend/src/hooks/security/useSecurityMutations.ts",
+          "frontend/src/components/admin/TreyCSecuritySection.tsx",
           "frontend/src/pages/AdminPanelPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/admin/useAdminResetAllData.ts",
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/security/useSecurityStats.ts",
+          "frontend/src/hooks/security/useSecurityEvents.ts",
+          "frontend/src/hooks/security/useSecurityConfig.ts",
+          "frontend/src/hooks/security/useSecurityMutations.ts",
+          "frontend/src/components/admin/TreyCSecuritySection.tsx",
           "frontend/src/pages/AdminPanelPage.tsx"
         ]
       },
       {
         "id": "REQ-5",
-        "summary": "Create a distinct, advanced 'hacker/cool' theme for admin users/routes, visually separate from the regular site theme, and apply it consistently across /admin screens and admin-only components.",
+        "summary": "Make the admin panel \"more advanced\" by adding high-value admin tools beyond the current order list: bulk order actions (approve/ship/delete), data export (CSV download) for orders, and an admin audit log view for critical admin actions (e.g., resets, deletes, security config changes).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AdminThemeLayout.tsx",
-          "frontend/index.css",
-          "frontend/src/App.tsx",
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/admin/useBulkOrderActions.ts",
+          "frontend/src/hooks/admin/useAuditLog.ts",
+          "frontend/src/utils/exportOrdersCsv.ts",
+          "frontend/src/components/admin/AuditLogSection.tsx",
+          "frontend/src/components/admin/BulkOrderActionsBar.tsx",
           "frontend/src/pages/AdminPanelPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminThemeLayout.tsx",
-          "frontend/src/App.tsx",
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/admin/useBulkOrderActions.ts",
+          "frontend/src/hooks/admin/useAuditLog.ts",
+          "frontend/src/utils/exportOrdersCsv.ts",
+          "frontend/src/components/admin/AuditLogSection.tsx",
+          "frontend/src/components/admin/BulkOrderActionsBar.tsx",
           "frontend/src/pages/AdminPanelPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-6",
-        "summary": "Add additional advanced admin panel features that improve operational control without changing the user ordering flow: searching, filtering, sorting, quick actions, and lightweight order insights.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/utils/formatters.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/utils/formatters.ts"
-        ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Perform a focused bugfix/stability pass on admin flow and order management UI to reduce glitches (loading states, error handling, query invalidation, and empty/unauthorized states).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/orders/useAllOrders.ts",
-          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-          "frontend/src/hooks/admin/useAdminResetAllData.ts",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/components/AdminGate.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/orders/useAllOrders.ts",
-          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-          "frontend/src/hooks/admin/useAdminResetAllData.ts",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/components/AdminGate.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/AdminGate.tsx",
-    "frontend/src/components/AdminThemeLayout.tsx",
-    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/components/admin/AuditLogSection.tsx",
+    "frontend/src/components/admin/BulkOrderActionsBar.tsx",
+    "frontend/src/components/admin/TreyCSecuritySection.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/admin/useAdminResetAllData.ts",
-    "frontend/src/hooks/auth/useIsAdmin.ts",
-    "frontend/src/hooks/orders/useAllOrders.ts",
-    "frontend/src/hooks/orders/useDeleteOrder.ts",
-    "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-    "frontend/src/index.css",
+    "frontend/src/hooks/admin/useAuditLog.ts",
+    "frontend/src/hooks/admin/useBulkOrderActions.ts",
+    "frontend/src/hooks/orders/queryKeys.ts",
+    "frontend/src/hooks/security/useSecurityConfig.ts",
+    "frontend/src/hooks/security/useSecurityEvents.ts",
+    "frontend/src/hooks/security/useSecurityMutations.ts",
+    "frontend/src/hooks/security/useSecurityStats.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/utils/formatters.ts",
-    "frontend/tailwind.config.js",
+    "frontend/src/utils/exportOrdersCsv.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

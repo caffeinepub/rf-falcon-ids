@@ -18,6 +18,12 @@ export interface Address {
   'first_name' : string,
   'last_name' : string,
 }
+export interface AuditLogEntry {
+  'action' : string,
+  'admin' : Principal,
+  'timestamp' : Time,
+  'details' : string,
+}
 export interface Details {
   'dob' : string,
   'zip' : string,
@@ -45,6 +51,20 @@ export interface Order {
 export type OrderStatus = { 'shipped' : null } |
   { 'pending' : null } |
   { 'approved' : null };
+export interface SecurityEvent {
+  'result' : { 'allowed' : null } |
+    { 'denied' : null } |
+    { 'throttled' : null },
+  'principal' : Principal,
+  'action' : string,
+  'timestamp' : Time,
+  'reason' : string,
+}
+export interface SecurityStats {
+  'deniedCalls' : bigint,
+  'allowedCalls' : bigint,
+  'throttledCalls' : bigint,
+}
 export type Status = { 'shipped' : null } |
   { 'pending' : null } |
   { 'approved' : null };
@@ -81,22 +101,52 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addToAllowlist' : ActorMethod<[Principal], undefined>,
+  'addToBlocklist' : ActorMethod<[Principal], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'bulkApproveOrders' : ActorMethod<[Array<string>], undefined>,
+  'bulkDeleteOrders' : ActorMethod<[Array<string>], undefined>,
+  'bulkShipOrders' : ActorMethod<[Array<string>], undefined>,
+  'clearSecurityCounters' : ActorMethod<[], undefined>,
   'createOrder' : ActorMethod<
     [string, Details, Address, ExternalBlob],
     undefined
   >,
+  'createOrderWithCallback' : ActorMethod<
+    [string, Details, Address, ExternalBlob],
+    Order
+  >,
   'deleteOrder' : ActorMethod<[string], undefined>,
+  'exportOrdersCSV' : ActorMethod<[], string>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getAuditLog' : ActorMethod<[bigint], Array<AuditLogEntry>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getOrder' : ActorMethod<[string], [] | [Order]>,
+  'getOrdersByStatus' : ActorMethod<[OrderStatus], Array<Order>>,
+  'getSecurityConfig' : ActorMethod<
+    [],
+    {
+      'blocklistSize' : bigint,
+      'allowlistSize' : bigint,
+      'rateLimitWindow' : bigint,
+      'maxCallsPerWindow' : bigint,
+      'enabled' : boolean,
+    }
+  >,
+  'getSecurityEvents' : ActorMethod<[bigint], Array<SecurityEvent>>,
+  'getSecurityStats' : ActorMethod<[], SecurityStats>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isOrderOwner' : ActorMethod<[Principal, string], boolean>,
+  'removeFromAllowlist' : ActorMethod<[Principal], undefined>,
+  'removeFromBlocklist' : ActorMethod<[Principal], undefined>,
   'resetAllData' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setSecurityEnabled' : ActorMethod<[boolean], undefined>,
   'setTrackingNumber' : ActorMethod<[string, string], undefined>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
+  'updateRateLimits' : ActorMethod<[bigint, bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

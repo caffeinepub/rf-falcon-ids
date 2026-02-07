@@ -1,153 +1,112 @@
 {
   "kind": "build_request",
-  "title": "Upgrade admin system reliability, add hacker-themed admin UI, and enable order deletion",
+  "title": "Add TREY C SECURITY anti-abuse protections and expand the admin panel with security + management tools",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix and harden admin detection so admin-only UI appears immediately after an admin logs in (no missing/late admin button, no flicker, no incorrect Access Denied while permissions are still being determined).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "Make the admin system more advanced and less glitchy so it pops up right away when a admin is logged in"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When a user logs in as an admin, the header renders an admin affordance (e.g., Admin link/button) as soon as the admin check completes, and does not remain hidden due to stale/undefined state.",
-        "AdminGate shows a clear loading state while checking admin status and does not briefly show Access Denied for an actual admin.",
-        "If the user is authenticated and confirmed admin, navigating to / redirects them to /admin (or an equivalent immediate admin entry flow) without requiring manual refresh.",
-        "If the user is not an admin, /admin reliably shows Access Denied (and never shows admin data)."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Ensure the backend exposes a reliable admin-check method used by the frontend (e.g., `isCallerAdmin : query () -> async Bool`) and that admin gating does not depend on missing/unstable methods.",
+      "text": "Implement a backend anti-abuse/anti-DDoS protection layer branded as \"TREY C SECURITY\" that rate-limits and blocks abusive callers in a way compatible with Internet Computer constraints (no IP address access), applying protections to all update calls that mutate state (e.g., createOrder, updateOrderStatus, setTrackingNumber, deleteOrder, resetAllData, saveCallerUserProfile).",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-6"
         ],
         "quotes": [
-          "Make the admin system more advanced and less glitchy"
+          "Add a super advanced Anti ddos system ... call the security system TREY C SECURITY"
         ]
       },
       "acceptanceCriteria": [
-        "Backend provides a query method that returns whether the caller is an admin (no traps for valid authenticated callers).",
-        "Frontend `useIsAdmin` successfully calls the backend admin-check method and consistently returns `true` for admins and `false` for non-admins.",
-        "Admin-only backend methods still enforce admin permission checks server-side (admin UI cannot bypass authorization)."
+        "Backend enforces configurable per-caller throttling (e.g., per Principal) for protected update methods and rejects requests that exceed limits with a clear error message mentioning TREY C SECURITY.",
+        "Backend supports an admin-managed blocklist/allowlist for Principals, where blocked principals are denied access to protected endpoints.",
+        "Rate-limit state and blocklist persist across upgrades (use stable storage); if existing stable state format changes, add/adjust migration logic accordingly (only if needed).",
+        "All admin-only methods remain admin-only; protections do not weaken existing authorization checks."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add backend TREY C SECURITY observability endpoints for administrators to view security posture: aggregated counters (allowed/denied/throttled), recent security events, and current configuration (rate-limit parameters, blocklist/allowlist sizes), all admin-gated.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "make the admin panel more advanced as well every single thing you think it needs add it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes admin-only methods to fetch security metrics and recent events suitable for rendering in the admin UI.",
+        "Security events include at least: timestamp, caller Principal, action/method name, decision (allowed/throttled/blocked), and reason.",
+        "Non-admin callers cannot access any TREY C SECURITY metrics/config endpoints (must trap/deny)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add an admin-only order deletion workflow so admins can delete an order when a customer cancels (with a confirmation step and immediate UI refresh).",
-      "target": "both",
+      "text": "Add backend TREY C SECURITY administrative controls for tuning and response: enable/disable protections, update rate-limit thresholds, clear/reset security counters, and add/remove principals from blocklist/allowlist, all admin-gated and auditable.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-6"
         ],
         "quotes": [
-          "also make it so I can delete orders to if someone wants to cancel"
+          "make the admin panel more advanced as well every single thing you think it needs add it"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes an admin-only method to delete an order by orderId; deleting a non-existent order returns a clear error.",
-        "Admin Panel UI includes a per-order Delete/Cancel action with a confirmation dialog.",
-        "After deletion, the order disappears from the admin orders list without requiring a full page refresh (React Query cache invalidation/refetch works).",
-        "Non-admins cannot delete orders (frontend hides controls; backend rejects calls)."
+        "Admin-only backend methods exist to update security configuration and to manage blocklist/allowlist entries.",
+        "Admin actions that change security configuration are recorded in the security event log (or a dedicated admin audit log) with timestamp and admin Principal.",
+        "Attempting to call these methods as a non-admin is denied."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Replace the current 'Reset All Data' behavior with a correct, admin-only backend reset that actually deletes stored orders (and keep the frontend confirmation dialog aligned with the real behavior).",
-      "target": "both",
+      "text": "Upgrade the frontend admin experience into a more advanced panel by adding a dedicated \"TREY C SECURITY\" section within the existing AdminPanelPage, showing security metrics, recent security events, and controls to manage protections (toggle, thresholds, blocklist/allowlist management).",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-6"
         ],
         "quotes": [
-          "make the admin panel super cool and op and make sure the site is not buggy"
+          "make the admin panel more advanced as well ... call the security system TREY C SECURITY"
         ]
       },
       "acceptanceCriteria": [
-        "Admin Panel 'Reset All Data' triggers a backend admin-only reset that clears persisted order data in the canister (not only localStorage).",
-        "After reset, `getAllOrders()` returns an empty list and the UI shows the 'No Orders' state.",
-        "The reset action still uses a confirmation dialog and shows pending/loading state while running.",
-        "Non-admin callers cannot invoke reset; backend enforces authorization."
+        "Admin panel includes a clearly labeled \"TREY C SECURITY\" area (tab/section) using the existing cyber admin theme styles.",
+        "The security area renders: (1) KPI cards/counters, (2) a recent-events table/list, (3) blocklist/allowlist management UI, and (4) configuration controls; all wired to backend endpoints via React Query hooks.",
+        "All security actions show success/error toasts and update the displayed data via query invalidation/refetch.",
+        "Non-admin users still cannot access the admin panel (AdminGate behavior unchanged)."
       ]
     },
     {
       "id": "REQ-5",
-      "text": "Create a distinct, advanced 'hacker/cool' theme for admin users/routes, visually separate from the regular site theme, and apply it consistently across /admin screens and admin-only components.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "also make the admins have a custom hacker cool theme make it super advanced"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin routes render with a clearly distinct visual style (e.g., terminal/cyber aesthetic) while non-admin pages keep the existing site theme.",
-        "Theming is implemented without modifying immutable Shadcn component sources; styling is applied via composition, Tailwind classes, and/or CSS variables at the page/layout level.",
-        "Admin theme remains readable and accessible (sufficient contrast for primary text and controls)."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Add additional advanced admin panel features that improve operational control without changing the user ordering flow: searching, filtering, sorting, quick actions, and lightweight order insights.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "add more features you think would be good also ... plus a lot more features make the admin panel super cool and op"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin can filter orders by status (pending/approved/shipped) and search by name, order ID, or ID number.",
-        "Admin can sort orders at least by creation time (newest/oldest).",
-        "Admin has one-click quick actions per order for common status transitions (e.g., Approve, Mark Shipped) with clear success/error feedback.",
-        "Admin panel shows basic summary stats (e.g., counts by status) that update when data changes.",
-        "All new admin controls are disabled appropriately during in-flight mutations to prevent double-submits."
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Perform a focused bugfix/stability pass on admin flow and order management UI to reduce glitches (loading states, error handling, query invalidation, and empty/unauthorized states).",
+      "text": "Make the admin panel \"more advanced\" by adding high-value admin tools beyond the current order list: bulk order actions (approve/ship/delete), data export (CSV download) for orders, and an admin audit log view for critical admin actions (e.g., resets, deletes, security config changes).",
       "target": "both",
       "source": {
         "messageIds": [
           "msg-6"
         ],
         "quotes": [
-          "make sure the site is not buggy"
+          "make the admin panel more advanced as well every single thing you think it needs add it"
         ]
       },
       "acceptanceCriteria": [
-        "All admin mutations (status update, tracking save, delete, reset) surface actionable error messages and do not leave the UI in a stuck loading state.",
-        "React Query cache invalidation is consistent so lists/details stay in sync after admin actions.",
-        "Unauthorized backend calls trap with clear messages and do not expose data.",
-        "Admin UI handles empty states and null/undefined values (e.g., trackingNumber) without console errors."
+        "Admin can select multiple orders and apply bulk actions with confirmation prompts; UI clearly shows progress and per-action outcomes.",
+        "Admin can export the currently filtered order list to a CSV file from the UI (frontend-generated CSV is acceptable).",
+        "Backend records critical admin actions in an audit log that is admin-readable; admin panel provides a view to browse/filter recent audit entries.",
+        "Existing single-order actions continue to work as before."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo.",
-    "Only generate backend/migration.mo if a stable-state schema change is required; prefer additive/non-breaking changes when possible.",
-    "Do not edit files under frontend/src/components/ui (Shadcn components); compose them instead.",
-    "Do not edit immutable paths listed in SYSTEM_CONTEXT.frontend.immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
-    "Use English for all user-facing text."
+    "Backend must remain a single-actor Motoko canister; keep all logic in backend/main.mo (single-actor architecture).",
+    "Do not edit files under frontend/src/components/ui (compose existing shadcn components instead).",
+    "Do not modify immutable frontend hook files listed by the platform (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
+    "Anti-DDoS protections must not depend on client IP addresses or third-party services; use Internet Computer-compatible signals (e.g., Principal/call patterns) only."
   ],
   "nonGoals": [
-    "Add third-party authentication providers (only Internet Identity is supported).",
-    "Add real-time features (WebSockets/live updates).",
-    "Add external databases or external backend services.",
-    "Add payment processing or checkout flow changes."
+    "Implementing network-level DDoS mitigation outside the canister (e.g., CDN/WAF, IP-based blocking).",
+    "Adding third-party authentication providers (only Internet Identity is supported).",
+    "Real-time features (websockets/push notifications) for security events."
   ],
   "imageRequirements": {
     "required": [],

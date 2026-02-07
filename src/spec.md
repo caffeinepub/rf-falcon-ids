@@ -1,15 +1,16 @@
 # Specification
 
 ## Summary
-**Goal:** Improve admin reliability and stability, add a distinct hacker-themed admin UI, and expand admin order management (including order deletion and a correct reset).
+**Goal:** Add “TREY C SECURITY” anti-abuse protections to state-mutating backend calls and expand the admin panel with security monitoring and higher-value management tools.
 
 **Planned changes:**
-- Harden frontend admin detection and gating to eliminate flicker/late rendering, show a clear loading state, and ensure correct redirects (/ → /admin for confirmed admins) and Access Denied behavior for non-admins.
-- Add/standardize a reliable backend admin-check query used by the frontend, while keeping server-side authorization for all admin-only methods.
-- Implement an admin-only order deletion workflow (backend delete by orderId + frontend delete action with confirmation and immediate list refresh).
-- Replace “Reset All Data” with an admin-only backend reset that actually clears persisted order data, keeping the existing confirmation/pending UI aligned with real behavior.
-- Apply a distinct hacker/cyber theme for admin routes and admin-only components, separate from the public site theme.
-- Add admin panel operational features: search, filter by status, sort by creation time, quick per-order status actions, and basic order summary stats.
-- Perform a focused bugfix/stability pass across admin/order management (loading/error handling, cache invalidation, empty/unauthorized states).
+- Implement a TREY C SECURITY backend protection layer that rate-limits protected state-mutating update methods per-caller (Principal), with configurable thresholds and clear TREY C SECURITY error messaging when limits are exceeded.
+- Add admin-managed allowlist/blocklist controls for Principals that deny blocked callers from protected endpoints, without weakening existing admin-only authorization.
+- Persist security configuration, counters, and lists across upgrades using stable storage (including migration updates only if needed).
+- Add admin-only TREY C SECURITY observability endpoints for aggregated counters, recent security events (timestamp, caller Principal, method/action, decision, reason), and current configuration summary.
+- Add admin-only TREY C SECURITY administrative endpoints to enable/disable protections, tune rate-limit thresholds, clear/reset counters, and manage allowlist/blocklist entries, with admin actions recorded to an audit trail.
+- Upgrade the existing AdminPanelPage with a dedicated “TREY C SECURITY” section (tab/section) showing KPIs, recent-events list/table, allowlist/blocklist management, and configuration controls, wired via React Query hooks with toasts and query refetch/invalidation.
+- Enhance admin order management with bulk order actions (approve/ship/delete) including confirmations and per-action outcomes, and add CSV export for the currently filtered orders.
+- Add a backend admin audit log for critical admin actions (e.g., resets, deletes, security config changes) and a corresponding admin UI view to browse/filter recent entries.
 
-**User-visible outcome:** Admins see the admin UI immediately and consistently after login, get a hacker-themed admin area with better controls (search/filter/sort/quick actions/stats), and can delete canceled orders or fully reset stored orders with confirmations and reliable UI updates; non-admins remain blocked from admin data and actions.
+**User-visible outcome:** Admins get a new “TREY C SECURITY” area in the admin panel to monitor and tune anti-abuse protections (including event history and allow/block lists), plus bulk order tools, CSV export, and an audit log view; abusive callers are throttled/blocked on protected state-changing operations.

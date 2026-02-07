@@ -98,21 +98,21 @@ export interface Address {
     last_name: string;
 }
 export type Time = bigint;
+export interface SecurityEvent {
+    result: Variant_allowed_denied_throttled;
+    principal: Principal;
+    action: string;
+    timestamp: Time;
+    reason: string;
+}
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
-export interface Details {
-    dob: string;
-    zip: string;
-    height: string;
-    city: string;
-    address: string;
-    gender: string;
-    first_name: string;
-    last_name: string;
-    state_name: string;
-    id_number: string;
-    eye_color: string;
+export interface AuditLogEntry {
+    action: string;
+    admin: Principal;
+    timestamp: Time;
+    details: string;
 }
 export interface _CaffeineStorageCreateCertificateResult {
     method: string;
@@ -127,6 +127,24 @@ export interface Order {
     address: Address;
     details: Details;
     photo: ExternalBlob;
+}
+export interface Details {
+    dob: string;
+    zip: string;
+    height: string;
+    city: string;
+    address: string;
+    gender: string;
+    first_name: string;
+    last_name: string;
+    state_name: string;
+    id_number: string;
+    eye_color: string;
+}
+export interface SecurityStats {
+    deniedCalls: bigint;
+    allowedCalls: bigint;
+    throttledCalls: bigint;
 }
 export interface UserProfile {
     name: string;
@@ -145,6 +163,11 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_allowed_denied_throttled {
+    allowed = "allowed",
+    denied = "denied",
+    throttled = "throttled"
+}
 export interface backendInterface {
     _caffeineStorageBlobIsLive(hash: Uint8Array): Promise<boolean>;
     _caffeineStorageBlobsToDelete(): Promise<Array<Uint8Array>>;
@@ -153,21 +176,45 @@ export interface backendInterface {
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    addToAllowlist(principal: Principal): Promise<void>;
+    addToBlocklist(principal: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    bulkApproveOrders(orderIds: Array<string>): Promise<void>;
+    bulkDeleteOrders(orderIds: Array<string>): Promise<void>;
+    bulkShipOrders(orderIds: Array<string>): Promise<void>;
+    clearSecurityCounters(): Promise<void>;
     createOrder(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<void>;
+    createOrderWithCallback(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<Order>;
     deleteOrder(orderId: string): Promise<void>;
+    exportOrdersCSV(): Promise<string>;
     getAllOrders(): Promise<Array<Order>>;
+    getAuditLog(limit: bigint): Promise<Array<AuditLogEntry>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
+    getOrdersByStatus(status: OrderStatus): Promise<Array<Order>>;
+    getSecurityConfig(): Promise<{
+        blocklistSize: bigint;
+        allowlistSize: bigint;
+        rateLimitWindow: bigint;
+        maxCallsPerWindow: bigint;
+        enabled: boolean;
+    }>;
+    getSecurityEvents(limit: bigint): Promise<Array<SecurityEvent>>;
+    getSecurityStats(): Promise<SecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    isOrderOwner(caller: Principal, orderId: string): Promise<boolean>;
+    removeFromAllowlist(principal: Principal): Promise<void>;
+    removeFromBlocklist(principal: Principal): Promise<void>;
     resetAllData(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setSecurityEnabled(enabled: boolean): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
+    updateRateLimits(rateLimitWindow: bigint, maxCallsPerWindow: bigint): Promise<void>;
 }
-import type { Address as _Address, Details as _Details, ExternalBlob as _ExternalBlob, Order as _Order, OrderStatus as _OrderStatus, Status as _Status, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { Address as _Address, Details as _Details, ExternalBlob as _ExternalBlob, Order as _Order, OrderStatus as _OrderStatus, SecurityEvent as _SecurityEvent, Status as _Status, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -268,6 +315,34 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async addToAllowlist(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addToAllowlist(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addToAllowlist(arg0);
+            return result;
+        }
+    }
+    async addToBlocklist(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addToBlocklist(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addToBlocklist(arg0);
+            return result;
+        }
+    }
     async assignCallerUserRole(arg0: Principal, arg1: UserRole): Promise<void> {
         if (this.processError) {
             try {
@@ -279,6 +354,62 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n8(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async bulkApproveOrders(arg0: Array<string>): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkApproveOrders(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkApproveOrders(arg0);
+            return result;
+        }
+    }
+    async bulkDeleteOrders(arg0: Array<string>): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkDeleteOrders(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkDeleteOrders(arg0);
+            return result;
+        }
+    }
+    async bulkShipOrders(arg0: Array<string>): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkShipOrders(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkShipOrders(arg0);
+            return result;
+        }
+    }
+    async clearSecurityCounters(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearSecurityCounters();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearSecurityCounters();
             return result;
         }
     }
@@ -296,6 +427,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async createOrderWithCallback(arg0: string, arg1: Details, arg2: Address, arg3: ExternalBlob): Promise<Order> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createOrderWithCallback(arg0, arg1, arg2, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3));
+                return from_candid_Order_n11(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createOrderWithCallback(arg0, arg1, arg2, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg3));
+            return from_candid_Order_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async deleteOrder(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -310,18 +455,46 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async exportOrdersCSV(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.exportOrdersCSV();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.exportOrdersCSV();
+            return result;
+        }
+    }
     async getAllOrders(): Promise<Array<Order>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllOrders();
-                return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllOrders();
-            return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAuditLog(arg0: bigint): Promise<Array<AuditLogEntry>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAuditLog(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAuditLog(arg0);
+            return result;
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
@@ -366,6 +539,68 @@ export class Backend implements backendInterface {
             return from_candid_opt_n22(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getOrdersByStatus(arg0: OrderStatus): Promise<Array<Order>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getOrdersByStatus(to_candid_OrderStatus_n23(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getOrdersByStatus(to_candid_OrderStatus_n23(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getSecurityConfig(): Promise<{
+        blocklistSize: bigint;
+        allowlistSize: bigint;
+        rateLimitWindow: bigint;
+        maxCallsPerWindow: bigint;
+        enabled: boolean;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSecurityConfig();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSecurityConfig();
+            return result;
+        }
+    }
+    async getSecurityEvents(arg0: bigint): Promise<Array<SecurityEvent>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSecurityEvents(arg0);
+                return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSecurityEvents(arg0);
+            return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getSecurityStats(): Promise<SecurityStats> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSecurityStats();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSecurityStats();
+            return result;
+        }
+    }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
@@ -391,6 +626,48 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isCallerAdmin();
+            return result;
+        }
+    }
+    async isOrderOwner(arg0: Principal, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isOrderOwner(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isOrderOwner(arg0, arg1);
+            return result;
+        }
+    }
+    async removeFromAllowlist(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.removeFromAllowlist(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.removeFromAllowlist(arg0);
+            return result;
+        }
+    }
+    async removeFromBlocklist(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.removeFromBlocklist(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.removeFromBlocklist(arg0);
             return result;
         }
     }
@@ -422,6 +699,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setSecurityEnabled(arg0: boolean): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setSecurityEnabled(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setSecurityEnabled(arg0);
+            return result;
+        }
+    }
     async setTrackingNumber(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -450,15 +741,32 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateRateLimits(arg0: bigint, arg1: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateRateLimits(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateRateLimits(arg0, arg1);
+            return result;
+        }
+    }
 }
-async function from_candid_ExternalBlob_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ExternalBlob): Promise<ExternalBlob> {
+async function from_candid_ExternalBlob_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ExternalBlob): Promise<ExternalBlob> {
     return await _downloadFile(value);
 }
-async function from_candid_Order_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Order): Promise<Order> {
-    return await from_candid_record_n13(_uploadFile, _downloadFile, value);
+async function from_candid_Order_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Order): Promise<Order> {
+    return await from_candid_record_n12(_uploadFile, _downloadFile, value);
 }
-function from_candid_Status_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Status): Status {
-    return from_candid_variant_n15(_uploadFile, _downloadFile, value);
+function from_candid_SecurityEvent_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SecurityEvent): SecurityEvent {
+    return from_candid_record_n27(_uploadFile, _downloadFile, value);
+}
+function from_candid_Status_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Status): Status {
+    return from_candid_variant_n14(_uploadFile, _downloadFile, value);
 }
 function from_candid_UserRole_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
     return from_candid_variant_n21(_uploadFile, _downloadFile, value);
@@ -466,17 +774,17 @@ function from_candid_UserRole_n20(_uploadFile: (file: ExternalBlob) => Promise<U
 function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+function from_candid_opt_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Principal]): Principal | null {
+function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Principal]): Principal | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
 async function from_candid_opt_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Order]): Promise<Order | null> {
-    return value.length === 0 ? null : await from_candid_Order_n12(_uploadFile, _downloadFile, value[0]);
+    return value.length === 0 ? null : await from_candid_Order_n11(_uploadFile, _downloadFile, value[0]);
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
     return value.length === 0 ? null : value[0];
@@ -484,7 +792,7 @@ function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Ar
 function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
 }
-async function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+async function from_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
     status: _Status;
     trackingNumber: [] | [string];
@@ -505,13 +813,40 @@ async function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promi
 }> {
     return {
         id: value.id,
-        status: from_candid_Status_n14(_uploadFile, _downloadFile, value.status),
-        trackingNumber: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.trackingNumber)),
-        owner: record_opt_to_undefined(from_candid_opt_n17(_uploadFile, _downloadFile, value.owner)),
+        status: from_candid_Status_n13(_uploadFile, _downloadFile, value.status),
+        trackingNumber: record_opt_to_undefined(from_candid_opt_n15(_uploadFile, _downloadFile, value.trackingNumber)),
+        owner: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.owner)),
         creationTime: value.creationTime,
         address: value.address,
         details: value.details,
-        photo: await from_candid_ExternalBlob_n18(_uploadFile, _downloadFile, value.photo)
+        photo: await from_candid_ExternalBlob_n17(_uploadFile, _downloadFile, value.photo)
+    };
+}
+function from_candid_record_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    result: {
+        allowed: null;
+    } | {
+        denied: null;
+    } | {
+        throttled: null;
+    };
+    principal: Principal;
+    action: string;
+    timestamp: _Time;
+    reason: string;
+}): {
+    result: Variant_allowed_denied_throttled;
+    principal: Principal;
+    action: string;
+    timestamp: Time;
+    reason: string;
+} {
+    return {
+        result: from_candid_variant_n28(_uploadFile, _downloadFile, value.result),
+        principal: value.principal,
+        action: value.action,
+        timestamp: value.timestamp,
+        reason: value.reason
     };
 }
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -526,7 +861,7 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
         topped_up_amount: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.topped_up_amount))
     };
 }
-function from_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     shipped: null;
 } | {
     pending: null;
@@ -544,8 +879,20 @@ function from_candid_variant_n21(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-async function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Order>): Promise<Array<Order>> {
-    return await Promise.all(value.map(async (x)=>await from_candid_Order_n12(_uploadFile, _downloadFile, x)));
+function from_candid_variant_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    allowed: null;
+} | {
+    denied: null;
+} | {
+    throttled: null;
+}): Variant_allowed_denied_throttled {
+    return "allowed" in value ? Variant_allowed_denied_throttled.allowed : "denied" in value ? Variant_allowed_denied_throttled.denied : "throttled" in value ? Variant_allowed_denied_throttled.throttled : value;
+}
+async function from_candid_vec_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Order>): Promise<Array<Order>> {
+    return await Promise.all(value.map(async (x)=>await from_candid_Order_n11(_uploadFile, _downloadFile, x)));
+}
+function from_candid_vec_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SecurityEvent>): Array<SecurityEvent> {
+    return value.map((x)=>from_candid_SecurityEvent_n26(_uploadFile, _downloadFile, x));
 }
 async function to_candid_ExternalBlob_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
     return await _uploadFile(value);

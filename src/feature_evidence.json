@@ -2,54 +2,15 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-and-harden-admin-detection-so-admin-only-ui-appears-immediately-after-an-admin-logs-in-no-missing-late-admin-button-no-flicker-no-incorrect-access-denied-while-permissions-are-still-being-determined",
-      "featureTitle": "Fix and harden admin detection so admin-only UI appears immediately after an admin logs in (no missing/late admin button, no flicker, no incorrect Access Denied while permissions are still being determined).",
+      "featureId": "feature-upgrade-the-frontend-admin-experience-into-a-more-advanced-panel-by-adding-a-dedicated-trey-c-security-section-within-the-existing-adminpanelpage-showing-security-metrics-recent-security-events-and-controls-to-manage-protections-toggle-thresholds-blocklist-allowlist-management",
+      "featureTitle": "Upgrade the frontend admin experience into a more advanced panel by adding a dedicated \"TREY C SECURITY\" section within the existing AdminPanelPage, showing security metrics, recent security events, and controls to manage protections (toggle, thresholds, blocklist/allowlist management).",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/AdminGate.tsx",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/hooks/auth/useIsAdmin.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-an-admin-only-order-deletion-workflow-so-admins-can-delete-an-order-when-a-customer-cancels-with-a-confirmation-step-and-immediate-ui-refresh",
-      "featureTitle": "Add an admin-only order deletion workflow so admins can delete an order when a customer cancels (with a confirmation step and immediate UI refresh).",
-      "files": [
-        "frontend/src/hooks/orders/useDeleteOrder.ts",
-        "frontend/src/pages/AdminPanelPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-replace-the-current-reset-all-data-behavior-with-a-correct-admin-only-backend-reset-that-actually-deletes-stored-orders-and-keep-the-frontend-confirmation-dialog-aligned-with-the-real-behavior",
-      "featureTitle": "Replace the current 'Reset All Data' behavior with a correct, admin-only backend reset that actually deletes stored orders (and keep the frontend confirmation dialog aligned with the real behavior).",
-      "files": [
-        "frontend/src/hooks/admin/useAdminResetAllData.ts",
+        "frontend/src/components/admin/TreyCSecuritySection.tsx",
+        "frontend/src/hooks/orders/queryKeys.ts",
+        "frontend/src/hooks/security/useSecurityConfig.ts",
+        "frontend/src/hooks/security/useSecurityEvents.ts",
+        "frontend/src/hooks/security/useSecurityMutations.ts",
+        "frontend/src/hooks/security/useSecurityStats.ts",
         "frontend/src/pages/AdminPanelPage.tsx"
       ],
       "components": [
@@ -67,12 +28,16 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-create-a-distinct-advanced-hacker-cool-theme-for-admin-users-routes-visually-separate-from-the-regular-site-theme-and-apply-it-consistently-across-admin-screens-and-admin-only-components",
-      "featureTitle": "Create a distinct, advanced 'hacker/cool' theme for admin users/routes, visually separate from the regular site theme, and apply it consistently across /admin screens and admin-only components.",
+      "featureId": "feature-make-the-admin-panel-more-advanced-by-adding-high-value-admin-tools-beyond-the-current-order-list-bulk-order-actions-approve-ship-delete-data-export-csv-download-for-orders-and-an-admin-audit-log-view-for-critical-admin-actions-e-g-resets-deletes-security-config-changes",
+      "featureTitle": "Make the admin panel \"more advanced\" by adding high-value admin tools beyond the current order list: bulk order actions (approve/ship/delete), data export (CSV download) for orders, and an admin audit log view for critical admin actions (e.g., resets, deletes, security config changes).",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/AdminThemeLayout.tsx",
-        "frontend/src/pages/AdminPanelPage.tsx"
+        "frontend/src/components/admin/AuditLogSection.tsx",
+        "frontend/src/components/admin/BulkOrderActionsBar.tsx",
+        "frontend/src/hooks/admin/useAuditLog.ts",
+        "frontend/src/hooks/admin/useBulkOrderActions.ts",
+        "frontend/src/hooks/orders/queryKeys.ts",
+        "frontend/src/pages/AdminPanelPage.tsx",
+        "frontend/src/utils/exportOrdersCsv.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -85,52 +50,6 @@
       ],
       "testIds": [
         "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-additional-advanced-admin-panel-features-that-improve-operational-control-without-changing-the-user-ordering-flow-searching-filtering-sorting-quick-actions-and-lightweight-order-insights",
-      "featureTitle": "Add additional advanced admin panel features that improve operational control without changing the user ordering flow: searching, filtering, sorting, quick actions, and lightweight order insights.",
-      "files": [
-        "frontend/src/pages/AdminPanelPage.tsx",
-        "frontend/src/utils/formatters.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-perform-a-focused-bugfix-stability-pass-on-admin-flow-and-order-management-ui-to-reduce-glitches-loading-states-error-handling-query-invalidation-and-empty-unauthorized-states",
-      "featureTitle": "Perform a focused bugfix/stability pass on admin flow and order management UI to reduce glitches (loading states, error handling, query invalidation, and empty/unauthorized states).",
-      "files": [
-        "frontend/src/components/AdminGate.tsx",
-        "frontend/src/hooks/admin/useAdminResetAllData.ts",
-        "frontend/src/hooks/orders/useAllOrders.ts",
-        "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-        "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-        "frontend/src/pages/AdminPanelPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-7"
       ],
       "confidence": "high"
     }
