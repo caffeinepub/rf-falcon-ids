@@ -41,6 +41,13 @@
         --sidebar-accent-foreground: 0.95 0 0;
         --sidebar-border: 0.85 0 0 / 12%;
         --sidebar-ring: 0.75 0 0;
+        
+        /* Cyber/Hacker theme colors for admin */
+        --cyber-primary: 0.70 0.15 160;
+        --cyber-accent: 0.75 0.18 140;
+        --cyber-bg: 0.08 0 0;
+        --cyber-card: 0.12 0.02 160;
+        --cyber-muted: 0.50 0.08 160;
     }
 
     * {
@@ -100,6 +107,52 @@
 
     .gothic-border {
         border-image: linear-gradient(135deg, #c0c0c0 0%, #606060 50%, #c0c0c0 100%) 1;
+    }
+
+    /* Admin theme styles */
+    .admin-theme {
+        background: oklch(var(--cyber-bg));
+        color: oklch(var(--cyber-primary));
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    .cyber-grid-bg {
+        position: fixed;
+        inset: 0;
+        background-image: 
+            linear-gradient(oklch(var(--cyber-primary) / 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, oklch(var(--cyber-primary) / 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .cyber-scan-line {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            transparent 0%,
+            oklch(var(--cyber-primary) / 0.05) 50%,
+            transparent 100%
+        );
+        animation: cyber-scan 8s linear infinite;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    @keyframes cyber-scan {
+        0% {
+            transform: translateY(-100%);
+        }
+        100% {
+            transform: translateY(100%);
+        }
+    }
+
+    .shadow-cyber {
+        box-shadow: 0 0 20px oklch(var(--cyber-primary) / 0.15);
     }
 }
 

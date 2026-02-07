@@ -17,8 +17,11 @@ export function useSetTrackingNumber() {
       return actor.setTrackingNumber(orderId, trackingNumber);
     },
     onSuccess: () => {
-      // Invalidate all order queries to reflect the updated tracking number
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
+    },
+    onError: (error: any) => {
+      console.error('Set tracking number error:', error);
+      throw error;
     },
   });
 }

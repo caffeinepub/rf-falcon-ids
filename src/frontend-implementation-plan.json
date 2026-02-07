@@ -1,63 +1,182 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin order tracking number management and post-submit payment instruction toast",
+  "title": "Harden admin gating, add hacker-themed admin UI, and improve admin order operations",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Update Admin Panel to add/edit per-order tracking numbers (only when not pending) and persist updates with toast feedback and React Query refetching.",
+      "id": "REQ-1",
+      "summary": "Harden admin detection and gating to eliminate flicker, stale state, and delayed admin affordances; add reliable admin entry redirect behavior.",
       "acceptanceCriteria": [
-        "For each order in the admin orders list, there is a tracking number input/display area.",
-        "When an order status is pending, the tracking number input is hidden or disabled with a clear UI indication that tracking is available only after pending.",
-        "When an order status is approved or shipped, the admin can save/update the tracking number and receives a success toast on completion and an error toast on failure.",
-        "After saving, the Admin Panel reflects the updated tracking number without a manual refresh (via React Query invalidation/refetch)."
+        "When a user logs in as an admin, the header renders an admin affordance (e.g., Admin link/button) as soon as the admin check completes, and does not remain hidden due to stale/undefined state.",
+        "AdminGate shows a clear loading state while checking admin status and does not briefly show Access Denied for an actual admin.",
+        "If the user is authenticated and confirmed admin, navigating to / redirects them to /admin (or an equivalent immediate admin entry flow) without requiring manual refresh.",
+        "If the user is not an admin, /admin reliably shows Access Denied (and never shows admin data)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-          "operation": "create",
-          "description": "Create a React Query mutation hook that calls the backend capability to set/update an order tracking number and invalidates relevant order queries on success. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/hooks/auth/useIsAdmin.ts",
+          "operation": "modify",
+          "description": "Make admin-check state deterministic by aligning React Query loading/fetched flags with actor/identity readiness (avoid returning false while permissions are still being determined); keep calling the backend capability isCallerAdmin and handle errors consistently."
         },
         {
-          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "path": "frontend/src/components/AdminGate.tsx",
           "operation": "modify",
-          "description": "Ensure query keys support invalidating admin order list and individual order detail after a tracking-number update (reuse existing keys where possible)."
+          "description": "Update gating logic to use the hardened admin-check state (loading vs resolved) so it shows a clear loading view during checks and never flashes Access Denied for real admins; ensure it reliably blocks non-admins."
+        },
+        {
+          "path": "frontend/src/components/BrandHeader.tsx",
+          "operation": "modify",
+          "description": "Ensure the Admin link/button behavior is stable: show it immediately after admin status resolves true; avoid flicker/missing admin affordance due to undefined/stale admin state; optionally render a disabled/placeholder admin affordance while admin status is being checked for authenticated users."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Adjust the index (/) routing behavior so authenticated confirmed admins are immediately routed into the admin entry flow (/admin) after the admin check completes, while non-admin authenticated users go to the dashboard; preserve existing AuthGate/AdminGate protections for /admin."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add an admin-only order deletion workflow in the admin UI with confirmation and immediate list refresh.",
+      "acceptanceCriteria": [
+        "Backend exposes an admin-only method to delete an order by orderId; deleting a non-existent order returns a clear error.",
+        "Admin Panel UI includes a per-order Delete/Cancel action with a confirmation dialog.",
+        "After deletion, the order disappears from the admin orders list without requiring a full page refresh (React Query cache invalidation/refetch works).",
+        "Non-admins cannot delete orders (frontend hides controls; backend rejects calls)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/orders/useDeleteOrder.ts",
+          "operation": "create",
+          "description": "Create a React Query mutation hook that calls the backend capability to delete an order and invalidates admin/user order queries to refresh UI immediately."
         },
         {
           "path": "frontend/src/pages/AdminPanelPage.tsx",
           "operation": "modify",
-          "description": "Add a tracking number UI per order in the admin list: show current tracking number when present; render an editable input + save action only when status is approved/shipped; disable or hide input for pending with a clear message; wire to the new useSetTrackingNumber mutation; show success/error toasts using the existing sonner toast pattern; invalidate/refetch orders after save so the list updates without manual refresh. Verify the component's usage instructions before implementing."
+          "description": "Add a per-order Delete/Cancel action that opens a confirmation dialog and triggers the delete mutation; disable controls during in-flight deletion and show success/error feedback; ensure list updates via query invalidation without full refresh."
+        },
+        {
+          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "operation": "modify",
+          "description": "If needed, refine/extend query keys to ensure consistent invalidation for admin list + any related order detail/user order queries after deletion."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Display an order’s tracking number on the Order Details page only when it exists.",
+      "summary": "Align 'Reset All Data' in the admin UI with the real backend reset behavior and keep confirmations/loading states correct.",
       "acceptanceCriteria": [
-        "If the order has a tracking number, Order Details displays it in a readable field/section.",
-        "If the order has no tracking number, Order Details does not show a misleading empty value."
+        "Admin Panel 'Reset All Data' triggers a backend admin-only reset that clears persisted order data in the canister (not only localStorage).",
+        "After reset, getAllOrders() returns an empty list and the UI shows the 'No Orders' state.",
+        "The reset action still uses a confirmation dialog and shows pending/loading state while running.",
+        "Non-admin callers cannot invoke reset; backend enforces authorization."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/OrderDetailPage.tsx",
+          "path": "frontend/src/hooks/admin/useAdminResetAllData.ts",
           "operation": "modify",
-          "description": "Add a readable 'Tracking Number' field/section that conditionally renders only when order.trackingNumber is present; avoid rendering placeholder/empty values when missing."
+          "description": "Replace the current local-only reset with a call to the backend capability resetAllData; keep local cleanup (e.g., user_orders_* keys) but ensure the backend reset runs; keep robust invalidation for all order/admin-related queries."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Keep the existing confirmation dialog but ensure copy, pending state, and result handling match the true behavior (backend reset + UI refresh to 'No Orders'); prevent double-submit while resetting and show actionable errors."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "After successful order submission, show a notification popup/toast instructing users to contact the owner for payment methods.",
+      "summary": "Implement a distinct hacker/cyber admin theme for /admin routes and admin-only components without modifying Shadcn component sources.",
       "acceptanceCriteria": [
-        "On successful order creation, the UI shows a notification/toast that reads exactly: \"Please contact the owner for payment methods\".",
-        "The notification appears after a successful submission (not on validation errors or backend failures).",
-        "The existing success flow (e.g., navigation to the dashboard) still occurs."
+        "Admin routes render with a clearly distinct visual style (e.g., terminal/cyber aesthetic) while non-admin pages keep the existing site theme.",
+        "Theming is implemented without modifying immutable Shadcn component sources; styling is applied via composition, Tailwind classes, and/or CSS variables at the page/layout level.",
+        "Admin theme remains readable and accessible (sufficient contrast for primary text and controls)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "path": "frontend/src/components/AdminThemeLayout.tsx",
+          "operation": "create",
+          "description": "Create a lightweight wrapper/layout that applies an admin-only theme scope (e.g., a root class for CSS variable overrides + background effects) for /admin screens; compose existing components instead of modifying Shadcn sources."
+        },
+        {
+          "path": "frontend/index.css",
           "operation": "modify",
-          "description": "On successful createOrder.mutateAsync completion, display a sonner toast whose text is exactly \"Please contact the owner for payment methods\" and still navigate to the dashboard; ensure the message is not shown on validation errors or failed submissions. Verify the component's usage instructions before implementing."
+          "description": "Add a scoped admin theme (e.g., .admin-theme) using CSS variables and/or utility-friendly base styles to create a terminal/cyber aesthetic while keeping contrast/readability; ensure non-admin theme remains unchanged."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wrap the /admin route content with AdminThemeLayout so the hacker theme is applied consistently across admin screens and admin-only components."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Adjust admin page composition/classes where needed so the new admin theme looks cohesive across cards, headers, controls, and empty states without editing files under frontend/src/components/ui."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Add advanced admin panel controls (search/filter/sort, quick actions, and order insights) without changing the customer ordering flow.",
+      "acceptanceCriteria": [
+        "Admin can filter orders by status (pending/approved/shipped) and search by name, order ID, or ID number.",
+        "Admin can sort orders at least by creation time (newest/oldest).",
+        "Admin has one-click quick actions per order for common status transitions (e.g., Approve, Mark Shipped) with clear success/error feedback.",
+        "Admin panel shows basic summary stats (e.g., counts by status) that update when data changes.",
+        "All new admin controls are disabled appropriately during in-flight mutations to prevent double-submits."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Add UI + derived client-side logic for search (name/order ID/ID number), status filter, and sort (creation time newest/oldest); add summary stats (counts by status) that update based on the displayed dataset; add one-click quick action buttons per order for common status transitions using existing mutation hooks; ensure all controls disable appropriately during in-flight mutations and show clear feedback."
+        },
+        {
+          "path": "frontend/src/utils/formatters.ts",
+          "operation": "modify",
+          "description": "If needed, add small, reusable formatting helpers for admin insights (e.g., time display) used by AdminPanelPage while keeping user-facing text in English."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Stabilize admin flow and order management UI with better loading/error handling, consistent invalidation, and safe handling of missing values.",
+      "acceptanceCriteria": [
+        "All admin mutations (status update, tracking save, delete, reset) surface actionable error messages and do not leave the UI in a stuck loading state.",
+        "React Query cache invalidation is consistent so lists/details stay in sync after admin actions.",
+        "Unauthorized backend calls trap with clear messages and do not expose data.",
+        "Admin UI handles empty states and null/undefined values (e.g., trackingNumber) without console errors."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/orders/useAllOrders.ts",
+          "operation": "modify",
+          "description": "Improve resilience for admin order loading: ensure query enablement aligns with actor readiness, handle and surface errors cleanly (including unauthorized), and avoid console errors on transient states."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "operation": "modify",
+          "description": "Ensure consistent query invalidation and robust error propagation for status updates so admin list and any user/order views remain in sync after mutations."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "operation": "modify",
+          "description": "Harden tracking save mutation behavior: consistent invalidation, clear error propagation, and ensure UI can safely handle missing trackingNumber values without crashes."
+        },
+        {
+          "path": "frontend/src/hooks/admin/useAdminResetAllData.ts",
+          "operation": "modify",
+          "description": "Ensure reset mutation never leaves UI stuck: propagate errors, invalidate all relevant queries consistently, and keep local cleanup aligned with backend reset behavior."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Add focused UI stability improvements: show clear loading/error/empty states, prevent double-submits across all mutations (status, tracking, delete, reset), and ensure null/undefined values render safely without console errors."
+        },
+        {
+          "path": "frontend/src/components/AdminGate.tsx",
+          "operation": "modify",
+          "description": "Ensure unauthorized state is stable and never leaks admin data; keep a clear loading state during permission checks and handle failed admin checks gracefully."
         }
       ]
     }

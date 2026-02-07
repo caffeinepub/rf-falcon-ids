@@ -1,5 +1,7 @@
-import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
+import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { useInternetIdentity } from './hooks/useInternetIdentity';
+import { useIsAdmin } from './hooks/auth/useIsAdmin';
+import { useEffect } from 'react';
 import LandingPage from './pages/LandingPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
@@ -10,6 +12,7 @@ import AdminPanelPage from './pages/AdminPanelPage';
 import AppShell from './components/AppShell';
 import AuthGate from './components/AuthGate';
 import AdminGate from './components/AdminGate';
+import AdminThemeLayout from './components/AdminThemeLayout';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
 
@@ -27,11 +30,32 @@ const rootRoute = createRootRoute({
 
 function IndexComponent() {
   const { identity } = useInternetIdentity();
+  const { data: isAdmin, isLoading: adminLoading, isFetched } = useIsAdmin();
+  const navigate = useNavigate();
   const isAuthenticated = !!identity;
-  
-  if (isAuthenticated) {
-    return <DashboardPage />;
+
+  useEffect(() => {
+    if (isAuthenticated && isFetched && !adminLoading) {
+      if (isAdmin) {
+        navigate({ to: '/admin' });
+      } else {
+        navigate({ to: '/dashboard' });
+      }
+    }
+  }, [isAuthenticated, isAdmin, adminLoading, isFetched, navigate]);
+
+  if (isAuthenticated && (adminLoading || !isFetched)) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-pulse text-chrome-300">Loading...</div>
+      </div>
+    );
   }
+
+  if (isAuthenticated) {
+    return null; // Will redirect via useEffect
+  }
+
   return <LandingPage />;
 }
 
@@ -89,7 +113,9 @@ const adminRoute = createRoute({
   component: () => (
     <AuthGate>
       <AdminGate>
-        <AdminPanelPage />
+        <AdminThemeLayout>
+          <AdminPanelPage />
+        </AdminThemeLayout>
       </AdminGate>
     </AuthGate>
   ),

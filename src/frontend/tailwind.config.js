@@ -83,6 +83,13 @@ export default {
                     500: 'oklch(0.60 0.01 240)',
                     600: 'oklch(0.50 0.01 240)',
                 },
+                cyber: {
+                    primary: 'oklch(var(--cyber-primary))',
+                    accent: 'oklch(var(--cyber-accent))',
+                    bg: 'oklch(var(--cyber-bg))',
+                    card: 'oklch(var(--cyber-card))',
+                    muted: 'oklch(var(--cyber-muted))',
+                },
             },
             borderRadius: {
                 lg: 'var(--radius)',
@@ -93,6 +100,7 @@ export default {
                 xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
                 glow: '0 0 24px rgba(192, 192, 192, 0.15), 0 0 48px rgba(192, 192, 192, 0.08)',
                 'chrome-glow': '0 0 16px rgba(192, 192, 192, 0.2)',
+                'cyber': '0 0 20px oklch(var(--cyber-primary) / 0.15)',
             },
             keyframes: {
                 'accordion-down': {
@@ -106,16 +114,22 @@ export default {
                 scan: {
                     '0%': { transform: 'translateY(-100%)' },
                     '100%': { transform: 'translateY(100%)' }
+                },
+                'cyber-scan': {
+                    '0%': { transform: 'translateY(-100%)' },
+                    '100%': { transform: 'translateY(100%)' }
                 }
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
-                'scan': 'scan 4s linear infinite'
+                'scan': 'scan 4s linear infinite',
+                'cyber-scan': 'cyber-scan 8s linear infinite'
             },
             fontFamily: {
                 serif: ['Cinzel', 'Playfair Display', 'Georgia', 'serif'],
                 sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+                mono: ['Courier New', 'monospace'],
             }
         }
     },

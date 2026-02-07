@@ -1,16 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
-import { useInternetIdentity } from '../useInternetIdentity';
 import { orderKeys, authKeys } from '../orders/queryKeys';
 
 export function useAdminResetAllData() {
   const { actor } = useActor();
-  const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not available');
+      
+      // Call backend reset
+      await actor.resetAllData();
       
       // Clear all localStorage order mappings for all users
       const keysToRemove: string[] = [];
@@ -26,6 +27,10 @@ export function useAdminResetAllData() {
       // Invalidate all relevant queries
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       queryClient.invalidateQueries({ queryKey: authKeys.all });
+    },
+    onError: (error: any) => {
+      console.error('Reset all data error:', error);
+      throw error;
     },
   });
 }

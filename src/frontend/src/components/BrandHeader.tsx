@@ -2,12 +2,12 @@ import { useNavigate } from '@tanstack/react-router';
 import AuthStatusButton from './AuthStatusButton';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useIsAdmin } from '../hooks/auth/useIsAdmin';
-import { Shield } from 'lucide-react';
+import { Shield, Terminal } from 'lucide-react';
 
 export default function BrandHeader() {
   const navigate = useNavigate();
   const { identity } = useInternetIdentity();
-  const { data: isAdmin } = useIsAdmin();
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const isAuthenticated = !!identity;
 
   return (
@@ -32,15 +32,20 @@ export default function BrandHeader() {
               >
                 Dashboard
               </button>
-              {isAdmin && (
+              {adminLoading ? (
+                <div className="text-sm text-cyber-primary/50 flex items-center gap-1 font-mono">
+                  <Terminal className="w-3 h-3 animate-pulse" />
+                  <span className="text-xs">...</span>
+                </div>
+              ) : isAdmin ? (
                 <button
                   onClick={() => navigate({ to: '/admin' })}
-                  className="text-sm text-muted-foreground hover:text-chrome-200 transition-colors flex items-center gap-1 font-medium tracking-wide"
+                  className="text-sm text-cyber-primary hover:text-cyber-accent transition-colors flex items-center gap-1 font-mono tracking-wider"
                 >
                   <Shield className="w-4 h-4" />
-                  Admin
+                  ADMIN
                 </button>
-              )}
+              ) : null}
             </>
           )}
           <AuthStatusButton />

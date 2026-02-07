@@ -62,12 +62,14 @@ export enum UserRole {
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createOrder(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<void>;
+    deleteOrder(orderId: string): Promise<void>;
     getAllOrders(): Promise<Array<Order>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    resetAllData(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;

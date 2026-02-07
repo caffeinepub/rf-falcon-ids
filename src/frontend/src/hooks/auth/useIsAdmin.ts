@@ -4,14 +4,14 @@ import { useInternetIdentity } from '../useInternetIdentity';
 import { authKeys } from '../orders/queryKeys';
 
 export function useIsAdmin() {
-  const { actor, isFetching } = useActor();
-  const { identity } = useInternetIdentity();
+  const { actor, isFetching: actorFetching } = useActor();
+  const { identity, isInitializing } = useInternetIdentity();
   const isAuthenticated = !!identity;
 
-  return useQuery<boolean>({
+  const query = useQuery<boolean>({
     queryKey: authKeys.isAdmin(),
     queryFn: async () => {
-      if (!actor) return false;
+      if (!actor) throw new Error('Actor not available');
       try {
         return await actor.isCallerAdmin();
       } catch (error) {
@@ -19,7 +19,15 @@ export function useIsAdmin() {
         return false;
       }
     },
-    enabled: !!actor && !isFetching && isAuthenticated,
+    enabled: !!actor && !actorFetching && isAuthenticated && !isInitializing,
     retry: false,
+    staleTime: 30000, // Cache for 30 seconds
   });
+
+  // Return deterministic loading state
+  return {
+    ...query,
+    isLoading: isInitializing || actorFetching || (isAuthenticated && query.isLoading),
+    isFetched: !!actor && !actorFetching && query.isFetched,
+  };
 }

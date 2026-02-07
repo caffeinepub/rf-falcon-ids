@@ -1,63 +1,114 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T22:23:22.356Z",
+  "generatedAt": "2026-02-07T00:02:03.049Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 3,
+    "total": 7,
+    "implemented": 6,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Extend the backend Order model to store an optional tracking number, and expose it via existing order query methods (getOrder, getAllOrders).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Fix and harden admin detection so admin-only UI appears immediately after an admin logs in (no missing/late admin button, no flicker, no incorrect Access Denied while permissions are still being determined).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/auth/useIsAdmin.ts",
+          "frontend/src/components/AdminGate.tsx",
+          "frontend/src/components/BrandHeader.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/auth/useIsAdmin.ts",
+          "frontend/src/components/AdminGate.tsx",
+          "frontend/src/components/BrandHeader.tsx",
+          "frontend/src/App.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add a backend admin-only method to set/update an order’s tracking number, and enforce that a tracking number can only be set when the order status is not pending (i.e., approved or shipped).",
+        "summary": "Ensure the backend exposes a reliable admin-check method used by the frontend (e.g., `isCallerAdmin : query () -> async Bool`) and that admin gating does not depend on missing/unstable methods.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Update the Admin Panel UI to let admins add/edit a tracking number per order, only when the order is no longer pending, and persist the change to the backend with success/error feedback.",
+        "summary": "Add an admin-only order deletion workflow so admins can delete an order when a customer cancels (with a confirmation step and immediate UI refresh).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-          "frontend/src/hooks/orders/queryKeys.ts",
-          "frontend/src/pages/AdminPanelPage.tsx"
+          "frontend/src/hooks/orders/useDeleteOrder.ts",
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/hooks/orders/queryKeys.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "frontend/src/hooks/orders/useDeleteOrder.ts",
           "frontend/src/pages/AdminPanelPage.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Show the tracking number on the Order Details page when it exists.",
+        "summary": "Replace the current 'Reset All Data' behavior with a correct, admin-only backend reset that actually deletes stored orders (and keep the frontend confirmation dialog aligned with the real behavior).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/OrderDetailPage.tsx"
+          "frontend/src/hooks/admin/useAdminResetAllData.ts",
+          "frontend/src/pages/AdminPanelPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/OrderDetailPage.tsx"
+          "frontend/src/hooks/admin/useAdminResetAllData.ts",
+          "frontend/src/pages/AdminPanelPage.tsx"
         ]
       },
       {
         "id": "REQ-5",
-        "summary": "After a user successfully submits an order, display a notification popup with the exact text: \"Please contact the owner for payment methods\".",
+        "summary": "Create a distinct, advanced 'hacker/cool' theme for admin users/routes, visually separate from the regular site theme, and apply it consistently across /admin screens and admin-only components.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/src/components/AdminThemeLayout.tsx",
+          "frontend/index.css",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/src/components/AdminThemeLayout.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Add additional advanced admin panel features that improve operational control without changing the user ordering flow: searching, filtering, sorting, quick actions, and lightweight order insights.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/utils/formatters.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/utils/formatters.ts"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Perform a focused bugfix/stability pass on admin flow and order management UI to reduce glitches (loading states, error handling, query invalidation, and empty/unauthorized states).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/orders/useAllOrders.ts",
+          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "frontend/src/hooks/admin/useAdminResetAllData.ts",
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/components/AdminGate.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/orders/useAllOrders.ts",
+          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "frontend/src/hooks/admin/useAdminResetAllData.ts",
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/components/AdminGate.tsx"
         ]
       }
     ]
@@ -69,14 +120,24 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/AdminGate.tsx",
+    "frontend/src/components/AdminThemeLayout.tsx",
+    "frontend/src/components/BrandHeader.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/admin/useAdminResetAllData.ts",
+    "frontend/src/hooks/auth/useIsAdmin.ts",
+    "frontend/src/hooks/orders/useAllOrders.ts",
+    "frontend/src/hooks/orders/useDeleteOrder.ts",
     "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+    "frontend/src/index.css",
     "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/NewOrderPage.tsx",
-    "frontend/src/pages/OrderDetailPage.tsx",
+    "frontend/src/utils/formatters.ts",
+    "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

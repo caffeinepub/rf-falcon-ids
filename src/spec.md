@@ -1,13 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Let admins add tracking numbers to non-pending orders and show users a payment-instructions notification after submitting an order.
+**Goal:** Improve admin reliability and stability, add a distinct hacker-themed admin UI, and expand admin order management (including order deletion and a correct reset).
 
 **Planned changes:**
-- Extend the backend Order model to include an optional tracking number and return it from existing order queries.
-- Add an admin-only backend method to set/update an order’s tracking number, rejecting updates while the order is pending.
-- Update the Admin Panel orders UI to display an add/edit tracking-number field per order (disabled/hidden while pending) and save changes with success/error feedback and automatic refresh.
-- Update the Order Details page to display the tracking number only when it exists.
-- After successful order submission, show a notification/toast with the exact text: "Please contact the owner for payment methods".
+- Harden frontend admin detection and gating to eliminate flicker/late rendering, show a clear loading state, and ensure correct redirects (/ → /admin for confirmed admins) and Access Denied behavior for non-admins.
+- Add/standardize a reliable backend admin-check query used by the frontend, while keeping server-side authorization for all admin-only methods.
+- Implement an admin-only order deletion workflow (backend delete by orderId + frontend delete action with confirmation and immediate list refresh).
+- Replace “Reset All Data” with an admin-only backend reset that actually clears persisted order data, keeping the existing confirmation/pending UI aligned with real behavior.
+- Apply a distinct hacker/cyber theme for admin routes and admin-only components, separate from the public site theme.
+- Add admin panel operational features: search, filter by status, sort by creation time, quick per-order status actions, and basic order summary stats.
+- Perform a focused bugfix/stability pass across admin/order management (loading/error handling, cache invalidation, empty/unauthorized states).
 
-**User-visible outcome:** Admins can add or update tracking numbers for approved/shipped orders, customers can see tracking numbers on order details when available, and customers see a payment-methods notification after successfully placing an order.
+**User-visible outcome:** Admins see the admin UI immediately and consistently after login, get a hacker-themed admin area with better controls (search/filter/sort/quick actions/stats), and can delete canceled orders or fully reset stored orders with confirmations and reliable UI updates; non-admins remain blocked from admin data and actions.

@@ -1,27 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { orderKeys } from './queryKeys';
-import type { OrderStatus } from '../../backend';
 
-interface UpdateOrderStatusParams {
-  orderId: string;
-  status: OrderStatus;
-}
-
-export function useUpdateOrderStatus() {
+export function useDeleteOrder() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderId, status }: UpdateOrderStatusParams) => {
+    mutationFn: async (orderId: string) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateOrderStatus(orderId, status);
+      return actor.deleteOrder(orderId);
     },
     onSuccess: () => {
+      // Invalidate all order queries to refresh lists
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
     onError: (error: any) => {
-      console.error('Update status error:', error);
+      console.error('Delete order error:', error);
       throw error;
     },
   });

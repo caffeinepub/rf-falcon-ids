@@ -1,19 +1,22 @@
 import { type ReactNode } from 'react';
 import { useIsAdmin } from '../hooks/auth/useIsAdmin';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, Terminal } from 'lucide-react';
 
 interface AdminGateProps {
   children: ReactNode;
 }
 
 export default function AdminGate({ children }: AdminGateProps) {
-  const { data: isAdmin, isLoading } = useIsAdmin();
+  const { data: isAdmin, isLoading, isFetched } = useIsAdmin();
 
-  if (isLoading) {
+  if (isLoading || !isFetched) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-pulse text-cyan-400">Verifying permissions...</div>
+        <div className="text-center space-y-4">
+          <Terminal className="w-12 h-12 mx-auto text-cyber-primary animate-pulse" />
+          <div className="text-cyber-primary font-mono text-sm tracking-wider">
+            [VERIFYING ADMIN CREDENTIALS...]
+          </div>
         </div>
       </div>
     );
