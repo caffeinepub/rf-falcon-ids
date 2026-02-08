@@ -1,50 +1,18 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Website project for Falcon Ids, including branding update (gothic text logo), an admin ticketing/moderation dashboard, and security hardening (HTTPS, rate limiting, input validation/sanitization, CSRF, security headers, and custom 404/500 pages).",
-  "architectural_notes": [
-    "Plan for security hardening controls: HTTPS enforcement, rate limiting middleware for forms/APIs, centralized input validation/sanitization, CSRF protection, standard security headers, and custom 404/500 error pages."
+  "summary": "Project now includes a support ticketing system (support center page, ticket submission, status viewing, categories) and a main-page branding update to replace the logo with gothic text reading \"Falcon Id's\".",
+  "architectural_notes": [],
+  "known_issues": [
+    "Previous attempt to implement the support system failed (AI couldn't implement request; needs rephrase/simplification)."
   ],
-  "known_issues": [],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-force-https-for-all-app-pages-by-implementing-a-client-side-redirect-whenever-the-app-is-loaded-over-http-including-deep-links-preserving-the-full-path-query-string-and-hash-during-the-redirect",
-      "title": "Force HTTPS for all app pages by implementing a client-side redirect whenever the app is loaded over `http:` (including deep links), preserving the full path, query string, and hash during the redirect.",
+      "id": "feature-update-the-main-landing-page-hero-branding-to-remove-the-logo-image-and-instead-display-the-text-falcon-id-s-styled-as-a-gothic-wordmark-using-existing-loaded-fonts-and-tailwind-classes-keeping-the-hero-section-centered-and-responsive",
+      "title": "Update the main landing page hero branding to remove the logo image and instead display the text \"Falcon Id's\" styled as a gothic wordmark (using existing loaded fonts and Tailwind classes), keeping the hero section centered and responsive.",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-standard-security-headers-for-the-frontend-asset-canister-by-updating-frontend-public-ic-assets-json5-to-include-common-hardening-headers-at-minimum-strict-transport-security-x-content-type-options-referrer-policy-permissions-policy-and-a-restrictive-content-security-policy-for-index-html-and-other-served-assets-where-appropriate",
-      "title": "Add standard security headers for the frontend asset canister by updating `frontend/public/.ic-assets.json5` to include common hardening headers (at minimum: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and a restrictive `Content-Security-Policy`) for `index.html` and other served assets where appropriate.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-validate-and-sanitize-all-user-controlled-inputs-on-both-frontend-and-backend-trim-strings-enforce-maximum-lengths-enforce-allowed-character-sets-where-sensible-and-validate-structured-fields-dob-format-zip-state-state-name-gender-height-id-order-ids-before-storing-or-using-them",
-      "title": "Validate and sanitize all user-controlled inputs on both frontend and backend: trim strings, enforce maximum lengths, enforce allowed character sets where sensible, and validate structured fields (DOB format, ZIP, state/state_name, gender, height, id/order IDs) before storing or using them.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-csrf-protection-for-state-changing-operations-by-introducing-a-csrf-token-flow-provide-a-backend-method-to-mint-return-a-token-scoped-to-the-caller-and-require-that-token-to-be-supplied-and-validated-for-mutating-backend-calls-initiated-from-the-ui",
-      "title": "Add CSRF protection for state-changing operations by introducing a CSRF token flow: provide a backend method to mint/return a token scoped to the caller and require that token to be supplied and validated for mutating backend calls initiated from the UI.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-custom-friendly-error-pages-a-not-found-404-page-for-unknown-routes-and-a-generic-error-500-page-for-unexpected-route-app-errors-using-tanstack-router-s-not-found-and-error-handling-so-users-see-helpful-guidance-and-a-way-back-to-the-home-dashboard",
-      "title": "Create custom, friendly error pages: a Not Found (404) page for unknown routes and a generic Error (500) page for unexpected route/app errors, using TanStack Router’s not-found and error handling so users see helpful guidance and a way back to the home/dashboard.",
-      "reqIds": [
-        "REQ-6"
       ],
       "version": 1
     }
@@ -52,32 +20,36 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Replace main page logo with \"Falcon Ids\" in gothic lettering; remove logo everywhere and use this text treatment site-wide",
+      "summary": "Add Support Center page",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Create an admin dashboard for tickets: view, respond, close, and tag tickets; add additional moderation tools",
+      "summary": "Allow users to submit new support tickets",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Security audit & hardening: enforce HTTPS everywhere, add basic rate limiting to forms/APIs, validate & sanitize inputs, add CSRF protection, set standard security headers, and create friendly custom 404/500 pages",
+      "summary": "Let users view ticket status",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-6",
-      "summary": "Ensure basic rate limiting is applied to all state-changing backend entrypoints (forms/APIs) by auditing `backend/main.mo` and adding `checkRateLimit(...)` enforcement anywhere it is missing for `shared` update methods that mutate state or perform privileged actions.",
-      "reqIds": [
-        "REQ-3"
-      ],
+      "id": "AR-4",
+      "summary": "Add simple ticket categories",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Replace main page logo with gothic letter text \"Falcon Id's\"",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Security hardening: HTTPS enforcement, rate limiting, input validation, CSRF protection, security headers, and friendly 404/500 pages",
+  "projectName": "Replace landing page logo with gothic text wordmark",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-force-https-for-all-app-pages-by-implementing-a-client-side-redirect-whenever-the-app-is-loaded-over-http-including-deep-links-preserving-the-full-path-query-string-and-hash-during-the-redirect",
-      "featureTitle": "Force HTTPS for all app pages by implementing a client-side redirect whenever the app is loaded over `http:` (including deep links), preserving the full path, query string, and hash during the redirect.",
+      "featureId": "feature-update-the-main-landing-page-hero-branding-to-remove-the-logo-image-and-instead-display-the-text-falcon-id-s-styled-as-a-gothic-wordmark-using-existing-loaded-fonts-and-tailwind-classes-keeping-the-hero-section-centered-and-responsive",
+      "featureTitle": "Update the main landing page hero branding to remove the logo image and instead display the text \"Falcon Id's\" styled as a gothic wordmark (using existing loaded fonts and Tailwind classes), keeping the hero section centered and responsive.",
       "files": [
-        "frontend/src/utils/enforceHttps.ts"
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,95 +18,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-standard-security-headers-for-the-frontend-asset-canister-by-updating-frontend-public-ic-assets-json5-to-include-common-hardening-headers-at-minimum-strict-transport-security-x-content-type-options-referrer-policy-permissions-policy-and-a-restrictive-content-security-policy-for-index-html-and-other-served-assets-where-appropriate",
-      "featureTitle": "Add standard security headers for the frontend asset canister by updating `frontend/public/.ic-assets.json5` to include common hardening headers (at minimum: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and a restrictive `Content-Security-Policy`) for `index.html` and other served assets where appropriate.",
-      "files": [
-        "frontend/public/.ic-assets.json5"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-validate-and-sanitize-all-user-controlled-inputs-on-both-frontend-and-backend-trim-strings-enforce-maximum-lengths-enforce-allowed-character-sets-where-sensible-and-validate-structured-fields-dob-format-zip-state-state-name-gender-height-id-order-ids-before-storing-or-using-them",
-      "featureTitle": "Validate and sanitize all user-controlled inputs on both frontend and backend: trim strings, enforce maximum lengths, enforce allowed character sets where sensible, and validate structured fields (DOB format, ZIP, state/state_name, gender, height, id/order IDs) before storing or using them.",
-      "files": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-        "frontend/src/utils/validation.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-csrf-protection-for-state-changing-operations-by-introducing-a-csrf-token-flow-provide-a-backend-method-to-mint-return-a-token-scoped-to-the-caller-and-require-that-token-to-be-supplied-and-validated-for-mutating-backend-calls-initiated-from-the-ui",
-      "featureTitle": "Add CSRF protection for state-changing operations by introducing a CSRF token flow: provide a backend method to mint/return a token scoped to the caller and require that token to be supplied and validated for mutating backend calls initiated from the UI.",
-      "files": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/hooks/orders/useDeleteOrder.ts",
-        "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-        "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-        "frontend/src/hooks/security/useCsrfToken.ts",
-        "frontend/src/hooks/security/useSecurityMutations.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-custom-friendly-error-pages-a-not-found-404-page-for-unknown-routes-and-a-generic-error-500-page-for-unexpected-route-app-errors-using-tanstack-router-s-not-found-and-error-handling-so-users-see-helpful-guidance-and-a-way-back-to-the-home-dashboard",
-      "featureTitle": "Create custom, friendly error pages: a Not Found (404) page for unknown routes and a generic Error (500) page for unexpected route/app errors, using TanStack Router’s not-found and error handling so users see helpful guidance and a way back to the home/dashboard.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/ErrorPage.tsx",
-        "frontend/src/pages/NotFoundPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
       ],
       "confidence": "high"
     }

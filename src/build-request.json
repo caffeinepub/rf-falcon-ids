@@ -1,125 +1,35 @@
 {
   "kind": "build_request",
-  "title": "Security hardening: HTTPS enforcement, rate limiting, input validation, CSRF protection, security headers, and friendly 404/500 pages",
+  "title": "Replace landing page logo with gothic text wordmark",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Force HTTPS for all app pages by implementing a client-side redirect whenever the app is loaded over `http:` (including deep links), preserving the full path, query string, and hash during the redirect.",
+      "text": "Update the main landing page hero branding to remove the logo image and instead display the text \"Falcon Id's\" styled as a gothic wordmark (using existing loaded fonts and Tailwind classes), keeping the hero section centered and responsive.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-10"
         ],
         "quotes": [
-          "Check the site for security problems and fix them by forcing HTTPS on all pages"
+          "Remove the logo on main page just type out Falcon Id's in gothic letters"
         ]
       },
       "acceptanceCriteria": [
-        "When visiting any app route over http://, the browser is redirected to the equivalent https:// URL with the same path/search/hash.",
-        "The redirect does not run during local development (e.g., localhost) to avoid breaking dev workflows.",
-        "The redirect does not create an infinite redirect loop."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Add standard security headers for the frontend asset canister by updating `frontend/public/.ic-assets.json5` to include common hardening headers (at minimum: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and a restrictive `Content-Security-Policy`) for `index.html` and other served assets where appropriate.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "setting standard security headers"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`index.html` responses include the configured security headers after deployment.",
-        "Security headers do not break required app functionality (React app loads, Internet Identity sign-in works, fonts/icons load as expected).",
-        "CSP is explicitly defined and is not left as an empty/placeholder policy."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Ensure basic rate limiting is applied to all state-changing backend entrypoints (forms/APIs) by auditing `backend/main.mo` and adding `checkRateLimit(...)` enforcement anywhere it is missing for `shared` update methods that mutate state or perform privileged actions.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "adding basic rate-limiting to forms and APIs"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All state-mutating `shared` methods enforce rate limiting via `checkRateLimit` (unless a specific exception is documented and justified).",
-        "When the rate limit is exceeded, the call is denied consistently and produces a clear failure (trap) without mutating state.",
-        "Rate-limited calls are recorded in security stats/events (allowed/denied/throttled)."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Validate and sanitize all user-controlled inputs on both frontend and backend: trim strings, enforce maximum lengths, enforce allowed character sets where sensible, and validate structured fields (DOB format, ZIP, state/state_name, gender, height, id/order IDs) before storing or using them.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "validating and sanitizing user inputs"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend rejects invalid or unexpectedly large payloads with clear error messages and does not write partial/dirty data to state.",
-        "Frontend form fields display user-friendly validation messages in English before submission for common invalid inputs (e.g., empty required fields, invalid ZIP/DOB).",
-        "All stored text fields are normalized (e.g., trimmed) consistently."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Add CSRF protection for state-changing operations by introducing a CSRF token flow: provide a backend method to mint/return a token scoped to the caller and require that token to be supplied and validated for mutating backend calls initiated from the UI.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "adding CSRF protection"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Mutating operations invoked from the frontend include a CSRF token parameter and the backend validates it before applying changes.",
-        "CSRF tokens are caller-scoped and cannot be reused across different principals.",
-        "If the CSRF token is missing/invalid, the backend denies the request without mutating state and returns a clear error/trap message."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Create custom, friendly error pages: a Not Found (404) page for unknown routes and a generic Error (500) page for unexpected route/app errors, using TanStack Router’s not-found and error handling so users see helpful guidance and a way back to the home/dashboard.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "creating custom friendly 404 and 500 error pages"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Navigating to an unknown route shows a dedicated 404 page (not a blank screen).",
-        "A thrown route/component error renders a friendly 500-style error page with clear English copy and a navigation option to recover (e.g., go home).",
-        "Error pages match the site’s existing layout shell (header/footer) and remain accessible (proper headings, readable contrast, keyboard reachable links/buttons)."
+        "On the landing page (route \"/\"), the hero area no longer renders the <img> logo/wordmark.",
+        "The hero displays the exact text: \"Falcon Id's\" (including apostrophe) as the primary brand mark.",
+        "The new text wordmark remains centered, visually prominent, and responsive across mobile and desktop breakpoints.",
+        "No broken image requests are made for \"/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png\" from the landing page hero after the change."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in `backend/main.mo`; add `backend/migration.mo` only if persistent state layout changes require a migration.",
-    "Do not edit files under `frontend/src/components/ui` or any paths listed in `frontend.immutablePaths` in SYSTEM_CONTEXT."
+    "Do not modify any files under frontend/src/components/ui (read-only components)."
   ],
   "nonGoals": [
-    "Implementing third-party WAF/CDN security features outside the Internet Computer asset canister and app code.",
-    "Adding external authentication providers beyond Internet Identity.",
-    "Implementing real-time/WAF-grade distributed rate limiting beyond the existing per-principal logic."
+    "Do not implement the previously requested support ticketing system in this change.",
+    "Do not change the site favicon or apple-touch icon assets.",
+    "Do not alter backend canister logic or data models."
   ],
   "imageRequirements": {
     "required": [],

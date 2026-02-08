@@ -1,14 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Harden the application’s security posture by enforcing HTTPS, adding security headers, improving backend protections (rate limiting, input validation, CSRF), and providing friendly error handling pages.
+**Goal:** Replace the landing page hero logo image with a centered, responsive gothic-styled text wordmark reading “Falcon Id's”.
 
 **Planned changes:**
-- Add a client-side HTTPS redirect for all routes when loaded over `http:` (preserving path, query, and hash), excluding local development and avoiding redirect loops.
-- Configure standard security headers for the frontend asset canister via `frontend/public/.ic-assets.json5`, including HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, and an explicit restrictive CSP compatible with app needs (React load, Internet Identity, fonts/icons).
-- Audit backend update methods in `backend/main.mo` and enforce `checkRateLimit(...)` on all state-changing/privileged entrypoints; ensure consistent denial behavior and security event/stat recording when throttled.
-- Implement frontend + backend input validation/sanitization (trimming, max lengths, allowed characters where sensible, and structured validation for fields like DOB/ZIP/state/gender/height/IDs) with clear user-facing messages and backend rejection of invalid payloads.
-- Add a CSRF token flow: backend issues caller-scoped tokens and requires them on mutating calls from the UI, denying requests with missing/invalid tokens.
-- Create friendly TanStack Router not-found (404) and generic error (500) pages that fit the existing layout and provide a recovery navigation option.
+- Update the landing page (route "/") hero to remove the rendered <img> logo/wordmark.
+- Render the exact text "Falcon Id's" as the primary brand mark, styled with existing loaded fonts and Tailwind classes to achieve a gothic wordmark look.
+- Ensure the hero branding remains centered, visually prominent, and responsive across mobile and desktop.
+- Remove any references in the landing page hero that would request `/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png`.
 
-**User-visible outcome:** Users are automatically redirected to HTTPS in production, benefit from improved security protections (headers, throttling, validation, CSRF), and see helpful 404/500 pages instead of blank or broken screens.
+**User-visible outcome:** The landing page hero displays “Falcon Id's” as a gothic-styled text wordmark instead of a logo image, centered and responsive on all screen sizes.

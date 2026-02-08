@@ -1,118 +1,34 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T00:34:44.728Z",
+  "generatedAt": "2026-02-08T00:48:07.916Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 5,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Force HTTPS for all app pages by implementing a client-side redirect whenever the app is loaded over `http:` (including deep links), preserving the full path, query string, and hash during the redirect.",
+        "summary": "Update the main landing page hero branding to remove the logo image and instead display the text \"Falcon Id's\" styled as a gothic wordmark (using existing loaded fonts and Tailwind classes), keeping the hero section centered and responsive.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/enforceHttps.ts",
-          "frontend/src/main.tsx"
+          "frontend/src/pages/LandingPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/enforceHttps.ts"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Add standard security headers for the frontend asset canister by updating `frontend/public/.ic-assets.json5` to include common hardening headers (at minimum: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and a restrictive `Content-Security-Policy`) for `index.html` and other served assets where appropriate.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/.ic-assets.json5",
-          "frontend/index.html"
-        ],
-        "matchedFiles": [
-          "frontend/public/.ic-assets.json5"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Ensure basic rate limiting is applied to all state-changing backend entrypoints (forms/APIs) by auditing `backend/main.mo` and adding `checkRateLimit(...)` enforcement anywhere it is missing for `shared` update methods that mutate state or perform privileged actions.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Validate and sanitize all user-controlled inputs on both frontend and backend: trim strings, enforce maximum lengths, enforce allowed character sets where sensible, and validate structured fields (DOB format, ZIP, state/state_name, gender, height, id/order IDs) before storing or using them.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/utils/validation.ts",
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/utils/validation.ts",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Add CSRF protection for state-changing operations by introducing a CSRF token flow: provide a backend method to mint/return a token scoped to the caller and require that token to be supplied and validated for mutating backend calls initiated from the UI.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/security/useCsrfToken.ts",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/hooks/orders/useDeleteOrder.ts",
-          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-          "frontend/src/hooks/security/useSecurityMutations.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/security/useCsrfToken.ts",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/hooks/orders/useDeleteOrder.ts",
-          "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-          "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-          "frontend/src/hooks/security/useSecurityMutations.ts"
-        ]
-      },
-      {
-        "id": "REQ-6",
-        "summary": "Create custom, friendly error pages: a Not Found (404) page for unknown routes and a generic Error (500) page for unexpected route/app errors, using TanStack Router’s not-found and error handling so users see helpful guidance and a way back to the home/dashboard.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/NotFoundPage.tsx",
-          "frontend/src/pages/ErrorPage.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/NotFoundPage.tsx",
-          "frontend/src/pages/ErrorPage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/pages/LandingPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/.ic-assets.json5",
-    "frontend/src/App.tsx",
-    "frontend/src/hooks/orders/useCreateOrder.ts",
-    "frontend/src/hooks/orders/useDeleteOrder.ts",
-    "frontend/src/hooks/orders/useSetTrackingNumber.ts",
-    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
-    "frontend/src/hooks/security/useCsrfToken.ts",
-    "frontend/src/hooks/security/useSecurityMutations.ts",
-    "frontend/src/pages/ErrorPage.tsx",
-    "frontend/src/pages/NotFoundPage.tsx",
-    "frontend/src/utils/enforceHttps.ts",
-    "frontend/src/utils/validation.ts",
+    "frontend/src/pages/LandingPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
