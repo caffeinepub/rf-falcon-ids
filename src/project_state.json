@@ -1,18 +1,48 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project now includes a support ticketing system (support center page, ticket submission, status viewing, categories) and a main-page branding update to replace the logo with gothic text reading \"Falcon Id's\".",
+  "summary": "Project involves updating an identification card-related page by removing watermarks and disclaimer text and replacing the top notice with an \"ORDER NOW\" call-to-action.",
   "architectural_notes": [],
-  "known_issues": [
-    "Previous attempt to implement the support system failed (AI couldn't implement request; needs rephrase/simplification)."
-  ],
+  "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-the-main-landing-page-hero-branding-to-remove-the-logo-image-and-instead-display-the-text-falcon-id-s-styled-as-a-gothic-wordmark-using-existing-loaded-fonts-and-tailwind-classes-keeping-the-hero-section-centered-and-responsive",
-      "title": "Update the main landing page hero branding to remove the logo image and instead display the text \"Falcon Id's\" styled as a gothic wordmark (using existing loaded fonts and Tailwind classes), keeping the hero section centered and responsive.",
+      "id": "feature-remove-the-global-top-banner-text-not-valid-for-official-identification-from-all-pages-and-replace-it-with-order-now-english-all-caps-in-the-same-banner-location-so-it-appears-consistently-site-wide",
+      "title": "Remove the global top banner text \"Not valid for official identification\" from all pages and replace it with \"ORDER NOW\" (English, all caps) in the same banner location so it appears consistently site-wide.",
       "reqIds": [
         "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-instances-of-the-disclaimer-text-these-identification-cards-are-not-valid-for-official-identification-or-legal-use-for-informational-purposes-only-from-the-ui-including-the-landing-page-disclaimer-block-and-any-centralized-copy-constants-that-feed-it",
+      "title": "Remove all instances of the disclaimer text \"These identification cards are not valid for official identification or legal use. For informational purposes only.\" from the UI, including the landing page disclaimer block and any centralized copy constants that feed it.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-instances-of-the-order-form-disclaimer-text-not-valid-for-official-identification-or-legal-use-from-the-ui-including-the-new-order-page-info-box-and-any-centralized-copy-constants-that-feed-it",
+      "title": "Remove all instances of the order-form disclaimer text \"Not valid for official identification or legal use.\" from the UI, including the New Order page info box and any centralized copy constants that feed it.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-id-card-preview-so-the-footer-text-not-valid-for-official-identification-is-removed-and-replaced-with-order-now-english-all-caps-and-ensure-this-change-is-reflected-in-on-screen-preview-png-export-and-print-output",
+      "title": "Update the ID card preview so the footer text \"NOT VALID FOR OFFICIAL IDENTIFICATION\" is removed and replaced with \"ORDER NOW\" (English, all caps) and ensure this change is reflected in on-screen preview, PNG export, and print output.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-watermarks-from-the-application-and-ensure-they-stay-removed-across-all-pages-and-all-id-output-modes-preview-export-png-print-this-includes-removing-any-watermark-overlays-components-and-any-css-dom-elements-intended-as-watermarks",
+      "title": "Remove all watermarks from the application and ensure they stay removed across all pages and all ID output modes (preview, export PNG, print). This includes removing any watermark overlays/components and any CSS/DOM elements intended as watermarks.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -20,36 +50,24 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add Support Center page",
+      "summary": "Remove all watermarks and ensure they remain removed across all pages",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Allow users to submit new support tickets",
+      "summary": "Remove the top text \"Not valid for official identification\" and replace with \"ORDER NOW\"",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Let users view ticket status",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Add simple ticket categories",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Replace main page logo with gothic letter text \"Falcon Id's\"",
+      "summary": "Remove disclaimer text: \"These identification cards are not valid for official identification or legal use. For informational purposes only.\"",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Replace landing page logo with gothic text wordmark",
+  "projectName": "Remove watermarks and replace disclaimer text with ORDER NOW across all pages",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

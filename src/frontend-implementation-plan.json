@@ -1,22 +1,117 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Replace landing hero logo with gothic text wordmark",
+  "title": "Remove disclaimer/watermark copy and standardize ORDER NOW text site-wide",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace the landing page hero logo image with a centered, responsive gothic-styled text wordmark that reads \"Falcon Id's\" using existing fonts and Tailwind classes.",
+      "summary": "Replace the global top banner disclaimer with ORDER NOW so it renders consistently across the app shell.",
       "acceptanceCriteria": [
-        "On the landing page (route \"/\"), the hero area no longer renders the <img> logo/wordmark.",
-        "The hero displays the exact text: \"Falcon Id's\" (including apostrophe) as the primary brand mark.",
-        "The new text wordmark remains centered, visually prominent, and responsive across mobile and desktop breakpoints.",
-        "No broken image requests are made for \"/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png\" from the landing page hero after the change."
+        "On every route that uses the app shell header area, the top banner displays \"ORDER NOW\" and does not display \"Not valid for official identification\" anywhere in that banner.",
+        "No other page renders the previous top-banner disclaimer text (case-insensitive match)."
       ],
       "file_operations": [
         {
+          "path": "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+          "operation": "modify",
+          "description": "Update the banner copy to render \"ORDER NOW\" (all caps) in the existing banner location and remove the previous \"Not valid for official identification\" string."
+        },
+        {
+          "path": "frontend/src/content/copy.ts",
+          "operation": "modify",
+          "description": "Update centralized banner copy so any banner-driven text no longer references the removed disclaimer and aligns with \"ORDER NOW\"."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Remove the long landing-page disclaimer sentence from the UI and from any centralized copy constants that supply it.",
+      "acceptanceCriteria": [
+        "The landing page no longer renders the disclaimer block containing the exact sentence \"These identification cards are not valid for official identification or legal use. For informational purposes only.\"",
+        "A text search through rendered UI strings shows the removed sentence is not present anywhere (including modals, banners, or notes)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/content/copy.ts",
+          "operation": "modify",
+          "description": "Remove or blank out the landing disclaimer constant value so the exact sentence is no longer present in centralized copy."
+        },
+        {
           "path": "frontend/src/pages/LandingPage.tsx",
           "operation": "modify",
-          "description": "In the hero section, remove the existing <img> that references /assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png and replace it with a text element that renders exactly \"Falcon Id's\". Style it as a gothic wordmark using existing loaded fonts (e.g., Tailwind font-serif) and Tailwind utility classes to keep it centered and responsive (appropriate font sizes, tracking, and wrapping constraints) across breakpoints."
+          "description": "Remove the landing disclaimer block from rendering (or conditionally render only when non-empty) so the removed sentence is not shown anywhere on the landing page."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Remove the New Order page disclaimer sentence from the UI and from any centralized copy constants that supply it.",
+      "acceptanceCriteria": [
+        "The New Order page no longer displays the sentence \"Not valid for official identification or legal use.\"",
+        "A text search through rendered UI strings shows \"Not valid for official identification or legal use.\" is not present anywhere."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/content/copy.ts",
+          "operation": "modify",
+          "description": "Remove or blank out the order-form disclaimer constant value so the sentence is not present in centralized copy."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Remove the New Order page info/disclaimer box rendering (or conditionally render only when non-empty) so the removed sentence is not displayed."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Replace the ID card preview footer text with ORDER NOW and ensure preview/export/print reflect it.",
+      "acceptanceCriteria": [
+        "The ID card preview footer shows \"ORDER NOW\" and does not show \"NOT VALID FOR OFFICIAL IDENTIFICATION\".",
+        "Exported PNG files do not contain the removed footer text and do contain \"ORDER NOW\".",
+        "The print view output does not contain the removed footer text and does contain \"ORDER NOW\"."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "modify",
+          "description": "Update the footer text in the ID card preview to render \"ORDER NOW\" (all caps) and remove the existing \"NOT VALID FOR OFFICIAL IDENTIFICATION\" string."
+        },
+        {
+          "path": "frontend/src/utils/exportIdCard.ts",
+          "operation": "modify",
+          "description": "Confirm export/print continues to capture the updated preview DOM (no hardcoded removed footer text) so PNG export and print output reflect \"ORDER NOW\"."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Remove watermark overlays/components and ensure no watermark appears on pages or in ID preview/export/print.",
+      "acceptanceCriteria": [
+        "No page renders any watermark text/graphics overlay in the UI (manual verification on Landing, Sign In, Dashboard, New Order, Order Detail, and Admin routes).",
+        "The ID card preview DOM does not include any watermark layer/component.",
+        "Exported PNG and printed ID do not include any watermark layer/graphics."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+          "operation": "modify",
+          "description": "Ensure the former disclaimer/watermark-like banner text is fully removed and replaced so no watermark/disclaimer string remains in the top-of-page overlay area."
+        },
+        {
+          "path": "frontend/src/components/IdCardPreview.tsx",
+          "operation": "modify",
+          "description": "Remove any watermark-like text from the ID card rendering (including the previous footer disclaimer) so the preview DOM contains no watermark layer/text."
+        },
+        {
+          "path": "frontend/src/components/IdWatermark.tsx",
+          "operation": "modify",
+          "description": "Implement this component as a no-op (renders nothing) to ensure any existing or future usage does not introduce watermark overlays into the UI or ID outputs."
+        },
+        {
+          "path": "frontend/src/content/copy.ts",
+          "operation": "modify",
+          "description": "Remove/blank any centralized disclaimer strings that could reintroduce watermark/disclaimer text across pages."
         }
       ]
     }

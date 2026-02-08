@@ -15,8 +15,7 @@ import PageHeader from '../components/dashboard/PageHeader';
 import { US_STATES } from '../constants/usStates';
 import { ExternalBlob } from '../backend';
 import { toast } from 'sonner';
-import { Loader2, Info, AlertCircle } from 'lucide-react';
-import { COPY } from '../content/copy';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { generateIdNumber } from '../utils/generateIdNumber';
 import { isValidDOB, dateInputToDOB, dobToDateInput } from '../utils/dob';
 
@@ -185,390 +184,399 @@ export default function NewOrderPage() {
         description="Follow the steps below to place your order"
       />
 
-      <div className="bg-card/60 border border-chrome-300/10 rounded-lg p-4 flex items-start gap-3 min-w-0">
-        <Info className="w-5 h-5 text-chrome-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-chrome-300 break-words">{COPY.ORDER_FORM_DISCLAIMER}</p>
-      </div>
-
-      {submissionError && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-start gap-3 min-w-0">
-          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-red-400 mb-1">Submission Error</p>
-            <p className="text-sm text-red-300 break-words">{submissionError}</p>
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-6 lg:gap-8 min-w-0">
-        <div className="space-y-6 min-w-0">
-          {/* Step 1: ID Details */}
-          <Card className="bg-card/80 border-chrome-300/20">
-            <CardHeader>
-              <CardTitle className="tracking-wide flex items-center gap-2 text-lg sm:text-xl">
-                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-chrome-300/20 text-chrome-300 text-sm font-bold shrink-0">1</span>
-                <span className="break-words">ID Information</span>
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Enter the details as you want them to appear on your ID
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-sm">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.firstName}
-                    aria-describedby={validationErrors.firstName ? 'firstName-error' : undefined}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.firstName && (
-                    <InlineFieldMessage id="firstName-error" type="error">
-                      {validationErrors.firstName}
-                    </InlineFieldMessage>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-sm">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.lastName}
-                    aria-describedby={validationErrors.lastName ? 'lastName-error' : undefined}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.lastName && (
-                    <InlineFieldMessage id="lastName-error" type="error">
-                      {validationErrors.lastName}
-                    </InlineFieldMessage>
-                  )}
-                </div>
+      <div className="grid lg:grid-cols-[1fr,420px] gap-6 sm:gap-8">
+        {/* Form Column */}
+        <div className="space-y-6">
+          {submissionError && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-destructive font-medium">Submission Error</p>
+                <p className="text-sm text-destructive/80 mt-1">{submissionError}</p>
               </div>
+            </div>
+          )}
 
-              <div className="space-y-2">
-                <Label htmlFor="dob" className="text-sm">Date of Birth (MM/DD/YYYY) *</Label>
-                <Input
-                  id="dob"
-                  type="date"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  className="bg-background/50 border-chrome-300/30 h-11"
-                  aria-invalid={showValidation && !!validationErrors.dob}
-                  aria-describedby={validationErrors.dob ? 'dob-error' : 'dob-preview'}
-                  disabled={isSubmitting}
-                  required
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* ID Details Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>ID Details</CardTitle>
+                <CardDescription>Enter the information to appear on the ID card</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="John"
+                      aria-invalid={showValidation && !!validationErrors.firstName}
+                      aria-describedby={validationErrors.firstName ? 'firstName-error' : undefined}
+                    />
+                    {showValidation && validationErrors.firstName && (
+                      <InlineFieldMessage id="firstName-error" type="error">
+                        {validationErrors.firstName}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Doe"
+                      aria-invalid={showValidation && !!validationErrors.lastName}
+                      aria-describedby={validationErrors.lastName ? 'lastName-error' : undefined}
+                    />
+                    {showValidation && validationErrors.lastName && (
+                      <InlineFieldMessage id="lastName-error" type="error">
+                        {validationErrors.lastName}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dob">Date of Birth *</Label>
+                    <Input
+                      id="dob"
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      aria-invalid={showValidation && !!validationErrors.dob}
+                      aria-describedby={validationErrors.dob ? 'dob-error' : undefined}
+                    />
+                    {showValidation && validationErrors.dob && (
+                      <InlineFieldMessage id="dob-error" type="error">
+                        {validationErrors.dob}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">Gender *</Label>
+                    <Select value={gender} onValueChange={setGender}>
+                      <SelectTrigger
+                        id="gender"
+                        aria-invalid={showValidation && !!validationErrors.gender}
+                        aria-describedby={validationErrors.gender ? 'gender-error' : undefined}
+                      >
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="M">Male</SelectItem>
+                        <SelectItem value="F">Female</SelectItem>
+                        <SelectItem value="X">Non-binary</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {showValidation && validationErrors.gender && (
+                      <InlineFieldMessage id="gender-error" type="error">
+                        {validationErrors.gender}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="height">Height *</Label>
+                    <Input
+                      id="height"
+                      value={height}
+                      onChange={(e) => setHeight(e.target.value)}
+                      placeholder="5'10&quot;"
+                      aria-invalid={showValidation && !!validationErrors.height}
+                      aria-describedby={validationErrors.height ? 'height-error' : undefined}
+                    />
+                    {showValidation && validationErrors.height && (
+                      <InlineFieldMessage id="height-error" type="error">
+                        {validationErrors.height}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="eyeColor">Eye Color *</Label>
+                    <Select value={eyeColor} onValueChange={setEyeColor}>
+                      <SelectTrigger
+                        id="eyeColor"
+                        aria-invalid={showValidation && !!validationErrors.eyeColor}
+                        aria-describedby={validationErrors.eyeColor ? 'eyeColor-error' : undefined}
+                      >
+                        <SelectValue placeholder="Select eye color" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BLK">Black</SelectItem>
+                        <SelectItem value="BLU">Blue</SelectItem>
+                        <SelectItem value="BRO">Brown</SelectItem>
+                        <SelectItem value="GRY">Gray</SelectItem>
+                        <SelectItem value="GRN">Green</SelectItem>
+                        <SelectItem value="HAZ">Hazel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {showValidation && validationErrors.eyeColor && (
+                      <InlineFieldMessage id="eyeColor-error" type="error">
+                        {validationErrors.eyeColor}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address *</Label>
+                  <Input
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="123 Main St"
+                    aria-invalid={showValidation && !!validationErrors.address}
+                    aria-describedby={validationErrors.address ? 'address-error' : undefined}
+                  />
+                  {showValidation && validationErrors.address && (
+                    <InlineFieldMessage id="address-error" type="error">
+                      {validationErrors.address}
+                    </InlineFieldMessage>
+                  )}
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City *</Label>
+                    <Input
+                      id="city"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="Springfield"
+                      aria-invalid={showValidation && !!validationErrors.city}
+                      aria-describedby={validationErrors.city ? 'city-error' : undefined}
+                    />
+                    {showValidation && validationErrors.city && (
+                      <InlineFieldMessage id="city-error" type="error">
+                        {validationErrors.city}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State *</Label>
+                    <Select value={state} onValueChange={setState}>
+                      <SelectTrigger
+                        id="state"
+                        aria-invalid={showValidation && !!validationErrors.state}
+                        aria-describedby={validationErrors.state ? 'state-error' : undefined}
+                      >
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {US_STATES.map((s) => (
+                          <SelectItem key={s.code} value={s.name}>
+                            {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {showValidation && validationErrors.state && (
+                      <InlineFieldMessage id="state-error" type="error">
+                        {validationErrors.state}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="zip">ZIP Code *</Label>
+                    <Input
+                      id="zip"
+                      value={zip}
+                      onChange={(e) => setZip(e.target.value)}
+                      placeholder="12345"
+                      aria-invalid={showValidation && !!validationErrors.zip}
+                      aria-describedby={validationErrors.zip ? 'zip-error' : undefined}
+                    />
+                    {showValidation && validationErrors.zip && (
+                      <InlineFieldMessage id="zip-error" type="error">
+                        {validationErrors.zip}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Photo Upload Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Photo</CardTitle>
+                <CardDescription>Upload a photo for your ID card</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PhotoUploader
+                  onPhotoSelected={handlePhotoSelected}
+                  onClear={handleClearPhoto}
+                  currentPhotoUrl={croppedPhotoUrl}
                 />
-                {showValidation && validationErrors.dob ? (
-                  <InlineFieldMessage id="dob-error" type="error">
-                    {validationErrors.dob}
+                {showValidation && validationErrors.photo && (
+                  <InlineFieldMessage id="photo-error" type="error">
+                    {validationErrors.photo}
                   </InlineFieldMessage>
-                ) : (
-                  <p id="dob-preview" className="text-xs text-muted-foreground">
-                    Will appear as: {previewDOB || 'MM/DD/YYYY'}
-                  </p>
                 )}
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="gender" className="text-sm">Gender *</Label>
-                  <Select value={gender} onValueChange={setGender} disabled={isSubmitting} required>
-                    <SelectTrigger className="bg-background/50 border-chrome-300/30 h-11" aria-invalid={showValidation && !!validationErrors.gender}>
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="M">Male</SelectItem>
-                      <SelectItem value="F">Female</SelectItem>
-                      <SelectItem value="X">Non-binary</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {showValidation && validationErrors.gender && (
-                    <InlineFieldMessage type="error">{validationErrors.gender}</InlineFieldMessage>
-                  )}
+            {/* Shipping Address Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Shipping Address</CardTitle>
+                <CardDescription>Where should we send your ID card?</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="shipFirstName">First Name *</Label>
+                    <Input
+                      id="shipFirstName"
+                      value={shipFirstName}
+                      onChange={(e) => setShipFirstName(e.target.value)}
+                      placeholder="John"
+                      aria-invalid={showValidation && !!validationErrors.shipFirstName}
+                      aria-describedby={validationErrors.shipFirstName ? 'shipFirstName-error' : undefined}
+                    />
+                    {showValidation && validationErrors.shipFirstName && (
+                      <InlineFieldMessage id="shipFirstName-error" type="error">
+                        {validationErrors.shipFirstName}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="shipLastName">Last Name *</Label>
+                    <Input
+                      id="shipLastName"
+                      value={shipLastName}
+                      onChange={(e) => setShipLastName(e.target.value)}
+                      placeholder="Doe"
+                      aria-invalid={showValidation && !!validationErrors.shipLastName}
+                      aria-describedby={validationErrors.shipLastName ? 'shipLastName-error' : undefined}
+                    />
+                    {showValidation && validationErrors.shipLastName && (
+                      <InlineFieldMessage id="shipLastName-error" type="error">
+                        {validationErrors.shipLastName}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="height" className="text-sm">Height *</Label>
+                  <Label htmlFor="shipAddress">Address *</Label>
                   <Input
-                    id="height"
-                    placeholder="5'10&quot;"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.height}
-                    disabled={isSubmitting}
-                    required
+                    id="shipAddress"
+                    value={shipAddress}
+                    onChange={(e) => setShipAddress(e.target.value)}
+                    placeholder="123 Main St"
+                    aria-invalid={showValidation && !!validationErrors.shipAddress}
+                    aria-describedby={validationErrors.shipAddress ? 'shipAddress-error' : undefined}
                   />
-                  {showValidation && validationErrors.height && (
-                    <InlineFieldMessage type="error">{validationErrors.height}</InlineFieldMessage>
+                  {showValidation && validationErrors.shipAddress && (
+                    <InlineFieldMessage id="shipAddress-error" type="error">
+                      {validationErrors.shipAddress}
+                    </InlineFieldMessage>
                   )}
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="eyeColor" className="text-sm">Eye Color *</Label>
-                <Select value={eyeColor} onValueChange={setEyeColor} disabled={isSubmitting} required>
-                  <SelectTrigger className="bg-background/50 border-chrome-300/30 h-11" aria-invalid={showValidation && !!validationErrors.eyeColor}>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BRN">Brown</SelectItem>
-                    <SelectItem value="BLU">Blue</SelectItem>
-                    <SelectItem value="GRN">Green</SelectItem>
-                    <SelectItem value="HZL">Hazel</SelectItem>
-                    <SelectItem value="GRY">Gray</SelectItem>
-                    <SelectItem value="BLK">Black</SelectItem>
-                  </SelectContent>
-                </Select>
-                {showValidation && validationErrors.eyeColor && (
-                  <InlineFieldMessage type="error">{validationErrors.eyeColor}</InlineFieldMessage>
-                )}
-              </div>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="shipCity">City *</Label>
+                    <Input
+                      id="shipCity"
+                      value={shipCity}
+                      onChange={(e) => setShipCity(e.target.value)}
+                      placeholder="Springfield"
+                      aria-invalid={showValidation && !!validationErrors.shipCity}
+                      aria-describedby={validationErrors.shipCity ? 'shipCity-error' : undefined}
+                    />
+                    {showValidation && validationErrors.shipCity && (
+                      <InlineFieldMessage id="shipCity-error" type="error">
+                        {validationErrors.shipCity}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-sm">Address *</Label>
-                <Input
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="bg-background/50 border-chrome-300/30 h-11"
-                  placeholder="123 Main St"
-                  aria-invalid={showValidation && !!validationErrors.address}
-                  disabled={isSubmitting}
-                  required
-                />
-                {showValidation && validationErrors.address && (
-                  <InlineFieldMessage type="error">{validationErrors.address}</InlineFieldMessage>
-                )}
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="shipState">State *</Label>
+                    <Select value={shipState} onValueChange={setShipState}>
+                      <SelectTrigger
+                        id="shipState"
+                        aria-invalid={showValidation && !!validationErrors.shipState}
+                        aria-describedby={validationErrors.shipState ? 'shipState-error' : undefined}
+                      >
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {US_STATES.map((s) => (
+                          <SelectItem key={s.code} value={s.code}>
+                            {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {showValidation && validationErrors.shipState && (
+                      <InlineFieldMessage id="shipState-error" type="error">
+                        {validationErrors.shipState}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city" className="text-sm">City *</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.city}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.city && (
-                    <InlineFieldMessage type="error">{validationErrors.city}</InlineFieldMessage>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="shipZip">ZIP Code *</Label>
+                    <Input
+                      id="shipZip"
+                      value={shipZip}
+                      onChange={(e) => setShipZip(e.target.value)}
+                      placeholder="12345"
+                      aria-invalid={showValidation && !!validationErrors.shipZip}
+                      aria-describedby={validationErrors.shipZip ? 'shipZip-error' : undefined}
+                    />
+                    {showValidation && validationErrors.shipZip && (
+                      <InlineFieldMessage id="shipZip-error" type="error">
+                        {validationErrors.shipZip}
+                      </InlineFieldMessage>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zip" className="text-sm">ZIP Code *</Label>
-                  <Input
-                    id="zip"
-                    value={zip}
-                    onChange={(e) => setZip(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.zip}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.zip && (
-                    <InlineFieldMessage type="error">{validationErrors.zip}</InlineFieldMessage>
-                  )}
-                </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="state" className="text-sm">State *</Label>
-                <Select value={state} onValueChange={setState} disabled={isSubmitting} required>
-                  <SelectTrigger className="bg-background/50 border-chrome-300/30 h-11" aria-invalid={showValidation && !!validationErrors.state}>
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {US_STATES.map((s) => (
-                      <SelectItem key={s.code} value={s.name}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {showValidation && validationErrors.state && (
-                  <InlineFieldMessage type="error">{validationErrors.state}</InlineFieldMessage>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Step 2: Photo Upload */}
-          <Card className="bg-card/80 border-chrome-300/20">
-            <CardHeader>
-              <CardTitle className="tracking-wide flex items-center gap-2 text-lg sm:text-xl">
-                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-chrome-300/20 text-chrome-300 text-sm font-bold shrink-0">2</span>
-                <span className="break-words">Upload Photo</span>
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Upload a clear photo of yourself for the ID
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PhotoUploader
-                onPhotoSelected={handlePhotoSelected}
-                onClear={handleClearPhoto}
-                currentPhotoUrl={croppedPhotoUrl}
-              />
-              {showValidation && validationErrors.photo && (
-                <InlineFieldMessage type="error">{validationErrors.photo}</InlineFieldMessage>
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto bg-chrome-300 hover:bg-chrome-200 text-black font-semibold"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                  Creating Order...
+                </>
+              ) : (
+                'Create Order'
               )}
-            </CardContent>
-          </Card>
-
-          {/* Step 3: Shipping Information */}
-          <Card className="bg-card/80 border-chrome-300/20">
-            <CardHeader>
-              <CardTitle className="tracking-wide flex items-center gap-2 text-lg sm:text-xl">
-                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-chrome-300/20 text-chrome-300 text-sm font-bold shrink-0">3</span>
-                <span className="break-words">Shipping Information</span>
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Where should we send your ID?
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="shipFirstName" className="text-sm">First Name *</Label>
-                  <Input
-                    id="shipFirstName"
-                    value={shipFirstName}
-                    onChange={(e) => setShipFirstName(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.shipFirstName}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.shipFirstName && (
-                    <InlineFieldMessage type="error">{validationErrors.shipFirstName}</InlineFieldMessage>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="shipLastName" className="text-sm">Last Name *</Label>
-                  <Input
-                    id="shipLastName"
-                    value={shipLastName}
-                    onChange={(e) => setShipLastName(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.shipLastName}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.shipLastName && (
-                    <InlineFieldMessage type="error">{validationErrors.shipLastName}</InlineFieldMessage>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="shipAddress" className="text-sm">Address *</Label>
-                <Input
-                  id="shipAddress"
-                  value={shipAddress}
-                  onChange={(e) => setShipAddress(e.target.value)}
-                  className="bg-background/50 border-chrome-300/30 h-11"
-                  placeholder="123 Main St"
-                  aria-invalid={showValidation && !!validationErrors.shipAddress}
-                  disabled={isSubmitting}
-                  required
-                />
-                {showValidation && validationErrors.shipAddress && (
-                  <InlineFieldMessage type="error">{validationErrors.shipAddress}</InlineFieldMessage>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="shipCity" className="text-sm">City *</Label>
-                  <Input
-                    id="shipCity"
-                    value={shipCity}
-                    onChange={(e) => setShipCity(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.shipCity}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.shipCity && (
-                    <InlineFieldMessage type="error">{validationErrors.shipCity}</InlineFieldMessage>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="shipZip" className="text-sm">ZIP Code *</Label>
-                  <Input
-                    id="shipZip"
-                    value={shipZip}
-                    onChange={(e) => setShipZip(e.target.value)}
-                    className="bg-background/50 border-chrome-300/30 h-11"
-                    aria-invalid={showValidation && !!validationErrors.shipZip}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  {showValidation && validationErrors.shipZip && (
-                    <InlineFieldMessage type="error">{validationErrors.shipZip}</InlineFieldMessage>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="shipState" className="text-sm">State *</Label>
-                <Select value={shipState} onValueChange={setShipState} disabled={isSubmitting} required>
-                  <SelectTrigger className="bg-background/50 border-chrome-300/30 h-11" aria-invalid={showValidation && !!validationErrors.shipState}>
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {US_STATES.map((s) => (
-                      <SelectItem key={s.code} value={s.name}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {showValidation && validationErrors.shipState && (
-                  <InlineFieldMessage type="error">{validationErrors.shipState}</InlineFieldMessage>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button
-            type="submit"
-            className="w-full bg-chrome-300 hover:bg-chrome-200 text-black font-semibold h-12 text-base shadow-chrome-glow"
-            disabled={isSubmitting}
-            size="lg"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Creating Order...
-              </>
-            ) : (
-              'Submit Order'
-            )}
-          </Button>
+            </Button>
+          </form>
         </div>
 
         {/* Preview Column - Sticky on desktop */}
-        <div className="lg:sticky lg:top-6 lg:self-start space-y-6 min-w-0 max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
-          <Card className="bg-card/80 border-chrome-300/20">
+        <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
+          <Card>
             <CardHeader>
-              <CardTitle className="tracking-wide text-lg sm:text-xl">Preview</CardTitle>
-              <CardDescription className="text-sm">
-                Live preview of your ID card
-              </CardDescription>
+              <CardTitle>Preview</CardTitle>
+              <CardDescription>Live preview of your ID card</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex flex-col items-center gap-4">
               <IdCardPreview
                 firstName={firstName}
                 lastName={lastName}
@@ -580,24 +588,23 @@ export default function NewOrderPage() {
                 state={state}
                 photoUrl={croppedPhotoUrl}
               />
-              {croppedPhotoUrl && firstName && lastName && (
-                <IdCardActions
-                  firstName={firstName}
-                  lastName={lastName}
-                  dob={previewDOB}
-                  gender={gender}
-                  height={height}
-                  eyeColor={eyeColor}
-                  idNumber={generatedIdNumber.current}
-                  state={state}
-                  photoUrl={croppedPhotoUrl}
-                />
-              )}
+              <IdCardActions
+                firstName={firstName}
+                lastName={lastName}
+                dob={previewDOB}
+                gender={gender}
+                height={height}
+                eyeColor={eyeColor}
+                idNumber={generatedIdNumber.current}
+                state={state}
+                photoUrl={croppedPhotoUrl}
+              />
             </CardContent>
           </Card>
         </div>
-      </form>
+      </div>
 
+      {/* Photo Crop Modal */}
       {showCropModal && rawPhotoUrl && (
         <PhotoCropModal
           open={showCropModal}

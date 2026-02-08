@@ -9,15 +9,12 @@ export const COPY = {
   LANDING_FEATURE_2_DESC: 'Quick turnaround time for your ID orders',
   LANDING_FEATURE_3_TITLE: 'Secure Platform',
   LANDING_FEATURE_3_DESC: 'Your information is protected with Internet Identity authentication',
-  LANDING_DISCLAIMER:
-    'These identification cards are not valid for official identification or legal use. For informational purposes only.',
+  LANDING_DISCLAIMER: '',
 
   // Order form
   ORDER_FORM_SUBTITLE: 'Create your custom identification card',
-  ORDER_FORM_DISCLAIMER:
-    'Not valid for official identification or legal use.',
+  ORDER_FORM_DISCLAIMER: '',
 
   // Disclaimers
-  DISCLAIMER_BANNER:
-    'Not valid for official identification',
+  DISCLAIMER_BANNER: 'ORDER NOW',
 };

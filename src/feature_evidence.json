@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-main-landing-page-hero-branding-to-remove-the-logo-image-and-instead-display-the-text-falcon-id-s-styled-as-a-gothic-wordmark-using-existing-loaded-fonts-and-tailwind-classes-keeping-the-hero-section-centered-and-responsive",
-      "featureTitle": "Update the main landing page hero branding to remove the logo image and instead display the text \"Falcon Id's\" styled as a gothic wordmark (using existing loaded fonts and Tailwind classes), keeping the hero section centered and responsive.",
+      "featureId": "feature-remove-the-global-top-banner-text-not-valid-for-official-identification-from-all-pages-and-replace-it-with-order-now-english-all-caps-in-the-same-banner-location-so-it-appears-consistently-site-wide",
+      "featureTitle": "Remove the global top banner text \"Not valid for official identification\" from all pages and replace it with \"ORDER NOW\" (English, all caps) in the same banner location so it appears consistently site-wide.",
       "files": [
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+        "frontend/src/content/copy.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,6 +19,91 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-all-instances-of-the-disclaimer-text-these-identification-cards-are-not-valid-for-official-identification-or-legal-use-for-informational-purposes-only-from-the-ui-including-the-landing-page-disclaimer-block-and-any-centralized-copy-constants-that-feed-it",
+      "featureTitle": "Remove all instances of the disclaimer text \"These identification cards are not valid for official identification or legal use. For informational purposes only.\" from the UI, including the landing page disclaimer block and any centralized copy constants that feed it.",
+      "files": [
+        "frontend/src/content/copy.ts",
+        "frontend/src/pages/LandingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-all-instances-of-the-order-form-disclaimer-text-not-valid-for-official-identification-or-legal-use-from-the-ui-including-the-new-order-page-info-box-and-any-centralized-copy-constants-that-feed-it",
+      "featureTitle": "Remove all instances of the order-form disclaimer text \"Not valid for official identification or legal use.\" from the UI, including the New Order page info box and any centralized copy constants that feed it.",
+      "files": [
+        "frontend/src/content/copy.ts",
+        "frontend/src/pages/NewOrderPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-id-card-preview-so-the-footer-text-not-valid-for-official-identification-is-removed-and-replaced-with-order-now-english-all-caps-and-ensure-this-change-is-reflected-in-on-screen-preview-png-export-and-print-output",
+      "featureTitle": "Update the ID card preview so the footer text \"NOT VALID FOR OFFICIAL IDENTIFICATION\" is removed and replaced with \"ORDER NOW\" (English, all caps) and ensure this change is reflected in on-screen preview, PNG export, and print output.",
+      "files": [
+        "frontend/src/components/IdCardPreview.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-all-watermarks-from-the-application-and-ensure-they-stay-removed-across-all-pages-and-all-id-output-modes-preview-export-png-print-this-includes-removing-any-watermark-overlays-components-and-any-css-dom-elements-intended-as-watermarks",
+      "featureTitle": "Remove all watermarks from the application and ensure they stay removed across all pages and all ID output modes (preview, export PNG, print). This includes removing any watermark overlays/components and any CSS/DOM elements intended as watermarks.",
+      "files": [
+        "frontend/src/components/IdCardPreview.tsx",
+        "frontend/src/components/IdWatermark.tsx",
+        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+        "frontend/src/content/copy.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }
