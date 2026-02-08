@@ -15,6 +15,10 @@ export function useUpdateOrderStatus() {
   return useMutation({
     mutationFn: async ({ orderId, status }: UpdateOrderStatusParams) => {
       if (!actor) throw new Error('Actor not available');
+      
+      // Note: CSRF token support prepared but backend not yet implemented
+      // When available: const { token } = useCsrfToken(); await actor.updateOrderStatus(orderId, status, token);
+      
       return actor.updateOrderStatus(orderId, status);
     },
     onSuccess: () => {

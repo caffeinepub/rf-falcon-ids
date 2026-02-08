@@ -1,71 +1,74 @@
 import { useNavigate } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, CheckCircle, Lock, Smartphone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Shield, Lock, Globe, UserPlus } from 'lucide-react';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-center min-h-[70vh]">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-4">
-            <Shield className="w-16 h-16 text-cyan-400" />
-          </div>
-          <CardTitle className="text-2xl font-bold text-center">Get Started with Internet Identity</CardTitle>
-          <CardDescription className="text-center">
-            Secure, anonymous authentication without passwords
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">What is Internet Identity?</h3>
-            <p className="text-sm text-muted-foreground">
-              Internet Identity is a blockchain-based authentication system that lets you sign in securely without passwords. Your identity is cryptographically secured and never shared with applications.
-            </p>
-          </div>
+    <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4">
+      <div className="w-full max-w-2xl space-y-8">
+        <div className="text-center space-y-3">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-wider">Create Account</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Get started with Internet Identity
+          </p>
+        </div>
 
-          <div className="space-y-3">
-            <h3 className="font-semibold text-lg">Key Features</h3>
-            <div className="grid gap-3">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-sm">No Passwords</p>
-                  <p className="text-xs text-muted-foreground">Use biometrics or security keys instead</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Lock className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-sm">Privacy First</p>
-                  <p className="text-xs text-muted-foreground">Your identity is anonymous and secure</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Smartphone className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-sm">Multi-Device</p>
-                  <p className="text-xs text-muted-foreground">Access from any device you register</p>
-                </div>
-              </div>
+        <Card className="bg-card/80 border-chrome-300/20 shadow-chrome-glow">
+          <CardHeader className="text-center space-y-4 pb-6">
+            <div className="w-16 h-16 bg-chrome-900/50 rounded-full flex items-center justify-center mx-auto border-2 border-chrome-300/30 shadow-chrome-glow">
+              <UserPlus className="w-8 h-8 text-chrome-300" aria-hidden="true" />
             </div>
-          </div>
-
-          <div className="space-y-3 pt-4">
+            <CardTitle className="text-2xl tracking-wide">Internet Identity</CardTitle>
+            <CardDescription className="text-base">
+              Create or use your existing Internet Identity to access Falcon IDs
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
             <Button
               onClick={() => navigate({ to: '/signin' })}
-              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+              className="w-full h-12 bg-chrome-300 hover:bg-chrome-200 text-black font-semibold text-base shadow-chrome-glow"
+              size="lg"
             >
               Continue to Sign In
             </Button>
-            <p className="text-xs text-center text-muted-foreground">
-              You'll be guided through creating your Internet Identity if you don't have one yet
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+
+            <div className="grid sm:grid-cols-3 gap-4 pt-4">
+              <Card className="bg-card/60 border-chrome-300/10">
+                <CardContent className="pt-4 space-y-2">
+                  <Lock className="w-6 h-6 text-chrome-300 mx-auto" aria-hidden="true" />
+                  <h3 className="font-semibold text-sm text-center">Secure</h3>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Cryptographic authentication
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/60 border-chrome-300/10">
+                <CardContent className="pt-4 space-y-2">
+                  <Globe className="w-6 h-6 text-chrome-300 mx-auto" aria-hidden="true" />
+                  <h3 className="font-semibold text-sm text-center">Decentralized</h3>
+                  <p className="text-xs text-muted-foreground text-center">
+                    No central authority
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/60 border-chrome-300/10">
+                <CardContent className="pt-4 space-y-2">
+                  <Shield className="w-6 h-6 text-chrome-300 mx-auto" aria-hidden="true" />
+                  <h3 className="font-semibold text-sm text-center">Private</h3>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Your data stays yours
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

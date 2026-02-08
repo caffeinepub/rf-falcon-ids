@@ -1,13 +1,12 @@
-import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
+import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet, useNavigate, ErrorComponent } from '@tanstack/react-router';
 import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useIsAdmin } from './hooks/auth/useIsAdmin';
 import { useEffect, lazy, Suspense } from 'react';
 import LandingPage from './pages/LandingPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
-import DashboardPage from './pages/DashboardPage';
-import NewOrderPage from './pages/NewOrderPage';
-import OrderDetailPage from './pages/OrderDetailPage';
+import NotFoundPage from './pages/NotFoundPage';
+import ErrorPage from './pages/ErrorPage';
 import AppShell from './components/AppShell';
 import AuthGate from './components/AuthGate';
 import AdminGate from './components/AdminGate';
@@ -15,9 +14,12 @@ import { AdminThemeProvider } from './hooks/admin/AdminThemeProvider';
 import AdminThemeLayout from './components/AdminThemeLayout';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
-import { Terminal } from 'lucide-react';
+import { Terminal, Loader2 } from 'lucide-react';
 
-// Lazy load admin panel for code splitting
+// Lazy load dashboard and admin pages for code splitting
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const NewOrderPage = lazy(() => import('./pages/NewOrderPage'));
+const OrderDetailPage = lazy(() => import('./pages/OrderDetailPage'));
 const AdminPanelPage = lazy(() => import('./pages/AdminPanelPage'));
 
 function Layout() {
@@ -30,6 +32,10 @@ function Layout() {
 
 const rootRoute = createRootRoute({
   component: Layout,
+  notFoundComponent: NotFoundPage,
+  errorComponent: ({ error, reset }) => (
+    <ErrorPage error={error} reset={reset} />
+  ),
 });
 
 function IndexComponent() {
@@ -81,12 +87,26 @@ const signUpRoute = createRoute({
   component: SignUpPage,
 });
 
+// Dashboard loading fallback
+function DashboardLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-center space-y-4">
+        <Loader2 className="w-12 h-12 mx-auto text-chrome-300 animate-spin" />
+        <div className="text-chrome-300 text-sm">Loading dashboard...</div>
+      </div>
+    </div>
+  );
+}
+
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
   component: () => (
     <AuthGate>
-      <DashboardPage />
+      <Suspense fallback={<DashboardLoadingFallback />}>
+        <DashboardPage />
+      </Suspense>
     </AuthGate>
   ),
 });
@@ -96,7 +116,9 @@ const newOrderRoute = createRoute({
   path: '/orders/new',
   component: () => (
     <AuthGate>
-      <NewOrderPage />
+      <Suspense fallback={<DashboardLoadingFallback />}>
+        <NewOrderPage />
+      </Suspense>
     </AuthGate>
   ),
 });
@@ -106,7 +128,9 @@ const orderDetailRoute = createRoute({
   path: '/orders/$orderId',
   component: () => (
     <AuthGate>
-      <OrderDetailPage />
+      <Suspense fallback={<DashboardLoadingFallback />}>
+        <OrderDetailPage />
+      </Suspense>
     </AuthGate>
   ),
 });
@@ -153,7 +177,10 @@ const routeTree = rootRoute.addChildren([
   adminRoute,
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({ 
+  routeTree,
+  defaultNotFoundComponent: NotFoundPage,
+});
 
 declare module '@tanstack/react-router' {
   interface Register {

@@ -60,13 +60,15 @@ export default function PhotoUploader({ onPhotoSelected, currentPhotoUrl, onClea
         accept="image/*"
         onChange={handleFileChange}
         className="hidden"
+        id="photo-upload-input"
+        aria-label="Upload photo file"
       />
       
       {currentPhotoUrl ? (
         <div className="relative">
           <img
             src={currentPhotoUrl}
-            alt="Selected photo"
+            alt="Selected photo preview"
             className="w-full h-48 object-cover rounded-lg border border-cyan-500/30"
           />
           {onClear && (
@@ -75,8 +77,9 @@ export default function PhotoUploader({ onPhotoSelected, currentPhotoUrl, onClea
               variant="destructive"
               size="sm"
               className="absolute top-2 right-2"
+              aria-label="Clear selected photo"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -90,8 +93,17 @@ export default function PhotoUploader({ onPhotoSelected, currentPhotoUrl, onClea
               ? 'border-cyan-500 bg-cyan-500/10'
               : 'border-border hover:border-cyan-500/50'
           }`}
+          role="button"
+          tabIndex={0}
+          aria-label="Photo upload area. Click to browse or drag and drop an image file"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
         >
-          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
           <p className="text-sm text-muted-foreground mb-4">
             Drag and drop your photo here, or click to browse
           </p>
@@ -99,6 +111,7 @@ export default function PhotoUploader({ onPhotoSelected, currentPhotoUrl, onClea
             onClick={() => fileInputRef.current?.click()}
             variant="outline"
             className="border-cyan-500/30"
+            type="button"
           >
             Select Photo
           </Button>

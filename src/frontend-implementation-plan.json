@@ -1,118 +1,145 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Professional copy refresh and Gothic Falcon IDs wordmark branding update",
+  "title": "Frontend security hardening: HTTPS redirect, asset headers, validation, CSRF wiring, and friendly error pages",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Remove role-play/cosplay/props/novelty language from all user-facing copy and replace with concise, professional legality/validity notices.",
+      "summary": "Force HTTPS via client-side redirect on initial app load while preserving path/query/hash and skipping local development hosts.",
       "acceptanceCriteria": [
-        "No user-facing text contains the words/phrases: \"role-play\", \"roleplay\", \"cosplay\", \"props\", or \"novelty use\" (case-insensitive).",
-        "Update the following known locations so they comply: frontend/src/content/copy.ts (e.g., LANDING_DISCLAIMER, ORDER_FORM_DISCLAIMER), frontend/src/components/NoveltyDisclaimerBanner.tsx, frontend/src/pages/LandingPage.tsx (hero subtitle + disclaimer block), frontend/src/pages/NewOrderPage.tsx (disclaimer block), frontend/src/components/IdCardPreview.tsx (card footer line).",
-        "Any remaining disclaimer/notice text is written in clear, professional English and does not imply roleplay/cosplay/props/novelty usage."
+        "When visiting any app route over http://, the browser is redirected to the equivalent https:// URL with the same path/search/hash.",
+        "The redirect does not run during local development (e.g., localhost) to avoid breaking dev workflows.",
+        "The redirect does not create an infinite redirect loop."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/content/copy.ts",
-          "operation": "modify",
-          "description": "Rewrite user-facing disclaimers and related marketing copy to remove any role-play/cosplay/props/novelty language, while keeping a concise, professional validity/legal-use notice (update at minimum: LANDING_HERO_SUBTITLE, LANDING_DISCLAIMER, ORDER_FORM_DISCLAIMER, DISCLAIMER_BANNER)."
+          "path": "frontend/src/utils/enforceHttps.ts",
+          "operation": "create",
+          "description": "Add a small utility that checks window.location (protocol/host) and performs a one-time replace() redirect from http: to https: while preserving pathname, search, and hash; ensure localhost/127.0.0.1 (and typical dev hostnames) are excluded to avoid breaking dev workflows."
         },
         {
-          "path": "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+          "path": "frontend/src/main.tsx",
           "operation": "modify",
-          "description": "Update the banner message so it remains concise and professional, and does not reference role-play/cosplay/props/novelty; prefer sourcing the banner string from frontend/src/content/copy.ts (e.g., COPY.DISCLAIMER_BANNER) to keep disclaimer copy consistent site-wide."
-        },
-        {
-          "path": "frontend/src/pages/LandingPage.tsx",
-          "operation": "modify",
-          "description": "Remove/replace any hero subtitle and disclaimer-block phrasing that implies role-play/cosplay/props/novelty usage; ensure the landing page hero subtitle reads realistic/professional and the disclaimer block uses the updated COPY text."
-        },
-        {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the order-page disclaimer block renders updated professional notice text (via COPY.ORDER_FORM_DISCLAIMER) and does not contain any role-play/cosplay/props/novelty language."
-        },
-        {
-          "path": "frontend/src/components/IdCardPreview.tsx",
-          "operation": "modify",
-          "description": "Replace the ID card footer disclaimer line so it is professional and validity-focused (no role-play/cosplay/props/novelty references), while remaining concise."
+          "description": "Invoke the HTTPS enforcement utility before React renders so deep links redirect immediately and consistently; ensure this runs only in the browser (not during SSR) and does not execute when already on https:."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Replace all visible logo placements with the new Gothic “Falcon IDs” wordmark asset.",
+      "summary": "Add standard security headers for the frontend asset canister via .ic-assets.json5, including a restrictive CSP that preserves required app functionality (fonts/II/etc.).",
       "acceptanceCriteria": [
-        "All pages that currently render the logo image (e.g., frontend/src/components/BrandHeader.tsx and frontend/src/pages/LandingPage.tsx) are updated to use the new Gothic “Falcon IDs” wordmark asset(s).",
-        "No old logo asset filenames remain referenced in the frontend codebase (e.g., /assets/generated/falcon-ids-logo-transparent.dim_1200x300.png is no longer used).",
-        "The displayed brand text reads exactly “Falcon IDs” (spacing/case) in all branded placements."
+        "`index.html` responses include the configured security headers after deployment.",
+        "Security headers do not break required app functionality (React app loads, Internet Identity sign-in works, fonts/icons load as expected).",
+        "CSP is explicitly defined and is not left as an empty/placeholder policy."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png",
-          "operation": "create",
-          "description": "Add the generated Gothic-style wordmark asset (transparent background) at this exact path and filename for use in header/hero branding."
-        },
-        {
-          "path": "frontend/src/components/BrandHeader.tsx",
+          "path": "frontend/public/.ic-assets.json5",
           "operation": "modify",
-          "description": "Update the header branding to use the new wordmark asset at frontend/public/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png, ensure alt text/brand label renders as exactly “Falcon IDs”, and remove any references to prior logo filenames."
-        },
-        {
-          "path": "frontend/src/pages/LandingPage.tsx",
-          "operation": "modify",
-          "description": "Update the landing hero logo to use the new wordmark asset at frontend/public/assets/generated/falcon-ids-wordmark-gothic-transparent.dim_1200x300.png, ensure displayed brand text reads exactly “Falcon IDs”, and remove any references to prior logo filenames."
-        },
-        {
-          "path": "frontend/public/assets/generated/falcon-ids-logo-transparent.dim_1200x300.png",
-          "operation": "delete",
-          "description": "Remove the old transparent logo asset to prevent accidental reuse and help ensure it is no longer referenced anywhere."
-        },
-        {
-          "path": "frontend/public/assets/generated/falcon-ids-logo.dim_1200x300.png",
-          "operation": "delete",
-          "description": "Remove the old non-transparent logo asset to prevent accidental reuse and help ensure it is no longer referenced anywhere."
-        },
-        {
-          "path": "frontend/public/assets/generated/rf-falcon-ids-logo.dim_1200x300.png",
-          "operation": "delete",
-          "description": "Remove the old alternate logo asset to prevent accidental reuse and help ensure it is no longer referenced anywhere."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Update favicon and apple-touch icon references to new Gothic “Falcon IDs” branded assets.",
-      "acceptanceCriteria": [
-        "frontend/index.html <link rel=\"icon\"> points to the new favicon asset.",
-        "frontend/index.html <link rel=\"apple-touch-icon\"> points to the new apple-touch icon asset.",
-        "The browser tab icon and iOS home-screen icon reflect the updated Gothic “Falcon IDs” branding."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.png",
-          "operation": "create",
-          "description": "Add the generated Gothic-style favicon asset at this exact path and filename so frontend/index.html can reference it."
-        },
-        {
-          "path": "frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.png",
-          "operation": "create",
-          "description": "Add the generated Gothic-style apple touch icon asset at this exact path and filename so frontend/index.html can reference it."
+          "description": "Extend the asset rules to attach security headers (at minimum Strict-Transport-Security, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, and an explicit restrictive Content-Security-Policy) for index.html and other relevant served assets; ensure CSP allows required sources used by this app (e.g., self-hosted assets, Google Fonts domains referenced in frontend/index.html, and any required IC/Internet Identity connections) without being a placeholder."
         },
         {
           "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Update <link rel=\"icon\"> to reference frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.png and update <link rel=\"apple-touch-icon\"> to reference frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.png; ensure the document title remains “Falcon IDs”."
+          "description": "Review and, if necessary, adjust external resource usage (e.g., font links) so the configured CSP in frontend/public/.ic-assets.json5 can remain restrictive without breaking app load or sign-in flows (do not add new third-party resources unless required)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Add frontend input normalization and validation (trim/max length/pattern checks) for user-controlled fields before submission, with clear inline messages.",
+      "acceptanceCriteria": [
+        "Backend rejects invalid or unexpectedly large payloads with clear error messages and does not write partial/dirty data to state.",
+        "Frontend form fields display user-friendly validation messages in English before submission for common invalid inputs (e.g., empty required fields, invalid ZIP/DOB).",
+        "All stored text fields are normalized (e.g., trimmed) consistently."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/validation.ts",
+          "operation": "create",
+          "description": "Create shared frontend validators/normalizers for common fields used in orders (trim, max lengths, allowed character sets; structured validation for DOB, ZIP, state/state_name normalization, gender, height, and ID/order IDs) to ensure consistent sanitization across forms before invoking backend calls."
         },
         {
-          "path": "frontend/public/assets/generated/falcon-ids-favicon.dim_32x32.png",
-          "operation": "delete",
-          "description": "Remove the old favicon asset to prevent accidental reuse after frontend/index.html is updated."
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Update form validation to use the shared validation utilities: enforce max lengths and patterns (e.g., ZIP format, reasonable name/address characters), ensure state/state_name values are normalized consistently, and show clear InlineFieldMessage errors for invalid inputs prior to submission; normalize all strings (trim) before creating the payload."
         },
         {
-          "path": "frontend/public/assets/generated/falcon-ids-apple-touch-icon.dim_180x180.png",
-          "operation": "delete",
-          "description": "Remove the old apple-touch icon asset to prevent accidental reuse after frontend/index.html is updated."
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
+          "operation": "modify",
+          "description": "Normalize and validate create-order payload right before the backend call (defense-in-depth): trim strings, enforce max lengths, and reject invalid structured fields with clear thrown errors so the UI can display a friendly message."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "operation": "modify",
+          "description": "Add basic tracking number validation/normalization (trim, length limits, allowed characters) before calling the backend so admin updates fail fast with readable errors rather than sending malformed input."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Wire a CSRF token flow in the frontend so all mutating backend calls include a caller-scoped token once the backend capability is available.",
+      "acceptanceCriteria": [
+        "Mutating operations invoked from the frontend include a CSRF token parameter and the backend validates it before applying changes.",
+        "CSRF tokens are caller-scoped and cannot be reused across different principals.",
+        "If the CSRF token is missing/invalid, the backend denies the request without mutating state and returns a clear error/trap message."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/security/useCsrfToken.ts",
+          "operation": "create",
+          "description": "Add a small hook that retrieves and caches a CSRF token per authenticated session/caller (and clears it on logout via existing auth clearing behavior); implement refresh/retry behavior suitable for token invalidation. This hook should be designed to call a backend capability for minting/returning a token once it exists."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
+          "operation": "modify",
+          "description": "Update the order creation mutation to obtain a CSRF token via the new hook and include it with the state-changing backend call once the backend capability supports it; ensure missing/invalid token errors are surfaced to the user as readable messages."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useDeleteOrder.ts",
+          "operation": "modify",
+          "description": "Update delete-order mutation to include a CSRF token from the CSRF hook when calling the state-changing backend function; handle token errors gracefully and avoid retry loops that could spam calls."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+          "operation": "modify",
+          "description": "Update order-status mutation to include a CSRF token parameter (via CSRF hook) for state changes; surface authorization/CSRF failures with clear UI errors."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+          "operation": "modify",
+          "description": "Update tracking-number mutation to include CSRF token; ensure token acquisition is performed only when an actor is available and the user is authenticated."
+        },
+        {
+          "path": "frontend/src/hooks/security/useSecurityMutations.ts",
+          "operation": "modify",
+          "description": "Update all security/admin state-changing mutations (toggle security, update rate limits, clear counters, allow/block list mutations) to include CSRF token support through the CSRF hook so admin operations are protected consistently once the backend capability is present."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Add friendly 404 and 500 error pages integrated with TanStack Router not-found and error handling and matching the existing AppShell layout.",
+      "acceptanceCriteria": [
+        "Navigating to an unknown route shows a dedicated 404 page (not a blank screen).",
+        "A thrown route/component error renders a friendly 500-style error page with clear English copy and a navigation option to recover (e.g., go home).",
+        "Error pages match the site’s existing layout shell (header/footer) and remain accessible (proper headings, readable contrast, keyboard reachable links/buttons)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/NotFoundPage.tsx",
+          "operation": "create",
+          "description": "Create a dedicated, friendly Not Found (404) page with accessible headings and a clear recovery action (e.g., button to go to / or /dashboard depending on auth), styled to match the current UI patterns (cards/buttons) and intended to render within AppShell."
+        },
+        {
+          "path": "frontend/src/pages/ErrorPage.tsx",
+          "operation": "create",
+          "description": "Create a generic friendly Error (500-style) page component for unexpected route/app errors with clear English guidance, optional error details for debugging (non-sensitive), and a primary recovery navigation action; ensure keyboard accessible controls and readable contrast."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire TanStack Router not-found and error handling to render the new NotFoundPage and ErrorPage (root route notFoundComponent/errorComponent or equivalent), ensuring these pages render inside the existing Layout/AppShell and are reachable for unknown routes and thrown route/component errors."
         }
       ]
     }

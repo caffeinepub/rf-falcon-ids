@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
@@ -97,9 +97,12 @@ export default function PhotoCropModal({ open, onClose, imageUrl, onCropComplete
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-card border-chrome-300/20">
+      <DialogContent className="max-w-2xl bg-card border-chrome-300/20" aria-describedby="crop-modal-description">
         <DialogHeader>
           <DialogTitle className="tracking-wide">Crop Photo to ID Size</DialogTitle>
+          <DialogDescription id="crop-modal-description">
+            Drag to position your photo and use the zoom slider to adjust the size. The cropped area will be used for your ID card.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -114,11 +117,13 @@ export default function PhotoCropModal({ open, onClose, imageUrl, onCropComplete
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            role="img"
+            aria-label="Photo crop preview area. Click and drag to reposition the photo."
           >
             {imageRef.current && (
               <img
                 src={imageUrl}
-                alt="Crop preview"
+                alt="Photo being cropped"
                 className="absolute"
                 style={{
                   transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
@@ -128,18 +133,22 @@ export default function PhotoCropModal({ open, onClose, imageUrl, onCropComplete
                 }}
               />
             )}
-            <div className="absolute inset-0 border-2 border-chrome-300/50 pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-chrome-300/50 pointer-events-none" aria-hidden="true" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Zoom</label>
+            <label htmlFor="zoom-slider" className="text-sm text-muted-foreground">
+              Zoom
+            </label>
             <Slider
+              id="zoom-slider"
               value={[scale]}
               onValueChange={(values) => setScale(values[0])}
               min={0.5}
               max={3}
               step={0.1}
               className="w-full"
+              aria-label="Zoom level"
             />
           </div>
         </div>
@@ -153,7 +162,7 @@ export default function PhotoCropModal({ open, onClose, imageUrl, onCropComplete
           </Button>
         </DialogFooter>
 
-        <canvas ref={canvasRef} className="hidden" />
+        <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
       </DialogContent>
     </Dialog>
   );

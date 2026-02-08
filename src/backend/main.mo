@@ -10,12 +10,9 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Storage "blob-storage/Storage";
 
-
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-
-// Specify the data migration function in with-clause
 
 actor {
   module State {
@@ -81,7 +78,7 @@ actor {
 
   public type SecurityConfig = {
     enabled : Bool;
-    rateLimitWindow : Nat; // nanoseconds
+    rateLimitWindow : Nat;
     maxCallsPerWindow : Nat;
   };
 
@@ -107,7 +104,6 @@ actor {
 
   include MixinStorage();
 
-  // Persistent state
   var orders = Map.empty<Text, Order>();
   var userProfiles = Map.empty<Principal, UserProfile>();
 
@@ -116,7 +112,7 @@ actor {
 
   var securityConfig : SecurityConfig = {
     enabled = true;
-    rateLimitWindow = 60_000_000_000; // 60 seconds in nanoseconds
+    rateLimitWindow = 60_000_000_000;
     maxCallsPerWindow = 100;
   };
 
@@ -131,31 +127,27 @@ actor {
   };
   var auditLog = List.empty<AuditLogEntry>();
 
-  // Admin management state
   var adminEmails = Map.empty<Text, Bool>();
   var emailToPrincipal = Map.empty<Text, Principal>();
   let OWNER_EMAIL = "traviscastonguay@gmail.com";
   var ownerPrincipal : ?Principal = null;
 
-  // Optimized rate limiting with reduced overhead
   func checkRateLimit(caller : Principal, action : Text) : Bool {
     if (not securityConfig.enabled) {
       return true;
     };
 
-    // Fast path: allowlist bypass
     if (allowlist.containsKey(caller)) {
       securityStats := {
-        securityStats with allowedCalls = securityStats.allowedCalls + 1
+        securityStats with allowedCalls = securityStats.allowedCalls + 1;
       };
       logSecurityEvent(caller, action, #allowed, "Allowlisted principal");
       return true;
     };
 
-    // Fast path: blocklist deny
     if (blocklist.containsKey(caller)) {
       securityStats := {
-        securityStats with deniedCalls = securityStats.deniedCalls + 1
+        securityStats with deniedCalls = securityStats.deniedCalls + 1;
       };
       logSecurityEvent(caller, action, #denied, "Principal is blocklisted");
       return false;
@@ -164,13 +156,11 @@ actor {
     let now = Time.now();
     let windowStart = now - securityConfig.rateLimitWindow;
 
-    // Get existing history or empty list
     let history = switch (callHistory.get(caller)) {
       case (null) { List.empty<Time.Time>() };
       case (?h) { h };
     };
 
-    // Filter to recent calls only (optimized: single pass)
     var recentCalls = List.empty<Time.Time>();
     var callCount = 0;
     for (timestamp in history.values()) {
@@ -180,27 +170,24 @@ actor {
       };
     };
 
-    // Check rate limit
     if (callCount >= securityConfig.maxCallsPerWindow) {
       securityStats := {
-        securityStats with throttledCalls = securityStats.throttledCalls + 1
+        securityStats with throttledCalls = securityStats.throttledCalls + 1;
       };
       logSecurityEvent(caller, action, #throttled, "Rate limit exceeded");
       return false;
     };
 
-    // Add current timestamp and update history
     recentCalls.add(now);
     callHistory.add(caller, recentCalls);
 
     securityStats := {
-      securityStats with allowedCalls = securityStats.allowedCalls + 1
+      securityStats with allowedCalls = securityStats.allowedCalls + 1;
     };
     logSecurityEvent(caller, action, #allowed, "Within rate limit");
     return true;
   };
 
-  // Optimized security event logging with proper retention (keep most recent)
   func logSecurityEvent(principal : Principal, action : Text, result : { #allowed; #denied; #throttled }, reason : Text) {
     let event : SecurityEvent = {
       timestamp = Time.now();
@@ -211,19 +198,15 @@ actor {
     };
     securityEvents.add(event);
 
-    // Truncate to keep most recent 1000 events
     let size = securityEvents.size();
     if (size > 1000) {
       let eventsArray = securityEvents.toArray();
       let startIndex = size - 1000;
-      let recentEvents = Array.tabulate(1000, func(i) {
-        eventsArray[startIndex + i];
-      });
+      let recentEvents = Array.tabulate(1000, func(i) { eventsArray[startIndex + i] });
       securityEvents := List.fromArray(recentEvents);
     };
   };
 
-  // Optimized audit log with proper retention (keep most recent)
   func logAuditEntry(admin : Principal, action : Text, details : Text) {
     let entry : AuditLogEntry = {
       timestamp = Time.now();
@@ -233,14 +216,11 @@ actor {
     };
     auditLog.add(entry);
 
-    // Truncate to keep most recent 500 entries
     let size = auditLog.size();
     if (size > 500) {
       let logArray = auditLog.toArray();
       let startIndex = size - 500;
-      let recentLog = Array.tabulate(500, func(i) {
-        logArray[startIndex + i];
-      });
+      let recentLog = Array.tabulate(500, func(i) { logArray[startIndex + i] });
       auditLog := List.fromArray(recentLog);
     };
   };
@@ -500,16 +480,13 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view security events");
     };
-    
+
     let eventsArray = securityEvents.toArray();
     let size = eventsArray.size();
     let actualLimit = if (limit < size) { limit } else { size };
-    
-    // Return most recent events (from the end of the array)
+
     let startIndex = if (size > actualLimit) { size - actualLimit } else { 0 };
-    Array.tabulate<SecurityEvent>(actualLimit, func(i) {
-      eventsArray[startIndex + i];
-    });
+    Array.tabulate<SecurityEvent>(actualLimit, func(i) { eventsArray[startIndex + i] });
   };
 
   public query ({ caller }) func getSecurityConfig() : async {
@@ -541,9 +518,7 @@ actor {
     };
 
     securityConfig := { securityConfig with enabled };
-    logAuditEntry(caller, "setSecurityEnabled", "Security " # (if (enabled) { "enabled" } else {
-      "disabled";
-    }));
+    logAuditEntry(caller, "setSecurityEnabled", "Security " # (if (enabled) { "enabled" } else { "disabled" }));
   };
 
   public shared ({ caller }) func updateRateLimits(rateLimitWindow : Nat, maxCallsPerWindow : Nat) : async () {
@@ -644,7 +619,7 @@ actor {
 
     for (orderId in orderIds.vals()) {
       switch (orders.get(orderId)) {
-        case (null) { /* Skip missing orders */ };
+        case (null) { };
         case (?order) {
           orders.add(orderId, { order with status = #approved });
         };
@@ -664,7 +639,7 @@ actor {
 
     for (orderId in orderIds.vals()) {
       switch (orders.get(orderId)) {
-        case (null) { /* Skip missing orders */ };
+        case (null) { };
         case (?order) {
           orders.add(orderId, { order with status = #shipped });
         };
@@ -724,12 +699,9 @@ actor {
     let logArray = auditLog.toArray();
     let size = logArray.size();
     let actualLimit = if (limit < size) { limit } else { size };
-    
-    // Return most recent entries (from the end of the array)
+
     let startIndex = if (size > actualLimit) { size - actualLimit } else { 0 };
-    Array.tabulate<AuditLogEntry>(actualLimit, func(i) {
-      logArray[startIndex + i];
-    });
+    Array.tabulate<AuditLogEntry>(actualLimit, func(i) { logArray[startIndex + i] });
   };
 
   public shared ({ caller }) func grantAdminAccess(admin_email : Text) : async () {
@@ -747,7 +719,7 @@ actor {
       case (?principal) {
         AccessControl.assignRole(accessControlState, caller, principal, #admin);
       };
-      case (null) { /* Email not yet associated with a principal */ };
+      case (null) { };
     };
 
     logAuditEntry(caller, "grantAdminAccess", "Admin access granted to " # admin_email);
@@ -772,7 +744,7 @@ actor {
       case (?principal) {
         AccessControl.assignRole(accessControlState, caller, principal, #user);
       };
-      case (null) { /* Email not yet associated with a principal */ };
+      case (null) { };
     };
 
     logAuditEntry(caller, "revokeAdminAccess", "Admin access revoked for " # admin_email);

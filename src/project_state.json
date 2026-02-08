@@ -1,33 +1,50 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Website branding/content updates for “Falcon IDs,” including removal of role-play/novelty/cosplay disclaimer language and replacing the logo with Gothic-style “Falcon IDs” branding across the site.",
-  "architectural_notes": [],
+  "summary": "Website project for Falcon Ids, including branding update (gothic text logo), an admin ticketing/moderation dashboard, and security hardening (HTTPS, rate limiting, input validation/sanitization, CSRF, security headers, and custom 404/500 pages).",
+  "architectural_notes": [
+    "Plan for security hardening controls: HTTPS enforcement, rate limiting middleware for forms/APIs, centralized input validation/sanitization, CSRF protection, standard security headers, and custom 404/500 error pages."
+  ],
   "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Gothic-style wordmark reading “Falcon IDs”, transparent background (falcon-ids-wordmark-gothic-transparent.dim_1200x300.png)\n- Gothic-style “Falcon IDs” favicon, high-contrast, legible at small sizes (falcon-ids-favicon-gothic.dim_32x32.png)\n- Gothic-style “Falcon IDs” apple touch icon, centered with padding (falcon-ids-apple-touch-gothic.dim_180x180.png)",
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-remove-all-references-to-role-play-props-novelty-use-and-cosplay-from-all-user-facing-warnings-disclaimers-and-page-copy-across-the-site-rewriting-the-remaining-copy-so-it-reads-realistic-and-professional-while-keeping-a-concise-legality-validity-notice-where-appropriate",
-      "title": "Remove all references to role-play, props, novelty use, and cosplay from all user-facing warnings, disclaimers, and page copy across the site, rewriting the remaining copy so it reads realistic and professional while keeping a concise legality/validity notice where appropriate.",
+      "id": "feature-force-https-for-all-app-pages-by-implementing-a-client-side-redirect-whenever-the-app-is-loaded-over-http-including-deep-links-preserving-the-full-path-query-string-and-hash-during-the-redirect",
+      "title": "Force HTTPS for all app pages by implementing a client-side redirect whenever the app is loaded over `http:` (including deep links), preserving the full path, query string, and hash during the redirect.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-replace-the-current-logo-everywhere-with-a-gothic-style-falcon-ids-wordmark-including-the-header-landing-page-hero-footer-branded-areas-if-any-and-any-other-visible-branded-placements",
-      "title": "Replace the current logo everywhere with a Gothic-style “Falcon IDs” wordmark, including the header, landing page hero, footer branded areas (if any), and any other visible branded placements.",
+      "id": "feature-add-standard-security-headers-for-the-frontend-asset-canister-by-updating-frontend-public-ic-assets-json5-to-include-common-hardening-headers-at-minimum-strict-transport-security-x-content-type-options-referrer-policy-permissions-policy-and-a-restrictive-content-security-policy-for-index-html-and-other-served-assets-where-appropriate",
+      "title": "Add standard security headers for the frontend asset canister by updating `frontend/public/.ic-assets.json5` to include common hardening headers (at minimum: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and a restrictive `Content-Security-Policy`) for `index.html` and other served assets where appropriate.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-site-icons-to-match-the-new-gothic-falcon-ids-branding-by-replacing-the-favicon-and-apple-touch-icon-references-in-frontend-index-html-with-the-new-branded-assets",
-      "title": "Update site icons to match the new Gothic “Falcon IDs” branding by replacing the favicon and apple-touch icon references in frontend/index.html with the new branded assets.",
+      "id": "feature-validate-and-sanitize-all-user-controlled-inputs-on-both-frontend-and-backend-trim-strings-enforce-maximum-lengths-enforce-allowed-character-sets-where-sensible-and-validate-structured-fields-dob-format-zip-state-state-name-gender-height-id-order-ids-before-storing-or-using-them",
+      "title": "Validate and sanitize all user-controlled inputs on both frontend and backend: trim strings, enforce maximum lengths, enforce allowed character sets where sensible, and validate structured fields (DOB format, ZIP, state/state_name, gender, height, id/order IDs) before storing or using them.",
       "reqIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-csrf-protection-for-state-changing-operations-by-introducing-a-csrf-token-flow-provide-a-backend-method-to-mint-return-a-token-scoped-to-the-caller-and-require-that-token-to-be-supplied-and-validated-for-mutating-backend-calls-initiated-from-the-ui",
+      "title": "Add CSRF protection for state-changing operations by introducing a CSRF token flow: provide a backend method to mint/return a token scoped to the caller and require that token to be supplied and validated for mutating backend calls initiated from the UI.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-custom-friendly-error-pages-a-not-found-404-page-for-unknown-routes-and-a-generic-error-500-page-for-unexpected-route-app-errors-using-tanstack-router-s-not-found-and-error-handling-so-users-see-helpful-guidance-and-a-way-back-to-the-home-dashboard",
+      "title": "Create custom, friendly error pages: a Not Found (404) page for unknown routes and a generic Error (500) page for unexpected route/app errors, using TanStack Router’s not-found and error handling so users see helpful guidance and a way back to the home/dashboard.",
+      "reqIds": [
+        "REQ-6"
       ],
       "version": 1
     }
@@ -35,37 +52,32 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Remove all references to role-play, props, novelty use, or cosplay from warnings, disclaimers, and page text to make the brand feel realistic and professional",
+      "summary": "Replace main page logo with \"Falcon Ids\" in gothic lettering; remove logo everywhere and use this text treatment site-wide",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Replace the current logo everywhere with Gothic-style lettering that says “Falcon IDs” in the header, footer, favicon, and all branded areas",
+      "summary": "Create an admin dashboard for tickets: view, respond, close, and tag tickets; add additional moderation tools",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Add a main-page support/ticket section where customers can submit tickets and admins can respond",
+      "summary": "Security audit & hardening: enforce HTTPS everywhere, add basic rate limiting to forms/APIs, validate & sanitize inputs, add CSRF protection, set standard security headers, and create friendly custom 404/500 pages",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-4",
-      "summary": "Create a helper feature called “Falcon” for answering customer questions with admin response capability",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Improve code for speed/performance and overall user satisfaction (general optimization pass)",
-      "reqIds": [],
+      "id": "AR-6",
+      "summary": "Ensure basic rate limiting is applied to all state-changing backend entrypoints (forms/APIs) by auditing `backend/main.mo` and adding `checkRateLimit(...)` enforcement anywhere it is missing for `shared` update methods that mutate state or perform privileged actions.",
+      "reqIds": [
+        "REQ-3"
+      ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Falcon IDs",
+  "projectName": "Security hardening: HTTPS enforcement, rate limiting, input validation, CSRF protection, security headers, and friendly 404/500 pages",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

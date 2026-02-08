@@ -11,8 +11,8 @@ export default function StateSeal({ state, className = 'w-12 h-12' }: StateSealP
 
   if (!sealPath) {
     return (
-      <div className={`${className} flex items-center justify-center bg-slate-700/50 rounded-full border border-cyan-500/30`}>
-        <Shield className="w-1/2 h-1/2 text-cyan-400/50" />
+      <div className={`${className} flex items-center justify-center bg-slate-700/50 rounded-full border border-cyan-500/30`} aria-label={`${state || 'State'} seal placeholder`}>
+        <Shield className="w-1/2 h-1/2 text-cyan-400/50" aria-hidden="true" />
       </div>
     );
   }
@@ -20,8 +20,10 @@ export default function StateSeal({ state, className = 'w-12 h-12' }: StateSealP
   return (
     <img
       src={sealPath}
-      alt={`${state} seal`}
+      alt={`${state} state seal`}
       className={`${className} object-contain`}
+      loading="lazy"
+      decoding="async"
       onError={(e) => {
         const target = e.target as HTMLImageElement;
         target.style.display = 'none';

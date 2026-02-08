@@ -1,4 +1,5 @@
 import { US_STATES } from '../constants/usStates';
+import { getAssetUrl } from './assetBase';
 
 export function getStateSealPath(stateName: string): string | null {
   if (!stateName) return null;
@@ -9,5 +10,5 @@ export function getStateSealPath(stateName: string): string | null {
 
   if (!state) return null;
 
-  return `/assets/generated/state-seals-pack/${state.code}.png`;
+  return getAssetUrl(`/assets/generated/state-seals-pack/${state.code}.png`);
 }

@@ -1,53 +1,76 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T23:30:52.813Z",
-  "summary": "REQ-2 (logo wordmark) and REQ-3 (favicon/apple-touch links) appear implemented in the shown diffs. REQ-1 (remove role-play/cosplay/props/novelty language everywhere) is not fully satisfied because the diff summary indicates remaining user-facing text containing forbidden terms (e.g., “Roleplay” component and “NOVELTY” watermark). The diff summary also indicates additional feature/UI work (e.g., expanded admin panel sections, audit log/security dashboard, watermark overlay, responsive refactors) that was not requested and conflicts with stated non-goals.",
+  "generatedAt": "2026-02-08T00:34:44.725Z",
+  "summary": "Diff implements security headers (REQ-2) and friendly TanStack Router 404/500 pages (REQ-6), and adds frontend validation utilities plus some usage in order-related mutations (partial REQ-4). However, HTTPS enforcement is not shown as being invoked (REQ-1 incomplete), CSRF token flow is explicitly not implemented (REQ-5 missing), and backend-side input validation and comprehensive rate-limit enforcement across all mutating shared methods are not verifiable from the provided backend diff (REQ-3/REQ-4 likely incomplete).",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Remove all references to role-play, props, novelty use, and cosplay from all user-facing warnings, disclaimers, and page copy across the site (no occurrences of \"role-play\", \"roleplay\", \"cosplay\", \"props\", or \"novelty use\"; professional legality/validity notice remains).",
-      "reason": "The diff summary indicates at least one component still explicitly references \"Roleplay\" and another renders \"NOVELTY\" text in a user-visible watermark, which violates the acceptance criteria banning these terms (case-insensitive) in user-facing text.",
+      "requirement": "Force HTTPS for all app pages by implementing a client-side redirect whenever the app is loaded over http:, preserving the full path, query string, and hash during the redirect; do not run during localhost/dev; avoid infinite loops.",
+      "reason": "An HTTPS enforcement utility was added, but the diff summary does not show it being called from the app startup/entry (e.g., App/root component or main entry file), so the redirect behavior is not implemented end-to-end based on the provided changes.",
       "evidence": [
-        "frontend-file-summaries.txt (mentions \"frontend/src/components/RoleplayDisclaimerBanner.tsx\")",
-        "frontend-file-summaries.txt (mentions \"frontend/src/components/IdWatermark.tsx\" renders \"NOVELTY / NOT VALID IDENTIFICATION\")"
+        "frontend/src/utils/enforceHttps.ts",
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Ensure basic rate limiting is applied to all state-changing backend entrypoints by auditing backend/main.mo and adding checkRateLimit(...) enforcement anywhere it is missing for shared update methods that mutate state or perform privileged actions.",
+      "reason": "backend/main.mo shows a checkRateLimit function and related security state/stats, but the diff summary is truncated and does not provide evidence that all state-mutating shared update methods actually call checkRateLimit before mutating state.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Validate and sanitize all user-controlled inputs on both frontend and backend (trim, max lengths, allowed charset, validate DOB/ZIP/state/gender/height/IDs) before storing or using them.",
+      "reason": "Frontend validation utilities were added and used in some mutations (e.g., create order, set tracking number), but the diff does not show backend-side validation/sanitization, and does not demonstrate coverage for all required structured fields (notably DOB) and all user-controlled inputs across the app.",
+      "evidence": [
+        "frontend/src/utils/validation.ts",
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Add CSRF protection via a backend method to mint/return a caller-scoped token and require/validate it for mutating backend calls from the UI.",
+      "reason": "Frontend CSRF hook explicitly states backend token generation is not implemented and returns null; mutations contain comments about future token usage but still call backend mutators without a token. No backend mint/validate methods are shown.",
+      "evidence": [
+        "frontend/src/hooks/security/useCsrfToken.ts",
+        "frontend/src/hooks/orders/useDeleteOrder.ts",
+        "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+        "frontend/src/hooks/security/useSecurityMutations.ts",
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Expanded/advanced admin panel with multiple tabs including Security Dashboard, Audit Log, and Admin Access, with lazy-loading and Suspense behavior.",
-      "reason": "BuildRequest explicitly scopes changes to branding/copy updates and lists non-goals like not adding support/admin response systems and not doing broad refactors; this admin-panel expansion is not requested by REQ-1/2/3.",
+      "description": "Blocklist/allowlist administration capabilities (and related UI mutation hooks) beyond the requested per-principal rate limiting and stats/events.",
+      "reason": "BuildRequest asks for rate limiting enforcement and recording allowed/denied/throttled events, but does not request implementing explicit allowlist/blocklist management features.",
       "evidence": [
-        "frontend-file-summaries.txt (\"frontend/src/pages/AdminPanelPage.tsx\": \"Advanced admin panel with tabbed interface for Orders, Security Dashboard, Audit Log, and Admin Access sections; ... lazy-loaded\")"
-      ]
-    },
-    {
-      "description": "Adding an ID watermark overlay component that renders large diagonal text (\"NOVELTY / NOT VALID IDENTIFICATION\").",
-      "reason": "Not requested by any requirement; additionally, it introduces banned \"novelty\" terminology conflicting with REQ-1 acceptance criteria.",
-      "evidence": [
-        "frontend-file-summaries.txt (\"frontend/src/components/IdWatermark.tsx\": \"rendering \\\"NOVELTY / NOT VALID IDENTIFICATION\\\"\")"
-      ]
-    },
-    {
-      "description": "Broad UX/layout refactors across multiple pages (mobile-first responsive layouts, step progression changes, two-column stacking behavior, search param typing) beyond branding/copy changes.",
-      "reason": "Non-goals state to avoid broad performance/optimization refactors beyond what is necessary for branding/copy; these changes are not part of REQ-1/2/3 as stated.",
-      "evidence": [
-        "frontend-file-summaries.txt (\"frontend/src/pages/DashboardPage.tsx\": responsive layout + typed search params)",
-        "frontend-file-summaries.txt (\"frontend/src/pages/NewOrderPage.tsx\": responsive single-column layout, numbered step progression, prop name corrections)",
-        "frontend-file-summaries.txt (\"frontend/src/pages/OrderDetailPage.tsx\": responsive two-column layout changes)"
+        "backend/main.mo",
+        "frontend/src/hooks/security/useSecurityMutations.ts"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/components/BrandHeader.tsx",
-    "frontend/src/components/IdCardPreview.tsx",
-    "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-    "frontend/src/content/copy.ts",
-    "frontend/src/pages/LandingPage.tsx",
+    "frontend/public/.ic-assets.json5",
+    "frontend/src/App.tsx",
+    "frontend/src/hooks/orders/useCreateOrder.ts",
+    "frontend/src/hooks/orders/useDeleteOrder.ts",
+    "frontend/src/hooks/orders/useSetTrackingNumber.ts",
+    "frontend/src/hooks/orders/useUpdateOrderStatus.ts",
+    "frontend/src/hooks/security/useCsrfToken.ts",
+    "frontend/src/hooks/security/useSecurityMutations.ts",
+    "frontend/src/pages/ErrorPage.tsx",
+    "frontend/src/pages/NotFoundPage.tsx",
+    "frontend/src/utils/enforceHttps.ts",
+    "frontend/src/utils/validation.ts",
     "project_state.json"
   ]
 }

@@ -1,77 +1,128 @@
 {
   "kind": "build_request",
-  "title": "Remove role-play/cosplay/novelty language and update Falcon IDs gothic wordmark branding everywhere",
+  "title": "Security hardening: HTTPS enforcement, rate limiting, input validation, CSRF protection, security headers, and friendly 404/500 pages",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove all references to role-play, props, novelty use, and cosplay from all user-facing warnings, disclaimers, and page copy across the site, rewriting the remaining copy so it reads realistic and professional while keeping a concise legality/validity notice where appropriate.",
+      "text": "Force HTTPS for all app pages by implementing a client-side redirect whenever the app is loaded over `http:` (including deep links), preserving the full path, query string, and hash during the redirect.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Remove all references to role-play, props, novelty use, or cosplay from warnings, disclaimers, and page text so the brand feels realistic and professional"
+          "Check the site for security problems and fix them by forcing HTTPS on all pages"
         ]
       },
       "acceptanceCriteria": [
-        "No user-facing text contains the words/phrases: \"role-play\", \"roleplay\", \"cosplay\", \"props\", or \"novelty use\" (case-insensitive).",
-        "Update the following known locations so they comply: frontend/src/content/copy.ts (e.g., LANDING_DISCLAIMER, ORDER_FORM_DISCLAIMER), frontend/src/components/NoveltyDisclaimerBanner.tsx, frontend/src/pages/LandingPage.tsx (hero subtitle + disclaimer block), frontend/src/pages/NewOrderPage.tsx (disclaimer block), frontend/src/components/IdCardPreview.tsx (card footer line).",
-        "Any remaining disclaimer/notice text is written in clear, professional English and does not imply roleplay/cosplay/props/novelty usage."
+        "When visiting any app route over http://, the browser is redirected to the equivalent https:// URL with the same path/search/hash.",
+        "The redirect does not run during local development (e.g., localhost) to avoid breaking dev workflows.",
+        "The redirect does not create an infinite redirect loop."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Replace the current logo everywhere with a Gothic-style “Falcon IDs” wordmark, including the header, landing page hero, footer branded areas (if any), and any other visible branded placements.",
+      "text": "Add standard security headers for the frontend asset canister by updating `frontend/public/.ic-assets.json5` to include common hardening headers (at minimum: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and a restrictive `Content-Security-Policy`) for `index.html` and other served assets where appropriate.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "replace the current logo everywhere with Gothic-style lettering that says “Falcon IDs” in the header, footer, favicon, and all branded areas."
+          "setting standard security headers"
         ]
       },
       "acceptanceCriteria": [
-        "All pages that currently render the logo image (e.g., frontend/src/components/BrandHeader.tsx and frontend/src/pages/LandingPage.tsx) are updated to use the new Gothic “Falcon IDs” wordmark asset(s).",
-        "No old logo asset filenames remain referenced in the frontend codebase (e.g., /assets/generated/falcon-ids-logo-transparent.dim_1200x300.png is no longer used).",
-        "The displayed brand text reads exactly “Falcon IDs” (spacing/case) in all branded placements."
+        "`index.html` responses include the configured security headers after deployment.",
+        "Security headers do not break required app functionality (React app loads, Internet Identity sign-in works, fonts/icons load as expected).",
+        "CSP is explicitly defined and is not left as an empty/placeholder policy."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Update site icons to match the new Gothic “Falcon IDs” branding by replacing the favicon and apple-touch icon references in frontend/index.html with the new branded assets.",
+      "text": "Ensure basic rate limiting is applied to all state-changing backend entrypoints (forms/APIs) by auditing `backend/main.mo` and adding `checkRateLimit(...)` enforcement anywhere it is missing for `shared` update methods that mutate state or perform privileged actions.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "adding basic rate-limiting to forms and APIs"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All state-mutating `shared` methods enforce rate limiting via `checkRateLimit` (unless a specific exception is documented and justified).",
+        "When the rate limit is exceeded, the call is denied consistently and produces a clear failure (trap) without mutating state.",
+        "Rate-limited calls are recorded in security stats/events (allowed/denied/throttled)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Validate and sanitize all user-controlled inputs on both frontend and backend: trim strings, enforce maximum lengths, enforce allowed character sets where sensible, and validate structured fields (DOB format, ZIP, state/state_name, gender, height, id/order IDs) before storing or using them.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "validating and sanitizing user inputs"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend rejects invalid or unexpectedly large payloads with clear error messages and does not write partial/dirty data to state.",
+        "Frontend form fields display user-friendly validation messages in English before submission for common invalid inputs (e.g., empty required fields, invalid ZIP/DOB).",
+        "All stored text fields are normalized (e.g., trimmed) consistently."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add CSRF protection for state-changing operations by introducing a CSRF token flow: provide a backend method to mint/return a token scoped to the caller and require that token to be supplied and validated for mutating backend calls initiated from the UI.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "adding CSRF protection"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Mutating operations invoked from the frontend include a CSRF token parameter and the backend validates it before applying changes.",
+        "CSRF tokens are caller-scoped and cannot be reused across different principals.",
+        "If the CSRF token is missing/invalid, the backend denies the request without mutating state and returns a clear error/trap message."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Create custom, friendly error pages: a Not Found (404) page for unknown routes and a generic Error (500) page for unexpected route/app errors, using TanStack Router’s not-found and error handling so users see helpful guidance and a way back to the home/dashboard.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "replace the current logo everywhere with Gothic-style lettering that says “Falcon IDs” in the header, footer, favicon, and all branded areas."
+          "creating custom friendly 404 and 500 error pages"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/index.html <link rel=\"icon\"> points to the new favicon asset.",
-        "frontend/index.html <link rel=\"apple-touch-icon\"> points to the new apple-touch icon asset.",
-        "The browser tab icon and iOS home-screen icon reflect the updated Gothic “Falcon IDs” branding."
+        "Navigating to an unknown route shows a dedicated 404 page (not a blank screen).",
+        "A thrown route/component error renders a friendly 500-style error page with clear English copy and a navigation option to recover (e.g., go home).",
+        "Error pages match the site’s existing layout shell (header/footer) and remain accessible (proper headings, readable contrast, keyboard reachable links/buttons)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui or any frontend immutablePaths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single Motoko actor in `backend/main.mo`; add `backend/migration.mo` only if persistent state layout changes require a migration.",
+    "Do not edit files under `frontend/src/components/ui` or any paths listed in `frontend.immutablePaths` in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Do not add a support/ticket system or admin responses.",
-    "Do not add a helper feature called “Falcon” or any Q&A system.",
-    "Do not perform a broad performance/optimization refactor beyond what is necessary to implement the branding/copy changes."
+    "Implementing third-party WAF/CDN security features outside the Internet Computer asset canister and app code.",
+    "Adding external authentication providers beyond Internet Identity.",
+    "Implementing real-time/WAF-grade distributed rate limiting beyond the existing per-principal logic."
   ],
   "imageRequirements": {
-    "required": [
-      "Gothic-style wordmark reading “Falcon IDs”, transparent background (falcon-ids-wordmark-gothic-transparent.dim_1200x300.png)",
-      "Gothic-style “Falcon IDs” favicon, high-contrast, legible at small sizes (falcon-ids-favicon-gothic.dim_32x32.png)",
-      "Gothic-style “Falcon IDs” apple touch icon, centered with padding (falcon-ids-apple-touch-gothic.dim_180x180.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

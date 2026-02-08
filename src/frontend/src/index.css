@@ -1,221 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --radius: 0.25rem;
-        /* Gothic Chrome: Deep blacks and metallic silvers */
-        --background: 0 0 0;
-        --foreground: 0.95 0 0;
-        --card: 0.12 0 0;
-        --card-foreground: 0.95 0 0;
-        --popover: 0.15 0 0;
-        --popover-foreground: 0.95 0 0;
-        /* Chrome silver as primary */
-        --primary: 0.85 0 0;
-        --primary-foreground: 0.12 0 0;
-        /* Dark steel secondary */
-        --secondary: 0.25 0 0;
-        --secondary-foreground: 0.95 0 0;
-        --muted: 0.25 0 0;
-        --muted-foreground: 0.65 0 0;
-        /* Subtle steel accent */
-        --accent: 0.35 0 0;
-        --accent-foreground: 0.95 0 0;
-        --destructive: 0.55 0.20 25;
-        --destructive-foreground: 0.95 0 0;
-        --border: 0.85 0 0 / 12%;
-        --input: 0.85 0 0 / 15%;
-        --ring: 0.75 0 0;
-        --chart-1: 0.65 0.05 240;
-        --chart-2: 0.60 0.05 200;
-        --chart-3: 0.70 0.05 280;
-        --chart-4: 0.55 0.05 220;
-        --chart-5: 0.75 0.05 260;
-        --sidebar: 0.12 0 0;
-        --sidebar-foreground: 0.95 0 0;
-        --sidebar-primary: 0.85 0 0;
-        --sidebar-primary-foreground: 0.12 0 0;
-        --sidebar-accent: 0.25 0 0;
-        --sidebar-accent-foreground: 0.95 0 0;
-        --sidebar-border: 0.85 0 0 / 12%;
-        --sidebar-ring: 0.75 0 0;
-        
-        /* Cyber/Hacker theme colors for admin */
-        --cyber-primary: 0.70 0.15 160;
-        --cyber-accent: 0.75 0.18 140;
-        --cyber-bg: 0.08 0 0;
-        --cyber-card: 0.12 0.02 160;
-        --cyber-muted: 0.50 0.08 160;
-    }
+  :root {
+    /* Gothic Chrome Hearts Theme - Light Mode */
+    --background: 0.98 0 0;
+    --foreground: 0.20 0 0;
+    --card: 0.95 0 0;
+    --card-foreground: 0.20 0 0;
+    --popover: 0.98 0 0;
+    --popover-foreground: 0.20 0 0;
+    --primary: 0.85 0 0;
+    --primary-foreground: 0.15 0 0;
+    --secondary: 0.90 0 0;
+    --secondary-foreground: 0.20 0 0;
+    --muted: 0.92 0 0;
+    --muted-foreground: 0.55 0 0;
+    --accent: 0.88 0 0;
+    --accent-foreground: 0.20 0 0;
+    --destructive: 0.55 0.20 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.85 0 0 / 0.2;
+    --input: 0.85 0 0 / 0.3;
+    --ring: 0.85 0 0;
+    --radius: 0.5rem;
+    --chart-1: 0.60 0.15 220;
+    --chart-2: 0.70 0.12 160;
+    --chart-3: 0.55 0.18 30;
+    --chart-4: 0.65 0.10 280;
+    --chart-5: 0.50 0.20 340;
 
-    * {
-        @apply border-border;
-    }
-    
-    body {
-        @apply bg-background text-foreground;
-        font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
-        font-weight: 400;
-    }
+    /* Cyber theme colors */
+    --cyber-primary: 0.70 0.15 200;
+    --cyber-accent: 0.65 0.20 280;
+    --cyber-bg: 0.12 0.02 240;
+    --cyber-card: 0.18 0.03 240;
+    --cyber-muted: 0.40 0.05 240;
+  }
 
-    h1, h2, h3, h4, h5, h6 {
-        font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
+  .dark {
+    /* Gothic Chrome Hearts Theme - Dark Mode */
+    --background: 0.12 0 0;
+    --foreground: 0.95 0 0;
+    --card: 0.15 0 0;
+    --card-foreground: 0.95 0 0;
+    --popover: 0.12 0 0;
+    --popover-foreground: 0.95 0 0;
+    --primary: 0.85 0 0;
+    --primary-foreground: 0.12 0 0;
+    --secondary: 0.20 0 0;
+    --secondary-foreground: 0.95 0 0;
+    --muted: 0.18 0 0;
+    --muted-foreground: 0.65 0 0;
+    --accent: 0.25 0 0;
+    --accent-foreground: 0.95 0 0;
+    --destructive: 0.45 0.25 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.85 0 0 / 0.2;
+    --input: 0.85 0 0 / 0.3;
+    --ring: 0.85 0 0;
+    --chart-1: 0.60 0.15 220;
+    --chart-2: 0.70 0.12 160;
+    --chart-3: 0.55 0.18 30;
+    --chart-4: 0.65 0.10 280;
+    --chart-5: 0.50 0.20 340;
 
-    button, input, select, textarea {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
+    /* Cyber theme colors - dark mode */
+    --cyber-primary: 0.70 0.15 200;
+    --cyber-accent: 0.65 0.20 280;
+    --cyber-bg: 0.12 0.02 240;
+    --cyber-card: 0.18 0.03 240;
+    --cyber-muted: 0.40 0.05 240;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Skip link styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
 }
 
 @layer utilities {
-    .scan-line {
-        background: linear-gradient(
-            to bottom,
-            transparent 0%,
-            rgba(192, 192, 192, 0.08) 50%,
-            transparent 100%
-        );
-        animation: scan 4s linear infinite;
-    }
+  /* Touch-friendly tap targets */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
 
-    @keyframes scan {
-        0% {
-            transform: translateY(-100%);
-        }
-        100% {
-            transform: translateY(100%);
-        }
-    }
+  /* Safe text wrapping for long strings */
+  .break-safe {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-        .scan-line {
-            animation: none;
-        }
-    }
+  /* Prevent horizontal overflow */
+  .overflow-x-safe {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
 
-    .chrome-text {
-        background: linear-gradient(180deg, #e8e8e8 0%, #a0a0a0 50%, #c0c0c0 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+  /* Enhanced focus styles for keyboard navigation */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chrome-300 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
 
-    .gothic-border {
-        border-image: linear-gradient(135deg, #c0c0c0 0%, #606060 50%, #c0c0c0 100%) 1;
-    }
+  /* Ensure focus-visible works properly */
+  *:focus-visible {
+    outline: 2px solid oklch(0.85 0 0);
+    outline-offset: 2px;
+  }
 
-    /* Admin theme styles */
-    .admin-theme {
-        background: oklch(var(--cyber-bg));
-        color: oklch(var(--cyber-primary));
-        position: relative;
-        overflow-x: hidden;
-    }
-
-    .cyber-grid-bg {
-        position: fixed;
-        inset: 0;
-        background-image: 
-            linear-gradient(oklch(var(--cyber-primary) / 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, oklch(var(--cyber-primary) / 0.03) 1px, transparent 1px);
-        background-size: 50px 50px;
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    .cyber-scan-line {
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(
-            to bottom,
-            transparent 0%,
-            oklch(var(--cyber-primary) / 0.05) 50%,
-            transparent 100%
-        );
-        animation: cyber-scan 8s linear infinite;
-        pointer-events: none;
-        z-index: 1;
-    }
-
-    @keyframes cyber-scan {
-        0% {
-            transform: translateY(-100%);
-        }
-        100% {
-            transform: translateY(100%);
-        }
-    }
-
-    .shadow-cyber {
-        box-shadow: 0 0 20px oklch(var(--cyber-primary) / 0.15);
-    }
-
-    /* Admin theme variants */
-    .admin-theme-goth-black {
-        --cyber-primary: 0.70 0.15 160;
-        --cyber-accent: 0.75 0.18 140;
-        --cyber-bg: 0.08 0 0;
-        --cyber-card: 0.12 0.02 160;
-        --cyber-muted: 0.50 0.08 160;
-    }
-
-    .admin-theme-silver-steel {
-        --cyber-primary: 0.80 0.02 240;
-        --cyber-accent: 0.85 0.03 220;
-        --cyber-bg: 0.15 0 0;
-        --cyber-card: 0.20 0.01 240;
-        --cyber-muted: 0.60 0.02 240;
-    }
-
-    .admin-theme-white-luxury {
-        --cyber-primary: 0.95 0 0;
-        --cyber-accent: 0.90 0 0;
-        --cyber-bg: 0.92 0 0;
-        --cyber-card: 0.97 0 0;
-        --cyber-muted: 0.50 0 0;
-    }
-
-    .admin-theme-deep-purple {
-        --cyber-primary: 0.65 0.20 300;
-        --cyber-accent: 0.70 0.22 280;
-        --cyber-bg: 0.08 0.05 300;
-        --cyber-card: 0.12 0.08 300;
-        --cyber-muted: 0.50 0.12 300;
-    }
-
-    .admin-theme-fire-red {
-        --cyber-primary: 0.60 0.25 25;
-        --cyber-accent: 0.65 0.28 15;
-        --cyber-bg: 0.08 0.05 25;
-        --cyber-card: 0.12 0.08 25;
-        --cyber-muted: 0.50 0.15 25;
-    }
-
-    /* Responsive overflow handling */
-    @media (max-width: 640px) {
-        .container {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-    }
-}
-
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    #id-card-preview,
-    #id-card-preview * {
-        visibility: visible;
-    }
-    #id-card-preview {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
+  /* Remove focus outline for mouse users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
 }

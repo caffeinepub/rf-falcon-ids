@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Package, Info, X } from 'lucide-react';
 import { formatDOB } from '../utils/dob';
 import { normalizeStateName } from '../utils/stateFormat';
+import PageHeader from '../components/dashboard/PageHeader';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -48,9 +49,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {showGuidanceBanner && (
-        <div className="bg-green-500/10 border border-green-500/30 rounded p-3 sm:p-4 flex items-start gap-3">
+        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 flex items-start gap-3 min-w-0">
           <Info className="w-5 h-5 text-green-300 shrink-0 mt-0.5" />
-          <div className="flex-1 text-sm text-green-200">
+          <div className="flex-1 text-sm text-green-200 min-w-0">
             <p className="font-semibold mb-1">Order created successfully!</p>
             <p className="text-green-200/80">
               Your order is now pending. Please contact the owner for payment methods. Once approved and shipped, you'll receive tracking information.
@@ -58,26 +59,28 @@ export default function DashboardPage() {
           </div>
           <button
             onClick={() => setShowGuidanceBanner(false)}
-            className="text-green-300 hover:text-green-200 transition-colors shrink-0"
+            className="text-green-300 hover:text-green-200 transition-colors shrink-0 p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400"
+            aria-label="Close banner"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-wider">Dashboard</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Track your ID orders</p>
-        </div>
-        <Button
-          onClick={() => navigate({ to: '/orders/new' })}
-          className="bg-chrome-300 hover:bg-chrome-200 text-black font-semibold w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          New Order
-        </Button>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="Track your ID orders"
+        action={
+          <Button
+            onClick={() => navigate({ to: '/orders/new' })}
+            className="bg-chrome-300 hover:bg-chrome-200 text-black font-semibold w-full sm:w-auto h-11 text-base shadow-chrome-glow"
+            size="lg"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            New Order
+          </Button>
+        }
+      />
 
       {!orders || orders.length === 0 ? (
         <Card className="bg-card/80 border-chrome-300/20">
@@ -89,9 +92,10 @@ export default function DashboardPage() {
             </p>
             <Button
               onClick={() => navigate({ to: '/orders/new' })}
-              className="bg-chrome-300 hover:bg-chrome-200 text-black font-semibold"
+              className="bg-chrome-300 hover:bg-chrome-200 text-black font-semibold h-11"
+              size="lg"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-5 h-5 mr-2" />
               Create Order
             </Button>
           </CardContent>
@@ -101,35 +105,43 @@ export default function DashboardPage() {
           {orders.map((order) => (
             <Card
               key={order.id}
-              className="bg-card/80 border-chrome-300/20 hover:shadow-chrome-glow transition-shadow cursor-pointer"
+              className="bg-card/80 border-chrome-300/20 hover:shadow-chrome-glow transition-all cursor-pointer focus-within:ring-2 focus-within:ring-chrome-300/50 min-w-0 group"
               onClick={() => navigate({ to: '/orders/$orderId', params: { orderId: order.id } })}
+              tabIndex={0}
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate({ to: '/orders/$orderId', params: { orderId: order.id } });
+                }
+              }}
             >
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <CardTitle className="tracking-wide text-lg sm:text-xl">
+                  <CardTitle className="tracking-wide text-lg sm:text-xl break-words min-w-0">
                     {order.details.first_name} {order.details.last_name}
                   </CardTitle>
-                  <Badge className={getStatusColor(order.status)}>
+                  <Badge className={`${getStatusColor(order.status)} shrink-0`}>
                     {getStatusLabel(order.status)}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-sm">
-                  <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-sm min-w-0">
+                  <div className="min-w-0">
                     <span className="text-muted-foreground block mb-1">Order ID</span>
                     <span className="text-chrome-300 font-mono text-xs sm:text-sm break-all">{order.id}</span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-muted-foreground block mb-1">Date of Birth</span>
                     <span className="text-chrome-300">{formatDOB(order.details.dob)}</span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-muted-foreground block mb-1">State</span>
-                    <span className="text-chrome-300">{normalizeStateName(order.details.state_name)}</span>
+                    <span className="text-chrome-300 break-words">{normalizeStateName(order.details.state_name)}</span>
                   </div>
                   {order.trackingNumber && (
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-muted-foreground block mb-1">Tracking</span>
                       <span className="text-green-300 font-mono text-xs sm:text-sm break-all">{order.trackingNumber}</span>
                     </div>

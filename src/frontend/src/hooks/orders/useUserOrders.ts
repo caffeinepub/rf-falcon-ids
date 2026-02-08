@@ -39,5 +39,7 @@ export function useUserOrders() {
       }
     },
     enabled: !!actor && !isFetching && isAuthenticated,
+    staleTime: 30000, // 30 seconds - reasonable cache duration
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches on tab switch
   });
 }

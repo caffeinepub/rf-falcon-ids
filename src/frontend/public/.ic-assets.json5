@@ -1,0 +1,72 @@
+[
+  {
+    // Security headers for HTML entry point
+    "match": "index.html",
+    "headers": {
+      "Cache-Control": "public, max-age=300",
+      "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+      "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.ic0.app https://*.icp0.io https://identity.ic0.app https://identity.internetcomputer.org; frame-src 'self' https://identity.ic0.app https://identity.internetcomputer.org; object-src 'none'; base-uri 'self'; form-action 'self';"
+    }
+  },
+  {
+    // Long-lived immutable cache for hashed build outputs
+    "match": "**/*.js",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    "match": "**/*.css",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    // Long-lived cache for optimized images
+    "match": "**/*.webp",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    "match": "**/*.png",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    "match": "**/*.jpg",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    "match": "**/*.jpeg",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    "match": "**/*.svg",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    // Conservative cache for asset manifest
+    "match": ".ic-assets.json5",
+    "headers": {
+      "Cache-Control": "public, max-age=300"
+    }
+  }
+]

@@ -39,12 +39,14 @@ export default function IdCardPreview({
     <div
       id="id-card-preview"
       className="relative w-full max-w-[420px] aspect-[1.586/1] bg-gradient-to-br from-black via-zinc-950 to-black rounded overflow-hidden border-2 border-chrome-300/30 shadow-2xl shadow-chrome-300/10"
+      role="img"
+      aria-label={`ID card preview for ${displayName}`}
     >
       {/* Scan line effect */}
-      <div className="absolute inset-0 scan-line pointer-events-none z-20" />
+      <div className="absolute inset-0 scan-line pointer-events-none z-20" aria-hidden="true" />
       
       {/* Subtle metallic sheen */}
-      <div className="absolute inset-0 bg-gradient-to-br from-chrome-300/5 via-transparent to-chrome-300/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-chrome-300/5 via-transparent to-chrome-300/5 pointer-events-none" aria-hidden="true" />
       
       <div className="relative z-10 p-4 sm:p-6 h-full flex flex-col">
         {/* Header */}
@@ -67,9 +69,14 @@ export default function IdCardPreview({
           {/* Photo */}
           <div className="w-20 h-24 sm:w-24 sm:h-28 bg-zinc-900 border border-chrome-300/20 rounded flex items-center justify-center overflow-hidden shrink-0">
             {photoUrl ? (
-              <img src={photoUrl} alt="ID Photo" className="w-full h-full object-cover" />
+              <img 
+                src={photoUrl} 
+                alt={`ID photo of ${displayName}`}
+                className="w-full h-full object-cover"
+                decoding="async"
+              />
             ) : (
-              <div className="text-chrome-400/30 text-[10px] sm:text-xs text-center px-2">
+              <div className="text-chrome-400/30 text-[10px] sm:text-xs text-center px-2" aria-label="No photo uploaded">
                 PHOTO
               </div>
             )}

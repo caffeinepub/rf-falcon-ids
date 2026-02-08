@@ -9,6 +9,10 @@ export function useDeleteOrder() {
   return useMutation({
     mutationFn: async (orderId: string) => {
       if (!actor) throw new Error('Actor not available');
+      
+      // Note: CSRF token support prepared but backend not yet implemented
+      // When available: const { token } = useCsrfToken(); await actor.deleteOrder(orderId, token);
+      
       return actor.deleteOrder(orderId);
     },
     onSuccess: () => {
