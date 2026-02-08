@@ -1,81 +1,65 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T00:55:42.675Z",
+  "generatedAt": "2026-02-08T16:20:26.230Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Remove the global top banner text \"Not valid for official identification\" from all pages and replace it with \"ORDER NOW\" (English, all caps) in the same banner location so it appears consistently site-wide.",
+        "summary": "Redesign the public homepage (route \"/\") to feel like a clean, futuristic, user-friendly landing page rather than a basic dashboard-style page, while keeping the overall app navigation and authentication flow intact.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-          "frontend/src/content/copy.ts"
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-          "frontend/src/content/copy.ts"
+          "frontend/src/pages/LandingPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Remove all instances of the disclaimer text \"These identification cards are not valid for official identification or legal use. For informational purposes only.\" from the UI, including the landing page disclaimer block and any centralized copy constants that feed it.",
+        "summary": "Update the existing LandingPage implementation to include additional landing-page sections beyond the current hero + 4-step grid, such as a benefits/features section and a clear next-step section that directs users to sign in (and/or sign up) using Internet Identity.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/pages/LandingPage.tsx"
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/content/copy.ts"
         ],
         "matchedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/pages/LandingPage.tsx"
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/content/copy.ts"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Remove all instances of the order-form disclaimer text \"Not valid for official identification or legal use.\" from the UI, including the New Order page info box and any centralized copy constants that feed it.",
+        "summary": "Implement a consistent clean/futuristic visual theme for the homepage redesign (colors, typography, layout, subtle futuristic accents like grid lines/glow), aligned with the existing dark-mode default and current Tailwind token system.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/index.css"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Update the ID card preview so the footer text \"NOT VALID FOR OFFICIAL IDENTIFICATION\" is removed and replaced with \"ORDER NOW\" (English, all caps) and ensure this change is reflected in on-screen preview, PNG export, and print output.",
+        "summary": "Add a new generated static hero background image asset and use it on the homepage hero section as a subtle futuristic backdrop (do not serve it from the backend).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/IdCardPreview.tsx",
-          "frontend/src/utils/exportIdCard.ts"
+          "frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/utils/assetBase.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/IdCardPreview.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Remove all watermarks from the application and ensure they stay removed across all pages and all ID output modes (preview, export PNG, print). This includes removing any watermark overlays/components and any CSS/DOM elements intended as watermarks.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-          "frontend/src/components/IdCardPreview.tsx",
-          "frontend/src/components/IdWatermark.tsx",
-          "frontend/src/content/copy.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-          "frontend/src/components/IdCardPreview.tsx",
-          "frontend/src/components/IdWatermark.tsx",
-          "frontend/src/content/copy.ts"
+          "frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png",
+          "frontend/src/pages/LandingPage.tsx"
         ]
       }
     ]
@@ -85,12 +69,11 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/IdCardPreview.tsx",
-    "frontend/src/components/IdWatermark.tsx",
-    "frontend/src/components/NoveltyDisclaimerBanner.tsx",
+    "frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png",
     "frontend/src/content/copy.ts",
+    "frontend/src/index.css",
     "frontend/src/pages/LandingPage.tsx",
-    "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Remove all watermark/disclaimer messaging across the site and replace the global/top and ID footer disclaimer text with “ORDER NOW”.
+**Goal:** Redesign the public homepage ("/") into a clean, futuristic, user-friendly landing page while keeping existing navigation and Internet Identity authentication behavior intact.
 
 **Planned changes:**
-- Replace the global top banner text “Not valid for official identification” with “ORDER NOW” so it displays consistently site-wide.
-- Remove all UI instances of the disclaimer sentence “These identification cards are not valid for official identification or legal use. For informational purposes only.” (including any centralized copy/constants feeding it).
-- Remove all UI instances of the order-form disclaimer text “Not valid for official identification or legal use.” (including any centralized copy/constants feeding it).
-- Update the ID card preview/export/print footer text by removing “NOT VALID FOR OFFICIAL IDENTIFICATION” and replacing it with “ORDER NOW”.
-- Remove all watermark overlays/components/CSS/DOM elements so no watermarks appear on any page or in ID outputs (preview, PNG export, print).
+- Update the unauthenticated homepage ("/") layout to a modern landing-page structure with clear hierarchy (hero, supporting sections) and an obvious primary call-to-action.
+- Expand the existing LandingPage beyond the current hero + 4-step grid by adding a benefits/features section and a prominent next-step CTA section that routes to "/signin" using existing navigation patterns.
+- Apply a consistent clean/futuristic visual theme aligned with the current dark-mode default and Tailwind tokens (cohesive typography, spacing, subtle futuristic accents) while preserving accessibility.
+- Add and reference a new static generated hero background image asset from the frontend public assets (no backend serving) and use it as a subtle backdrop in the hero section.
 
-**User-visible outcome:** The site no longer shows watermark or disclaimer text anywhere, and users see “ORDER NOW” in the top banner and on the ID card footer in preview, exported PNGs, and printed output.
+**User-visible outcome:** Unauthenticated visitors see a responsive, English-language futuristic landing page with clear sections and a prominent button that takes them to sign in (and/or sign up) via Internet Identity, while authenticated users continue to be redirected to their dashboard/admin view as before.

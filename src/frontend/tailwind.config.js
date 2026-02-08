@@ -89,7 +89,7 @@ export default {
                     bg: 'oklch(var(--cyber-bg))',
                     card: 'oklch(var(--cyber-card))',
                     muted: 'oklch(var(--cyber-muted))',
-                },
+                }
             },
             borderRadius: {
                 lg: 'var(--radius)',
@@ -97,41 +97,33 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
-                glow: '0 0 24px rgba(192, 192, 192, 0.15), 0 0 48px rgba(192, 192, 192, 0.08)',
-                'chrome-glow': '0 0 16px rgba(192, 192, 192, 0.2)',
-                'cyber': '0 0 20px oklch(var(--cyber-primary) / 0.15)',
+                'chrome-glow': '0 0 20px oklch(0.85 0 0 / 0.15), 0 0 40px oklch(0.85 0 0 / 0.1)',
+                'chrome-glow-lg': '0 0 30px oklch(0.85 0 0 / 0.25), 0 0 60px oklch(0.85 0 0 / 0.15)',
+                'cyber': '0 0 20px oklch(var(--cyber-primary) / 0.3)',
             },
             keyframes: {
                 'accordion-down': {
-                    from: { height: '0' },
-                    to: { height: 'var(--radix-accordion-content-height)' }
+                    from: {
+                        height: '0'
+                    },
+                    to: {
+                        height: 'var(--radix-accordion-content-height)'
+                    }
                 },
                 'accordion-up': {
-                    from: { height: 'var(--radix-accordion-content-height)' },
-                    to: { height: '0' }
-                },
-                scan: {
-                    '0%': { transform: 'translateY(-100%)' },
-                    '100%': { transform: 'translateY(100%)' }
-                },
-                'cyber-scan': {
-                    '0%': { transform: 'translateY(-100%)' },
-                    '100%': { transform: 'translateY(100%)' }
+                    from: {
+                        height: 'var(--radix-accordion-content-height)'
+                    },
+                    to: {
+                        height: '0'
+                    }
                 }
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
-                'accordion-up': 'accordion-up 0.2s ease-out',
-                'scan': 'scan 4s linear infinite',
-                'cyber-scan': 'cyber-scan 8s linear infinite'
-            },
-            fontFamily: {
-                serif: ['Cinzel', 'Playfair Display', 'Georgia', 'serif'],
-                sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
-                mono: ['Courier New', 'monospace'],
+                'accordion-up': 'accordion-up 0.2s ease-out'
             }
         }
     },
-    plugins: [typography, containerQueries, animate]
+    plugins: [animate, typography, containerQueries]
 };

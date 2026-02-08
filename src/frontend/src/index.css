@@ -146,4 +146,66 @@
   *:focus:not(:focus-visible) {
     outline: none;
   }
+
+  /* Futuristic grid background */
+  .futuristic-grid {
+    background-image: 
+      linear-gradient(to right, oklch(0.85 0 0 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.85 0 0 / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Futuristic text effect */
+  .futuristic-text {
+    text-shadow: 
+      0 0 20px oklch(0.85 0 0 / 0.3),
+      0 0 40px oklch(0.85 0 0 / 0.2),
+      0 0 60px oklch(0.85 0 0 / 0.1);
+  }
+
+  /* Fade in animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInDelay {
+    0%, 30% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(12px);
+      opacity: 0;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  .animate-fade-in-delay {
+    animation: fadeInDelay 1.2s ease-out forwards;
+  }
+
+  .animate-scroll {
+    animation: scroll 1.5s ease-in-out infinite;
+  }
 }

@@ -1,69 +1,42 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T00:55:42.672Z",
-  "summary": "The diff implements several text/copy changes (banner to “ORDER NOW”, disclaimer constants emptied, landing/order disclaimers removed) and makes the IdWatermark component a no-op. However, the diff evidence is insufficient to confirm the banner change is applied site-wide and that the ID preview footer change propagates to PNG export/print outputs, and watermark removal beyond the IdWatermark component is not fully evidenced.",
+  "generatedAt": "2026-02-08T16:20:26.226Z",
+  "summary": "LandingPage was redesigned with a hero section using a referenced generated background image path, plus a new features/benefits section and updated landing copy/styles. However, the required static hero image asset file itself is not present in the diff, and some global theming/navigation additions appear beyond the explicit request.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Remove the global top banner text \"Not valid for official identification\" from all pages and replace it with \"ORDER NOW\" in the same banner location so it appears consistently site-wide.",
-      "reason": "Only NoveltyDisclaimerBanner is shown updated to render \"ORDER NOW\"; the diff summary does not show removal/replacement in the actual app shell/header component(s) that render globally across all routes, nor evidence that the old text cannot appear elsewhere in the header area.",
-      "evidence": [
-        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-        "frontend-file-summaries.txt (mentions AppShell/BrandHeader/RoleplayDisclaimerBanner but no shown changes)"
-      ]
-    },
-    {
       "id": "REQ-4",
-      "requirement": "Update the ID card preview footer text to replace \"NOT VALID FOR OFFICIAL IDENTIFICATION\" with \"ORDER NOW\" and ensure it is reflected in on-screen preview, PNG export, and print output.",
-      "reason": "The IdCardPreview file is truncated and does not show the footer text change directly, and there is no diff evidence in the export/print utilities or print view that confirms PNG exports and print output include \"ORDER NOW\" and exclude the removed text.",
+      "requirement": "Add a new generated static hero background image asset under frontend/public/assets/generated and reference it in the LandingPage hero.",
+      "reason": "LandingPage references /assets/generated/landing-hero-bg.dim_2400x1350.png, but the diff shows no added files (and specifically no asset added under frontend/public/assets/generated). This suggests the required image asset was not actually added.",
       "evidence": [
-        "frontend/src/components/IdCardPreview.tsx (truncated)",
-        "frontend-file-summaries.txt (mentions IdCardActions export/print but no concrete diff of the rendering/output)"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Remove all watermarks across all pages and all ID output modes (preview, export PNG, print), including overlays/components and any CSS/DOM elements intended as watermarks.",
-      "reason": "Only one watermark-related component (IdWatermark) is made a no-op. The diff summary provides no evidence that other watermark layers/overlays/CSS in the preview DOM, PNG export rendering, or print output were removed or cannot render.",
-      "evidence": [
-        "frontend/src/components/IdWatermark.tsx",
-        "frontend/src/components/IdCardPreview.tsx (truncated)"
+        "File diff summary: \"Added: 0\" / \"ADDED FILES: none\"",
+        "frontend/src/pages/LandingPage.tsx (references getAssetUrl('/assets/generated/landing-hero-bg.dim_2400x1350.png'))"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Advanced admin panel with tabbed interface and lazy-loaded tabs (Security Dashboard, Audit Log, Admin Access) using Suspense/performance-oriented chunk loading.",
-      "reason": "Not requested; the BuildRequest is specifically about removing watermarks and replacing disclaimer text with \"ORDER NOW\" and explicitly lists non-goals about adding new functionality beyond displayed text changes.",
+      "description": "Added a secondary CTA button that navigates to \"/signup\" (\"Learn More\"), which is not requested (request only requires prominent CTA routing to \"/signin\").",
+      "reason": "REQ-2 requires a prominent CTA to /signin; it does not request a /signup route CTA from the homepage.",
       "evidence": [
-        "frontend-file-summaries.txt (entry for frontend/src/pages/AdminPanelPage.tsx)"
+        "frontend/src/pages/LandingPage.tsx (Button onClick navigate({ to: '/signup' }) with label \"Learn More\")"
       ]
     },
     {
-      "description": "Added/changed global-friendly 404 and error handling pages integrated into the router/AppShell.",
-      "reason": "Not requested and unrelated to watermark/disclaimer text changes.",
+      "description": "Global theme adjustments introducing \"Gothic Chrome Hearts Theme\" variables and importing Google fonts (Cinzel/Inter), which may go beyond the requested homepage-only clean/futuristic theme update.",
+      "reason": "REQ-3 focuses on a consistent clean/futuristic visual theme for the homepage aligned with existing dark-mode default and Tailwind tokens; the diff changes broad root/dark CSS theme variables and adds external font imports, which are not explicitly requested as part of the homepage redesign scope.",
       "evidence": [
-        "frontend-file-summaries.txt (entry for frontend/src/App.tsx)"
-      ]
-    },
-    {
-      "description": "Broad UI/UX and accessibility refactors across header, dashboard, order detail, and various components (touch targets, keyboard navigation, focus management, styling refinements).",
-      "reason": "Not requested; scope was narrowly defined to remove watermarks/disclaimer text and replace with \"ORDER NOW\" without other behavioral/routing changes.",
-      "evidence": [
-        "frontend-file-summaries.txt (entries for BrandHeader.tsx, DashboardPage.tsx, OrderDetailPage.tsx, multiple components)"
+        "frontend/src/index.css (@import Google fonts; :root and .dark set \"Gothic Chrome Hearts Theme\" variables)"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.74,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/components/IdCardPreview.tsx",
-    "frontend/src/components/IdWatermark.tsx",
-    "frontend/src/components/NoveltyDisclaimerBanner.tsx",
     "frontend/src/content/copy.ts",
+    "frontend/src/index.css",
     "frontend/src/pages/LandingPage.tsx",
-    "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/tailwind.config.js",
     "project_state.json"
   ]
 }

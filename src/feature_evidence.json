@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-the-global-top-banner-text-not-valid-for-official-identification-from-all-pages-and-replace-it-with-order-now-english-all-caps-in-the-same-banner-location-so-it-appears-consistently-site-wide",
-      "featureTitle": "Remove the global top banner text \"Not valid for official identification\" from all pages and replace it with \"ORDER NOW\" (English, all caps) in the same banner location so it appears consistently site-wide.",
+      "featureId": "feature-redesign-the-public-homepage-route-to-feel-like-a-clean-futuristic-user-friendly-landing-page-rather-than-a-basic-dashboard-style-page-while-keeping-the-overall-app-navigation-and-authentication-flow-intact",
+      "featureTitle": "Redesign the public homepage (route \"/\") to feel like a clean, futuristic, user-friendly landing page rather than a basic dashboard-style page, while keeping the overall app navigation and authentication flow intact.",
       "files": [
-        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-        "frontend/src/content/copy.ts"
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -23,8 +22,8 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-remove-all-instances-of-the-disclaimer-text-these-identification-cards-are-not-valid-for-official-identification-or-legal-use-for-informational-purposes-only-from-the-ui-including-the-landing-page-disclaimer-block-and-any-centralized-copy-constants-that-feed-it",
-      "featureTitle": "Remove all instances of the disclaimer text \"These identification cards are not valid for official identification or legal use. For informational purposes only.\" from the UI, including the landing page disclaimer block and any centralized copy constants that feed it.",
+      "featureId": "feature-update-the-existing-landingpage-implementation-to-include-additional-landing-page-sections-beyond-the-current-hero-4-step-grid-such-as-a-benefits-features-section-and-a-clear-next-step-section-that-directs-users-to-sign-in-and-or-sign-up-using-internet-identity",
+      "featureTitle": "Update the existing LandingPage implementation to include additional landing-page sections beyond the current hero + 4-step grid, such as a benefits/features section and a clear next-step section that directs users to sign in (and/or sign up) using Internet Identity.",
       "files": [
         "frontend/src/content/copy.ts",
         "frontend/src/pages/LandingPage.tsx"
@@ -44,11 +43,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-remove-all-instances-of-the-order-form-disclaimer-text-not-valid-for-official-identification-or-legal-use-from-the-ui-including-the-new-order-page-info-box-and-any-centralized-copy-constants-that-feed-it",
-      "featureTitle": "Remove all instances of the order-form disclaimer text \"Not valid for official identification or legal use.\" from the UI, including the New Order page info box and any centralized copy constants that feed it.",
+      "featureId": "feature-implement-a-consistent-clean-futuristic-visual-theme-for-the-homepage-redesign-colors-typography-layout-subtle-futuristic-accents-like-grid-lines-glow-aligned-with-the-existing-dark-mode-default-and-current-tailwind-token-system",
+      "featureTitle": "Implement a consistent clean/futuristic visual theme for the homepage redesign (colors, typography, layout, subtle futuristic accents like grid lines/glow), aligned with the existing dark-mode default and current Tailwind token system.",
       "files": [
-        "frontend/src/content/copy.ts",
-        "frontend/src/pages/NewOrderPage.tsx"
+        "frontend/src/index.css",
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -65,10 +64,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-id-card-preview-so-the-footer-text-not-valid-for-official-identification-is-removed-and-replaced-with-order-now-english-all-caps-and-ensure-this-change-is-reflected-in-on-screen-preview-png-export-and-print-output",
-      "featureTitle": "Update the ID card preview so the footer text \"NOT VALID FOR OFFICIAL IDENTIFICATION\" is removed and replaced with \"ORDER NOW\" (English, all caps) and ensure this change is reflected in on-screen preview, PNG export, and print output.",
+      "featureId": "feature-add-a-new-generated-static-hero-background-image-asset-and-use-it-on-the-homepage-hero-section-as-a-subtle-futuristic-backdrop-do-not-serve-it-from-the-backend",
+      "featureTitle": "Add a new generated static hero background image asset and use it on the homepage hero section as a subtle futuristic backdrop (do not serve it from the backend).",
       "files": [
-        "frontend/src/components/IdCardPreview.tsx"
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -81,29 +80,6 @@
       ],
       "testIds": [
         "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-remove-all-watermarks-from-the-application-and-ensure-they-stay-removed-across-all-pages-and-all-id-output-modes-preview-export-png-print-this-includes-removing-any-watermark-overlays-components-and-any-css-dom-elements-intended-as-watermarks",
-      "featureTitle": "Remove all watermarks from the application and ensure they stay removed across all pages and all ID output modes (preview, export PNG, print). This includes removing any watermark overlays/components and any CSS/DOM elements intended as watermarks.",
-      "files": [
-        "frontend/src/components/IdCardPreview.tsx",
-        "frontend/src/components/IdWatermark.tsx",
-        "frontend/src/components/NoveltyDisclaimerBanner.tsx",
-        "frontend/src/content/copy.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
       ],
       "confidence": "high"
     }

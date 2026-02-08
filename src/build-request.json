@@ -1,117 +1,97 @@
 {
   "kind": "build_request",
-  "title": "Remove watermarks and replace disclaimer text with ORDER NOW across all pages",
+  "title": "Redesign homepage into a clean, futuristic landing experience",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove the global top banner text \"Not valid for official identification\" from all pages and replace it with \"ORDER NOW\" (English, all caps) in the same banner location so it appears consistently site-wide.",
+      "text": "Redesign the public homepage (route \"/\") to feel like a clean, futuristic, user-friendly landing page rather than a basic dashboard-style page, while keeping the overall app navigation and authentication flow intact.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Remove all watermarks make sure they will stay gone on all pages also remove top Not valid for official identification and put ORDER NOW"
+          "Make the homepage more user friendly like instead of a straight order dashboard like a just a better more appealing website",
+          "Clean and futuristic"
         ]
       },
       "acceptanceCriteria": [
-        "On every route that uses the app shell header area, the top banner displays \"ORDER NOW\" and does not display \"Not valid for official identification\" anywhere in that banner.",
-        "No other page renders the previous top-banner disclaimer text (case-insensitive match)."
+        "When not authenticated, visiting \"/\" shows a modern landing page with clear hierarchy (hero, supporting sections) and obvious primary call-to-action.",
+        "The landing page is responsive (mobile → desktop) and maintains good spacing/typography with a clean, futuristic look.",
+        "All user-facing text on the landing page is in English.",
+        "No backend changes are required for the homepage redesign."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Remove all instances of the disclaimer text \"These identification cards are not valid for official identification or legal use. For informational purposes only.\" from the UI, including the landing page disclaimer block and any centralized copy constants that feed it.",
+      "text": "Update the existing LandingPage implementation to include additional landing-page sections beyond the current hero + 4-step grid, such as a benefits/features section and a clear next-step section that directs users to sign in (and/or sign up) using Internet Identity.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "also remove this These identification cards are not valid for official identification or legal use. For informational purposes only."
+          "Make the homepage more user friendly... just a better more appealing website"
         ]
       },
       "acceptanceCriteria": [
-        "The landing page no longer renders the disclaimer block containing the exact sentence \"These identification cards are not valid for official identification or legal use. For informational purposes only.\"",
-        "A text search through rendered UI strings shows the removed sentence is not present anywhere (including modals, banners, or notes)."
+        "LandingPage includes at least: (1) an improved hero section, (2) a benefits/features section, and (3) a prominent CTA section that routes to \"/signin\".",
+        "The CTA(s) use existing navigation patterns (TanStack Router navigate) and remain functional.",
+        "The new sections use existing UI components (e.g., Card, Button) and match the clean/futuristic aesthetic."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Remove all instances of the order-form disclaimer text \"Not valid for official identification or legal use.\" from the UI, including the New Order page info box and any centralized copy constants that feed it.",
+      "text": "Implement a consistent clean/futuristic visual theme for the homepage redesign (colors, typography, layout, subtle futuristic accents like grid lines/glow), aligned with the existing dark-mode default and current Tailwind token system.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "remove top Not valid for official identification",
-          "also remove this These identification cards are not valid for official identification or legal use. For informational purposes only."
+          "Clean and futuristic"
         ]
       },
       "acceptanceCriteria": [
-        "The New Order page no longer displays the sentence \"Not valid for official identification or legal use.\"",
-        "A text search through rendered UI strings shows \"Not valid for official identification or legal use.\" is not present anywhere."
+        "The homepage design uses a cohesive visual system (consistent spacing, type scale, and accent usage) and does not introduce conflicting styles.",
+        "No changes are made to read-only UI component sources under frontend/src/components/ui (compose existing components only).",
+        "The resulting page remains accessible (semantic headings, readable contrast, focus-visible states preserved)."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Update the ID card preview so the footer text \"NOT VALID FOR OFFICIAL IDENTIFICATION\" is removed and replaced with \"ORDER NOW\" (English, all caps) and ensure this change is reflected in on-screen preview, PNG export, and print output.",
+      "text": "Add a new generated static hero background image asset and use it on the homepage hero section as a subtle futuristic backdrop (do not serve it from the backend).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "remove top Not valid for official identification and put ORDER NOW"
+          "Clean and futuristic"
         ]
       },
       "acceptanceCriteria": [
-        "The ID card preview footer shows \"ORDER NOW\" and does not show \"NOT VALID FOR OFFICIAL IDENTIFICATION\".",
-        "Exported PNG files do not contain the removed footer text and do contain \"ORDER NOW\".",
-        "The print view output does not contain the removed footer text and does contain \"ORDER NOW\"."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Remove all watermarks from the application and ensure they stay removed across all pages and all ID output modes (preview, export PNG, print). This includes removing any watermark overlays/components and any CSS/DOM elements intended as watermarks.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Remove all watermarks make sure they will stay gone on all pages"
-        ]
-      },
-      "acceptanceCriteria": [
-        "No page renders any watermark text/graphics overlay in the UI (manual verification on Landing, Sign In, Dashboard, New Order, Order Detail, and Admin routes).",
-        "The ID card preview DOM does not include any watermark layer/component.",
-        "Exported PNG and printed ID do not include any watermark layer/graphics."
+        "A generated image file is added under frontend/public/assets/generated and is referenced directly by the LandingPage hero section.",
+        "The hero background image loads in production builds without requiring any backend endpoints.",
+        "The background image remains subtle (does not reduce text readability) and scales well across viewport sizes."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/components/ui (read-only shadcn components).",
-    "Keep changes limited to frontend; no backend schema/state changes are required for this request."
+    "Do not edit files in frontend immutablePaths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui (compose only).",
+    "Keep the existing routing/auth behavior where authenticated users are redirected from \"/\" to \"/dashboard\" (or \"/admin\" for admins), unless explicitly required by the homepage redesign request.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Adding new ordering/payment functionality beyond changing the displayed text to \"ORDER NOW\".",
-    "Changing routing/navigation behavior when users click buttons or banner text unless explicitly required by the request."
+    "Changing backend data models, order flows, or admin/dashboard functionality.",
+    "Introducing third-party authentication providers (only Internet Identity remains).",
+    "Building real-time features (e.g., live chat, WebSockets) as part of the homepage redesign."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Abstract clean futuristic grid/glow hero background, dark with subtle chrome accents (landing-hero-bg.dim_2400x1350.png)"
+    ],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }
