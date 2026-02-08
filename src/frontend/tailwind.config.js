@@ -15,9 +15,14 @@ export default {
             }
         },
         extend: {
+            fontFamily: {
+                sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+                display: ['Space Grotesk', 'Inter', 'sans-serif'],
+                mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
+            },
             colors: {
-                border: 'oklch(var(--border))',
-                input: 'oklch(var(--input))',
+                border: 'oklch(var(--border) / <alpha-value>)',
+                input: 'oklch(var(--input) / <alpha-value>)',
                 ring: 'oklch(var(--ring) / <alpha-value>)',
                 background: 'oklch(var(--background))',
                 foreground: 'oklch(var(--foreground))',
@@ -66,29 +71,14 @@ export default {
                     border: 'oklch(var(--sidebar-border))',
                     ring: 'oklch(var(--sidebar-ring))'
                 },
-                chrome: {
-                    50: 'oklch(0.98 0 0)',
-                    100: 'oklch(0.95 0 0)',
-                    200: 'oklch(0.90 0 0)',
-                    300: 'oklch(0.85 0 0)',
-                    400: 'oklch(0.75 0 0)',
-                    500: 'oklch(0.65 0 0)',
-                    600: 'oklch(0.55 0 0)',
-                    700: 'oklch(0.45 0 0)',
-                    800: 'oklch(0.35 0 0)',
-                    900: 'oklch(0.25 0 0)',
-                },
-                steel: {
-                    400: 'oklch(0.70 0.01 240)',
-                    500: 'oklch(0.60 0.01 240)',
-                    600: 'oklch(0.50 0.01 240)',
-                },
-                cyber: {
-                    primary: 'oklch(var(--cyber-primary))',
-                    accent: 'oklch(var(--cyber-accent))',
-                    bg: 'oklch(var(--cyber-bg))',
-                    card: 'oklch(var(--cyber-card))',
-                    muted: 'oklch(var(--cyber-muted))',
+                admin: {
+                    bg: 'oklch(var(--admin-bg))',
+                    card: 'oklch(var(--admin-card))',
+                    primary: 'oklch(var(--admin-primary))',
+                    accent: 'oklch(var(--admin-accent))',
+                    muted: 'oklch(var(--admin-muted))',
+                    border: 'oklch(var(--admin-border))',
+                    foreground: 'oklch(var(--admin-foreground) / <alpha-value>)',
                 }
             },
             borderRadius: {
@@ -97,9 +87,9 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             boxShadow: {
-                'chrome-glow': '0 0 20px oklch(0.85 0 0 / 0.15), 0 0 40px oklch(0.85 0 0 / 0.1)',
-                'chrome-glow-lg': '0 0 30px oklch(0.85 0 0 / 0.25), 0 0 60px oklch(0.85 0 0 / 0.15)',
-                'cyber': '0 0 20px oklch(var(--cyber-primary) / 0.3)',
+                'glow': '0 0 20px oklch(var(--primary) / 0.15), 0 0 40px oklch(var(--primary) / 0.1)',
+                'glow-lg': '0 0 30px oklch(var(--primary) / 0.25), 0 0 60px oklch(var(--primary) / 0.15)',
+                'admin': '0 0 20px oklch(var(--admin-primary) / 0.3)',
             },
             keyframes: {
                 'accordion-down': {

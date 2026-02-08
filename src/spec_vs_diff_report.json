@@ -1,40 +1,72 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T16:20:26.226Z",
-  "summary": "LandingPage was redesigned with a hero section using a referenced generated background image path, plus a new features/benefits section and updated landing copy/styles. However, the required static hero image asset file itself is not present in the diff, and some global theming/navigation additions appear beyond the explicit request.",
+  "generatedAt": "2026-02-08T18:15:47.261Z",
+  "summary": "Diff implements a new token-driven typography/theme foundation (index.css + tailwind config), modernizes public shell/header/landing styling, and adds admin-theme semantic tokens + admin theme switcher styling. However, the diff summary also indicates changes outside the styling-only scope (copy/content changes, watermark behavior, and possibly routing/error page behavior), and it’s not fully evidenced that contrast/readability was audited across all key components for both public and admin themes.",
   "missing_requirements": [
     {
-      "id": "REQ-4",
-      "requirement": "Add a new generated static hero background image asset under frontend/public/assets/generated and reference it in the LandingPage hero.",
-      "reason": "LandingPage references /assets/generated/landing-hero-bg.dim_2400x1350.png, but the diff shows no added files (and specifically no asset added under frontend/public/assets/generated). This suggests the required image asset was not actually added.",
+      "id": "REQ-2",
+      "requirement": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
+      "reason": "While some focus/contrast improvements are visible in AppShell/BrandHeader and global tokens were updated, the diff summary does not provide clear evidence of an explicit audit/adjustment across the full set of key components (buttons, inputs, cards, badges, tabs/menus) and their interactive states in both light and dark mode.",
       "evidence": [
-        "File diff summary: \"Added: 0\" / \"ADDED FILES: none\"",
-        "frontend/src/pages/LandingPage.tsx (references getAssetUrl('/assets/generated/landing-hero-bg.dim_2400x1350.png'))"
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Validate each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
+      "reason": "Admin theme variables and the theme switcher styles were updated, but the diff summary does not show evidence that admin panel components broadly (e.g., labels, inputs, table text/borders, tabs) were audited/adjusted to ensure readable contrast across all listed themes beyond the switcher and root variables.",
+      "evidence": [
+        "frontend/src/components/admin/AdminThemeSwitcher.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a secondary CTA button that navigates to \"/signup\" (\"Learn More\"), which is not requested (request only requires prominent CTA routing to \"/signin\").",
-      "reason": "REQ-2 requires a prominent CTA to /signin; it does not request a /signup route CTA from the homepage.",
+      "description": "Changing public-facing copy/content (e.g., ID card preview footer text changed to \"ORDER NOW\", and removing disclaimer text).",
+      "reason": "BuildRequest explicitly states no navigation/page content changes (styling/theme modernization only). These are content/behavior changes not requested.",
       "evidence": [
-        "frontend/src/pages/LandingPage.tsx (Button onClick navigate({ to: '/signup' }) with label \"Learn More\")"
+        "frontend-file-summaries.txt (mentions \"IdCardPreview\" footer text change and disclaimer removals)"
       ]
     },
     {
-      "description": "Global theme adjustments introducing \"Gothic Chrome Hearts Theme\" variables and importing Google fonts (Cinzel/Inter), which may go beyond the requested homepage-only clean/futuristic theme update.",
-      "reason": "REQ-3 focuses on a consistent clean/futuristic visual theme for the homepage aligned with existing dark-mode default and Tailwind tokens; the diff changes broad root/dark CSS theme variables and adds external font imports, which are not explicitly requested as part of the homepage redesign scope.",
+      "description": "Making IdWatermark a no-op that renders nothing.",
+      "reason": "Not requested by any REQ; also changes functional UI behavior rather than styling tokens/typography/layout modernization.",
       "evidence": [
-        "frontend/src/index.css (@import Google fonts; :root and .dark set \"Gothic Chrome Hearts Theme\" variables)"
+        "frontend-file-summaries.txt (mentions \"IdWatermark\" no-op)"
+      ]
+    },
+    {
+      "description": "Adding/modifying router-level behavior such as integrated 404/notFound and error handling pages in App.tsx.",
+      "reason": "Non-goals include changing app routes/behavior; adding router-level error/404 handling is not part of the requested theme modernization and may affect navigation/behavior.",
+      "evidence": [
+        "frontend-file-summaries.txt (mentions \"frontend/src/App.tsx\" TanStack Router 404/error handling)"
+      ]
+    },
+    {
+      "description": "Adding/expanding admin panel functionality such as advanced search/filter/sort and bulk actions.",
+      "reason": "BuildRequest is about theming/readability; new admin panel features are outside scope (and could be considered new product functionality).",
+      "evidence": [
+        "frontend/src/pages/AdminPanelPage.tsx (shows searchQuery/statusFilter/sortBy logic)",
+        "frontend/src/pages/AdminPanelPage.tsx (imports BulkOrderActionsBar)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.62,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/content/copy.ts",
+    "frontend/src/components/AdminThemeLayout.tsx",
+    "frontend/src/components/AppShell.tsx",
+    "frontend/src/components/AuthGate.tsx",
+    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/components/admin/AdminThemeSwitcher.tsx",
     "frontend/src/index.css",
+    "frontend/src/pages/AdminPanelPage.tsx",
     "frontend/src/pages/LandingPage.tsx",
     "frontend/tailwind.config.js",
     "project_state.json"

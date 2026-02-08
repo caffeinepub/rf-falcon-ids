@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-redesign-the-public-homepage-route-to-feel-like-a-clean-futuristic-user-friendly-landing-page-rather-than-a-basic-dashboard-style-page-while-keeping-the-overall-app-navigation-and-authentication-flow-intact",
-      "featureTitle": "Redesign the public homepage (route \"/\") to feel like a clean, futuristic, user-friendly landing page rather than a basic dashboard-style page, while keeping the overall app navigation and authentication flow intact.",
+      "featureId": "feature-update-the-global-design-tokens-and-typography-so-the-public-site-has-a-modern-professional-look-consistent-with-the-admin-panel-while-keeping-all-styling-driven-by-semantic-tailwind-token-colors-background-foreground-card-muted-accent-etc-rather-than-hard-coded-one-off-colors",
+      "featureTitle": "Update the global design tokens and typography so the public site has a modern, professional look consistent with the admin panel, while keeping all styling driven by semantic Tailwind token colors (background/foreground/card/muted/accent/etc.) rather than hard-coded one-off colors.",
       "files": [
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,11 +23,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-existing-landingpage-implementation-to-include-additional-landing-page-sections-beyond-the-current-hero-4-step-grid-such-as-a-benefits-features-section-and-a-clear-next-step-section-that-directs-users-to-sign-in-and-or-sign-up-using-internet-identity",
-      "featureTitle": "Update the existing LandingPage implementation to include additional landing-page sections beyond the current hero + 4-step grid, such as a benefits/features section and a clear next-step section that directs users to sign in (and/or sign up) using Internet Identity.",
+      "featureId": "feature-ensure-text-and-ui-element-contrast-remains-readable-across-theme-color-combinations-by-auditing-and-adjusting-foreground-background-pairings-for-key-components-buttons-inputs-cards-badges-nav-header-tabs-menus-and-providing-accessible-defaults-for-both-light-and-dark-mode",
+      "featureTitle": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
       "files": [
-        "frontend/src/content/copy.ts",
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/components/AuthGate.tsx",
+        "frontend/src/components/BrandHeader.tsx",
+        "frontend/src/index.css"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,10 +45,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-a-consistent-clean-futuristic-visual-theme-for-the-homepage-redesign-colors-typography-layout-subtle-futuristic-accents-like-grid-lines-glow-aligned-with-the-existing-dark-mode-default-and-current-tailwind-token-system",
-      "featureTitle": "Implement a consistent clean/futuristic visual theme for the homepage redesign (colors, typography, layout, subtle futuristic accents like grid lines/glow), aligned with the existing dark-mode default and current Tailwind token system.",
+      "featureId": "feature-modernize-the-public-facing-layout-styling-to-match-the-admin-panel-s-professional-feel-header-footer-and-landing-hero-sections-while-keeping-existing-navigation-and-page-content-unchanged",
+      "featureTitle": "Modernize the public-facing layout styling to match the admin panel’s professional feel (header, footer, and landing hero/sections), while keeping existing navigation and page content unchanged.",
       "files": [
-        "frontend/src/index.css",
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/components/BrandHeader.tsx",
         "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
@@ -64,10 +67,13 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-new-generated-static-hero-background-image-asset-and-use-it-on-the-homepage-hero-section-as-a-subtle-futuristic-backdrop-do-not-serve-it-from-the-backend",
-      "featureTitle": "Add a new generated static hero background image asset and use it on the homepage hero section as a subtle futuristic backdrop (do not serve it from the backend).",
+      "featureId": "feature-align-admin-panel-theme-readability-by-validating-each-existing-admin-theme-option-goth-black-silver-steel-white-luxury-deep-purple-fire-red-maintains-readable-text-and-ui-contrast-for-admin-panel-components-and-theme-switcher-states",
+      "featureTitle": "Align admin panel theme readability by validating each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
       "files": [
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/components/AdminThemeLayout.tsx",
+        "frontend/src/components/admin/AdminThemeSwitcher.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/AdminPanelPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",

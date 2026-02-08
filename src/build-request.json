@@ -1,97 +1,91 @@
 {
   "kind": "build_request",
-  "title": "Redesign homepage into a clean, futuristic landing experience",
+  "title": "Modernize public site theme to match admin panel and ensure readable typography across all colors",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Redesign the public homepage (route \"/\") to feel like a clean, futuristic, user-friendly landing page rather than a basic dashboard-style page, while keeping the overall app navigation and authentication flow intact.",
+      "text": "Update the global design tokens and typography so the public site has a modern, professional look consistent with the admin panel, while keeping all styling driven by semantic Tailwind token colors (background/foreground/card/muted/accent/etc.) rather than hard-coded one-off colors.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Make the homepage more user friendly like instead of a straight order dashboard like a just a better more appealing website",
-          "Clean and futuristic"
+          "make it look more modern and make sure themes and fonts and everything can be seen no mater the color make the website look more like a professional modern theme same as the admin panel make it more modern like professional theme."
         ]
       },
       "acceptanceCriteria": [
-        "When not authenticated, visiting \"/\" shows a modern landing page with clear hierarchy (hero, supporting sections) and obvious primary call-to-action.",
-        "The landing page is responsive (mobile → desktop) and maintains good spacing/typography with a clean, futuristic look.",
-        "All user-facing text on the landing page is in English.",
-        "No backend changes are required for the homepage redesign."
+        "Global styles are updated in frontend/src/index.css (and related Tailwind token usage) so primary UI surfaces use semantic tokens (bg-background, text-foreground, bg-card, text-muted-foreground, border-border, etc.).",
+        "Typography is standardized (body, headings, labels) with consistent font-family usage and a modern, professional scale across the public pages.",
+        "No public-facing components rely on hard-coded colors that reduce legibility (e.g., fixed chrome text on similarly bright backgrounds)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the existing LandingPage implementation to include additional landing-page sections beyond the current hero + 4-step grid, such as a benefits/features section and a clear next-step section that directs users to sign in (and/or sign up) using Internet Identity.",
+      "text": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Make the homepage more user friendly... just a better more appealing website"
+          "make sure themes and fonts and everything can be seen no mater the color"
         ]
       },
       "acceptanceCriteria": [
-        "LandingPage includes at least: (1) an improved hero section, (2) a benefits/features section, and (3) a prominent CTA section that routes to \"/signin\".",
-        "The CTA(s) use existing navigation patterns (TanStack Router navigate) and remain functional.",
-        "The new sections use existing UI components (e.g., Card, Button) and match the clean/futuristic aesthetic."
+        "Primary text, muted text, borders, and interactive states remain clearly legible in light mode and dark mode.",
+        "Interactive states (hover/focus/active/disabled) remain readable and clearly distinguishable.",
+        "Focus indicators remain visible on all backgrounds (keyboard navigation)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Implement a consistent clean/futuristic visual theme for the homepage redesign (colors, typography, layout, subtle futuristic accents like grid lines/glow), aligned with the existing dark-mode default and current Tailwind token system.",
+      "text": "Modernize the public-facing layout styling to match the admin panel’s professional feel (header, footer, and landing hero/sections), while keeping existing navigation and page content unchanged.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Clean and futuristic"
+          "make the website look more like a professional modern theme same as the admin panel"
         ]
       },
       "acceptanceCriteria": [
-        "The homepage design uses a cohesive visual system (consistent spacing, type scale, and accent usage) and does not introduce conflicting styles.",
-        "No changes are made to read-only UI component sources under frontend/src/components/ui (compose existing components only).",
-        "The resulting page remains accessible (semantic headings, readable contrast, focus-visible states preserved)."
+        "Brand header (frontend/src/components/BrandHeader.tsx), shell/footer (frontend/src/components/AppShell.tsx), and landing page (frontend/src/pages/LandingPage.tsx) have a cohesive modern/professional visual treatment (spacing, borders, surfaces, typography).",
+        "No routes, copy, or core behaviors change—this is a styling/theme modernization only.",
+        "The landing page remains responsive and visually consistent from mobile to desktop."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Add a new generated static hero background image asset and use it on the homepage hero section as a subtle futuristic backdrop (do not serve it from the backend).",
+      "text": "Align admin panel theme readability by validating each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Clean and futuristic"
+          "same as the admin panel"
         ]
       },
       "acceptanceCriteria": [
-        "A generated image file is added under frontend/public/assets/generated and is referenced directly by the LandingPage hero section.",
-        "The hero background image loads in production builds without requiring any backend endpoints.",
-        "The background image remains subtle (does not reduce text readability) and scales well across viewport sizes."
+        "Switching between all existing admin themes does not produce low-contrast text (e.g., labels, inputs, table text) or invisible borders.",
+        "Admin UI elements used throughout the admin panel keep consistent semantic token usage for backgrounds/foregrounds/borders so theme swaps remain predictable."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files in frontend immutablePaths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui (compose only).",
-    "Keep the existing routing/auth behavior where authenticated users are redirected from \"/\" to \"/dashboard\" (or \"/admin\" for admins), unless explicitly required by the homepage redesign request.",
-    "Use English for all user-facing text."
+    "Do not modify files under frontend/src/components/ui (Shadcn UI sources must be composed, not edited).",
+    "Do not edit any paths listed as immutable in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
   ],
   "nonGoals": [
-    "Changing backend data models, order flows, or admin/dashboard functionality.",
-    "Introducing third-party authentication providers (only Internet Identity remains).",
-    "Building real-time features (e.g., live chat, WebSockets) as part of the homepage redesign."
+    "Adding new backend features or changing any Motoko canister logic.",
+    "Changing app routes, authentication behavior, or admin permissions.",
+    "Adding new theme types beyond the existing admin themes unless explicitly requested."
   ],
   "imageRequirements": {
-    "required": [
-      "Abstract clean futuristic grid/glow hero background, dark with subtle chrome accents (landing-hero-bg.dim_2400x1350.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

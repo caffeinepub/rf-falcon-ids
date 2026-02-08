@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    /* Gothic Chrome Hearts Theme - Light Mode */
-    --background: 0.98 0 0;
-    --foreground: 0.20 0 0;
-    --card: 0.95 0 0;
-    --card-foreground: 0.20 0 0;
-    --popover: 0.98 0 0;
-    --popover-foreground: 0.20 0 0;
-    --primary: 0.85 0 0;
-    --primary-foreground: 0.15 0 0;
-    --secondary: 0.90 0 0;
-    --secondary-foreground: 0.20 0 0;
-    --muted: 0.92 0 0;
-    --muted-foreground: 0.55 0 0;
-    --accent: 0.88 0 0;
-    --accent-foreground: 0.20 0 0;
-    --destructive: 0.55 0.20 25;
-    --destructive-foreground: 0.98 0 0;
-    --border: 0.85 0 0 / 0.2;
-    --input: 0.85 0 0 / 0.3;
-    --ring: 0.85 0 0;
+    /* Modern Professional Theme - Light Mode */
+    --background: 0.99 0 0;
+    --foreground: 0.15 0 0;
+    --card: 0.98 0.005 240;
+    --card-foreground: 0.15 0 0;
+    --popover: 0.99 0 0;
+    --popover-foreground: 0.15 0 0;
+    --primary: 0.45 0.15 250;
+    --primary-foreground: 0.99 0 0;
+    --secondary: 0.92 0.01 240;
+    --secondary-foreground: 0.15 0 0;
+    --muted: 0.94 0.005 240;
+    --muted-foreground: 0.50 0.01 240;
+    --accent: 0.50 0.18 260;
+    --accent-foreground: 0.99 0 0;
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.99 0 0;
+    --border: 0.88 0.01 240;
+    --input: 0.90 0.01 240;
+    --ring: 0.45 0.15 250;
     --radius: 0.5rem;
     --chart-1: 0.60 0.15 220;
     --chart-2: 0.70 0.12 160;
@@ -33,47 +33,104 @@
     --chart-4: 0.65 0.10 280;
     --chart-5: 0.50 0.20 340;
 
-    /* Cyber theme colors */
-    --cyber-primary: 0.70 0.15 200;
-    --cyber-accent: 0.65 0.20 280;
-    --cyber-bg: 0.12 0.02 240;
-    --cyber-card: 0.18 0.03 240;
-    --cyber-muted: 0.40 0.05 240;
+    /* Admin theme variables */
+    --admin-bg: 0.12 0.02 240;
+    --admin-card: 0.18 0.03 240;
+    --admin-primary: 0.70 0.15 200;
+    --admin-accent: 0.65 0.20 280;
+    --admin-muted: 0.40 0.05 240;
+    --admin-border: 0.30 0.08 240;
   }
 
   .dark {
-    /* Gothic Chrome Hearts Theme - Dark Mode */
-    --background: 0.12 0 0;
-    --foreground: 0.95 0 0;
-    --card: 0.15 0 0;
-    --card-foreground: 0.95 0 0;
-    --popover: 0.12 0 0;
-    --popover-foreground: 0.95 0 0;
-    --primary: 0.85 0 0;
-    --primary-foreground: 0.12 0 0;
-    --secondary: 0.20 0 0;
-    --secondary-foreground: 0.95 0 0;
-    --muted: 0.18 0 0;
-    --muted-foreground: 0.65 0 0;
-    --accent: 0.25 0 0;
-    --accent-foreground: 0.95 0 0;
-    --destructive: 0.45 0.25 25;
-    --destructive-foreground: 0.98 0 0;
-    --border: 0.85 0 0 / 0.2;
-    --input: 0.85 0 0 / 0.3;
-    --ring: 0.85 0 0;
+    /* Modern Professional Theme - Dark Mode */
+    --background: 0.10 0.005 240;
+    --foreground: 0.95 0.005 240;
+    --card: 0.14 0.01 240;
+    --card-foreground: 0.95 0.005 240;
+    --popover: 0.10 0.005 240;
+    --popover-foreground: 0.95 0.005 240;
+    --primary: 0.60 0.18 250;
+    --primary-foreground: 0.99 0 0;
+    --secondary: 0.18 0.02 240;
+    --secondary-foreground: 0.95 0.005 240;
+    --muted: 0.16 0.01 240;
+    --muted-foreground: 0.60 0.02 240;
+    --accent: 0.55 0.20 260;
+    --accent-foreground: 0.99 0 0;
+    --destructive: 0.50 0.25 25;
+    --destructive-foreground: 0.99 0 0;
+    --border: 0.25 0.03 240;
+    --input: 0.22 0.03 240;
+    --ring: 0.60 0.18 250;
     --chart-1: 0.60 0.15 220;
     --chart-2: 0.70 0.12 160;
     --chart-3: 0.55 0.18 30;
     --chart-4: 0.65 0.10 280;
     --chart-5: 0.50 0.20 340;
 
-    /* Cyber theme colors - dark mode */
-    --cyber-primary: 0.70 0.15 200;
-    --cyber-accent: 0.65 0.20 280;
-    --cyber-bg: 0.12 0.02 240;
-    --cyber-card: 0.18 0.03 240;
-    --cyber-muted: 0.40 0.05 240;
+    /* Admin theme variables - dark mode */
+    --admin-bg: 0.08 0.02 240;
+    --admin-card: 0.14 0.03 240;
+    --admin-primary: 0.75 0.18 200;
+    --admin-accent: 0.70 0.22 280;
+    --admin-muted: 0.45 0.08 240;
+    --admin-border: 0.30 0.10 240;
+  }
+
+  /* Admin Theme: Goth Black */
+  .admin-theme-goth-black {
+    --admin-bg: 0.08 0 0;
+    --admin-card: 0.12 0 0;
+    --admin-primary: 0.85 0 0;
+    --admin-accent: 0.75 0 0;
+    --admin-muted: 0.50 0 0;
+    --admin-border: 0.25 0 0;
+    --admin-foreground: 0.95 0 0;
+  }
+
+  /* Admin Theme: Silver Steel */
+  .admin-theme-silver-steel {
+    --admin-bg: 0.15 0.01 240;
+    --admin-card: 0.22 0.01 240;
+    --admin-primary: 0.70 0.02 240;
+    --admin-accent: 0.60 0.03 240;
+    --admin-muted: 0.50 0.02 240;
+    --admin-border: 0.35 0.02 240;
+    --admin-foreground: 0.92 0.01 240;
+  }
+
+  /* Admin Theme: White Luxury */
+  .admin-theme-white-luxury {
+    --admin-bg: 0.96 0.005 60;
+    --admin-card: 0.99 0.005 60;
+    --admin-primary: 0.25 0.08 60;
+    --admin-accent: 0.35 0.10 40;
+    --admin-muted: 0.60 0.02 60;
+    --admin-border: 0.85 0.01 60;
+    --admin-foreground: 0.15 0.02 60;
+  }
+
+  /* Admin Theme: Deep Purple */
+  .admin-theme-deep-purple {
+    --admin-bg: 0.12 0.08 280;
+    --admin-card: 0.18 0.10 280;
+    --admin-primary: 0.65 0.20 280;
+    --admin-accent: 0.55 0.25 300;
+    --admin-muted: 0.45 0.10 280;
+    --admin-border: 0.30 0.12 280;
+    --admin-foreground: 0.95 0.05 280;
+  }
+
+  /* Admin Theme: Fire Red */
+  .admin-theme-fire-red {
+    --admin-bg: 0.10 0.08 25;
+    --admin-card: 0.16 0.10 25;
+    --admin-primary: 0.60 0.25 25;
+    --admin-accent: 0.70 0.20 40;
+    --admin-muted: 0.45 0.10 25;
+    --admin-border: 0.30 0.12 25;
+    --admin-foreground: 0.95 0.05 25;
   }
 }
 
@@ -81,9 +138,40 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Typography scale */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: oklch(var(--foreground));
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+  }
+
+  p {
+    line-height: 1.7;
   }
 
   /* Skip link styles */
@@ -109,6 +197,26 @@
     clip: auto;
     white-space: normal;
   }
+
+  /* Enhanced focus styles for accessibility */
+  *:focus-visible {
+    outline: 2px solid oklch(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid oklch(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
@@ -131,36 +239,47 @@
     max-width: 100%;
   }
 
-  /* Enhanced focus styles for keyboard navigation */
-  .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chrome-300 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
-  }
-
-  /* Ensure focus-visible works properly */
-  *:focus-visible {
-    outline: 2px solid oklch(0.85 0 0);
-    outline-offset: 2px;
-  }
-
-  /* Remove focus outline for mouse users */
-  *:focus:not(:focus-visible) {
-    outline: none;
-  }
-
-  /* Futuristic grid background */
+  /* Modern grid background */
   .futuristic-grid {
     background-image: 
-      linear-gradient(to right, oklch(0.85 0 0 / 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, oklch(0.85 0 0 / 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(to right, oklch(var(--border) / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(var(--border) / 0.3) 1px, transparent 1px);
+    background-size: 48px 48px;
   }
 
-  /* Futuristic text effect */
-  .futuristic-text {
-    text-shadow: 
-      0 0 20px oklch(0.85 0 0 / 0.3),
-      0 0 40px oklch(0.85 0 0 / 0.2),
-      0 0 60px oklch(0.85 0 0 / 0.1);
+  /* Admin cyber grid */
+  .cyber-grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(to right, oklch(var(--admin-border) / 0.2) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(var(--admin-border) / 0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .cyber-scan-line {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      oklch(var(--admin-primary) / 0.05) 50%,
+      transparent 100%
+    );
+    animation: scan 8s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes scan {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
   }
 
   /* Fade in animations */

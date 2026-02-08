@@ -16,17 +16,21 @@ export default function AdminThemeSwitcher() {
 
   return (
     <div className="space-y-2">
-      <Label className="text-cyber-muted font-mono text-xs uppercase tracking-wider flex items-center gap-2">
+      <Label className="text-admin-muted font-mono text-xs uppercase tracking-wider flex items-center gap-2">
         <Palette className="w-3 h-3" />
         Admin Theme
       </Label>
       <Select value={theme} onValueChange={(v) => setTheme(v as AdminTheme)}>
-        <SelectTrigger className="bg-cyber-bg border-cyber-primary/30 text-cyber-primary font-mono">
+        <SelectTrigger className="bg-admin-card border-admin-border text-admin-foreground font-mono focus:ring-admin-primary">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-cyber-card border-cyber-primary/30">
+        <SelectContent className="bg-admin-card border-admin-border">
           {availableThemes.map((t) => (
-            <SelectItem key={t} value={t} className="font-mono">
+            <SelectItem 
+              key={t} 
+              value={t} 
+              className="font-mono text-admin-foreground focus:bg-admin-primary/20 focus:text-admin-primary"
+            >
               {THEME_LABELS[t]}
             </SelectItem>
           ))}

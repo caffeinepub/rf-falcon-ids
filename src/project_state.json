@@ -1,39 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project to redesign the app homepage to be more user-friendly and visually appealing, shifting from a straight order dashboard to a clean, futuristic landing-style experience.",
-  "architectural_notes": [],
+  "summary": "Modernize the website UI to match the professional theme of the admin panel, ensuring fonts and UI elements remain readable across all theme/color combinations (accessibility/contrast).",
+  "architectural_notes": [
+    "Establish a consistent design system between public site and admin panel, including theme tokens and accessibility/contrast requirements for typography and UI components."
+  ],
   "known_issues": [],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Abstract clean futuristic grid/glow hero background, dark with subtle chrome accents (landing-hero-bg.dim_2400x1350.png)",
   "existing_features": [
     {
-      "id": "feature-redesign-the-public-homepage-route-to-feel-like-a-clean-futuristic-user-friendly-landing-page-rather-than-a-basic-dashboard-style-page-while-keeping-the-overall-app-navigation-and-authentication-flow-intact",
-      "title": "Redesign the public homepage (route \"/\") to feel like a clean, futuristic, user-friendly landing page rather than a basic dashboard-style page, while keeping the overall app navigation and authentication flow intact.",
+      "id": "feature-update-the-global-design-tokens-and-typography-so-the-public-site-has-a-modern-professional-look-consistent-with-the-admin-panel-while-keeping-all-styling-driven-by-semantic-tailwind-token-colors-background-foreground-card-muted-accent-etc-rather-than-hard-coded-one-off-colors",
+      "title": "Update the global design tokens and typography so the public site has a modern, professional look consistent with the admin panel, while keeping all styling driven by semantic Tailwind token colors (background/foreground/card/muted/accent/etc.) rather than hard-coded one-off colors.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-existing-landingpage-implementation-to-include-additional-landing-page-sections-beyond-the-current-hero-4-step-grid-such-as-a-benefits-features-section-and-a-clear-next-step-section-that-directs-users-to-sign-in-and-or-sign-up-using-internet-identity",
-      "title": "Update the existing LandingPage implementation to include additional landing-page sections beyond the current hero + 4-step grid, such as a benefits/features section and a clear next-step section that directs users to sign in (and/or sign up) using Internet Identity.",
+      "id": "feature-ensure-text-and-ui-element-contrast-remains-readable-across-theme-color-combinations-by-auditing-and-adjusting-foreground-background-pairings-for-key-components-buttons-inputs-cards-badges-nav-header-tabs-menus-and-providing-accessible-defaults-for-both-light-and-dark-mode",
+      "title": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-a-consistent-clean-futuristic-visual-theme-for-the-homepage-redesign-colors-typography-layout-subtle-futuristic-accents-like-grid-lines-glow-aligned-with-the-existing-dark-mode-default-and-current-tailwind-token-system",
-      "title": "Implement a consistent clean/futuristic visual theme for the homepage redesign (colors, typography, layout, subtle futuristic accents like grid lines/glow), aligned with the existing dark-mode default and current Tailwind token system.",
+      "id": "feature-modernize-the-public-facing-layout-styling-to-match-the-admin-panel-s-professional-feel-header-footer-and-landing-hero-sections-while-keeping-existing-navigation-and-page-content-unchanged",
+      "title": "Modernize the public-facing layout styling to match the admin panel’s professional feel (header, footer, and landing hero/sections), while keeping existing navigation and page content unchanged.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-new-generated-static-hero-background-image-asset-and-use-it-on-the-homepage-hero-section-as-a-subtle-futuristic-backdrop-do-not-serve-it-from-the-backend",
-      "title": "Add a new generated static hero background image asset and use it on the homepage hero section as a subtle futuristic backdrop (do not serve it from the backend).",
+      "id": "feature-align-admin-panel-theme-readability-by-validating-each-existing-admin-theme-option-goth-black-silver-steel-white-luxury-deep-purple-fire-red-maintains-readable-text-and-ui-contrast-for-admin-panel-components-and-theme-switcher-states",
+      "title": "Align admin panel theme readability by validating each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
       "reqIds": [
         "REQ-4"
       ],
@@ -43,12 +44,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Redesign homepage into a more user-friendly, visually appealing clean/futuristic landing page (not a straight order dashboard)",
+      "summary": "Update public site styling to a more modern, professional theme consistent with the admin panel, with readable fonts/UI across all themes/colors (contrast/accessibility)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Redesign homepage into a clean, futuristic landing experience",
+  "projectName": "Modernize public site theme to match admin panel and ensure readable typography across all colors",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

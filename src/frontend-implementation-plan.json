@@ -1,95 +1,108 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Futuristic landing page redesign for public homepage",
+  "title": "Modernize public theme with semantic Tailwind tokens and accessible typography/contrast",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Redesign the public homepage (\"/\") into a clean, futuristic, user-friendly landing experience while preserving existing routing/auth redirects and navigation.",
+      "summary": "Modernize global design tokens and typography using semantic Tailwind token colors (no hard-coded one-off colors) for a professional public-site look consistent with admin styling foundations.",
       "acceptanceCriteria": [
-        "When not authenticated, visiting \"/\" shows a modern landing page with clear hierarchy (hero, supporting sections) and obvious primary call-to-action.",
-        "The landing page is responsive (mobile → desktop) and maintains good spacing/typography with a clean, futuristic look.",
-        "All user-facing text on the landing page is in English.",
-        "No backend changes are required for the homepage redesign."
+        "Global styles are updated in frontend/src/index.css (and related Tailwind token usage) so primary UI surfaces use semantic tokens (bg-background, text-foreground, bg-card, text-muted-foreground, border-border, etc.).",
+        "Typography is standardized (body, headings, labels) with consistent font-family usage and a modern, professional scale across the public pages.",
+        "No public-facing components rely on hard-coded colors that reduce legibility (e.g., fixed chrome text on similarly bright backgrounds)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LandingPage.tsx",
+          "path": "frontend/tailwind.config.js",
           "operation": "modify",
-          "description": "Replace the current dashboard-like layout with a more polished landing layout (hero + multiple supporting sections), keeping TanStack Router navigation behavior intact and ensuring English-only copy. Use existing shadcn-ui primitives already in the app (e.g., Card, Button) to build the new layout. Verify the component's usage instructions before implementing."
+          "description": "Adjust Tailwind theme extensions to better support a modern typographic system (font families for sans/serif/mono) and ensure semantic tokens (background/foreground/card/muted/accent/border/ring) are the preferred primitives for public UI styling. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Confirm the existing redirect behavior for authenticated users (\"/\" → \"/dashboard\" or \"/admin\") remains unchanged while the unauthenticated experience renders the redesigned LandingPage."
+          "description": "Update global CSS variables (light/dark) to provide consistent semantic token mapping (background/foreground/card/muted/accent/border/input/ring) and add standardized base typography (body + heading scale, label defaults) using the existing fonts; ensure globals avoid hard-coded foreground/background pairings that can reduce legibility. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Expand LandingPage content to include a benefits/features section and a prominent next-step CTA section that routes users to \"/signin\" (Internet Identity flow).",
+      "summary": "Ensure readable contrast and accessible interactive/focus states across light/dark mode by auditing key UI compositions (buttons, inputs, cards, nav/header, menus/tabs) and adjusting foreground/background pairings to semantic defaults.",
       "acceptanceCriteria": [
-        "LandingPage includes at least: (1) an improved hero section, (2) a benefits/features section, and (3) a prominent CTA section that routes to \"/signin\".",
-        "The CTA(s) use existing navigation patterns (TanStack Router navigate) and remain functional.",
-        "The new sections use existing UI components (e.g., Card, Button) and match the clean/futuristic aesthetic."
+        "Primary text, muted text, borders, and interactive states remain clearly legible in light mode and dark mode.",
+        "Interactive states (hover/focus/active/disabled) remain readable and clearly distinguishable.",
+        "Focus indicators remain visible on all backgrounds (keyboard navigation)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LandingPage.tsx",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Add new landing sections beyond the current hero + 4-step grid: (1) benefits/features section using Card-based feature tiles and (2) a clear next-step section with a primary CTA that navigates to \"/signin\" via TanStack Router navigate. Use existing shadcn-ui components (Card, Button) and existing lucide icons where appropriate; do not modify any files under frontend/src/components/ui. Verify the component's usage instructions before implementing."
+          "description": "Revise global focus-visible styling to use semantic ring tokens (ring, ring-offset-background) rather than fixed colors, and ensure base element defaults (links/buttons/inputs) maintain readable contrast in both themes without relying on hard-coded outline colors. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/content/copy.ts",
+          "path": "frontend/src/components/AuthGate.tsx",
           "operation": "modify",
-          "description": "Update/extend centralized landing-page copy constants to support the new hero messaging, benefits/features text, and next-step CTA wording (English only), and migrate LandingPage to consume these constants to keep text consistent."
+          "description": "Replace any hard-coded loading text colors with semantic token classes (e.g., text-muted-foreground / text-foreground) and ensure loading/fallback UI remains readable in both light and dark mode. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/BrandHeader.tsx",
+          "operation": "modify",
+          "description": "Audit and update navigation/menu button styling to ensure readable contrast for default/active/hover/focus states using semantic tokens (background/foreground/muted/accent/border/ring), avoiding fixed chrome color classes that can reduce legibility across themes. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Apply a consistent clean/futuristic visual theme for the redesigned homepage using existing Tailwind tokens and dark-mode defaults without altering immutable UI component sources.",
+      "summary": "Modernize public-facing layout styling (header, footer, landing hero/sections) for a cohesive professional feel while keeping existing navigation and content unchanged.",
       "acceptanceCriteria": [
-        "The homepage design uses a cohesive visual system (consistent spacing, type scale, and accent usage) and does not introduce conflicting styles.",
-        "No changes are made to read-only UI component sources under frontend/src/components/ui (compose existing components only).",
-        "The resulting page remains accessible (semantic headings, readable contrast, focus-visible states preserved)."
+        "Brand header (frontend/src/components/BrandHeader.tsx), shell/footer (frontend/src/components/AppShell.tsx), and landing page (frontend/src/pages/LandingPage.tsx) have a cohesive modern/professional visual treatment (spacing, borders, surfaces, typography).",
+        "No routes, copy, or core behaviors change—this is a styling/theme modernization only.",
+        "The landing page remains responsive and visually consistent from mobile to desktop."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LandingPage.tsx",
+          "path": "frontend/src/components/AppShell.tsx",
           "operation": "modify",
-          "description": "Refine typography hierarchy (semantic headings), spacing, and accent treatments for a cohesive futuristic look using existing Tailwind tokens (chrome/cyber palette) and preserving focus-visible/accessibility patterns; ensure sections are responsive and readable on dark mode."
+          "description": "Update shell/footer surface styling to match the admin panel’s polished feel using semantic tokens (bg-background/bg-card, text-foreground/text-muted-foreground, border-border) and refined spacing; keep structure, navigation, and copy unchanged. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/components/BrandHeader.tsx",
           "operation": "modify",
-          "description": "Add/adjust small reusable global utility classes for subtle futuristic accents used by the LandingPage (e.g., faint gridline overlay helper, soft glow treatment, section background treatments) while staying aligned with existing Tailwind token variables and not introducing conflicting global styles."
+          "description": "Modernize header layout styling (sticky header surface, borders, active nav styling, mobile sheet trigger styling) using semantic tokens instead of chrome-specific classes; preserve current nav items and behavior. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Refresh landing hero/sections styling to be more modern/professional (typography scale alignment, card surfaces, gradients/overlays, spacing) while keeping existing content and navigation actions intact; replace hard-coded chrome color usage with semantic token usage where possible. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Add and wire a generated static hero background image as a subtle futuristic backdrop in the homepage hero (no backend serving).",
+      "summary": "Validate and align readability/contrast across all existing admin themes (goth-black, silver-steel, white-luxury, deep-purple, fire-red) by ensuring admin UI compositions consistently use semantic token variables and predictable theme-scoped values.",
       "acceptanceCriteria": [
-        "A generated image file is added under frontend/public/assets/generated and is referenced directly by the LandingPage hero section.",
-        "The hero background image loads in production builds without requiring any backend endpoints.",
-        "The background image remains subtle (does not reduce text readability) and scales well across viewport sizes."
+        "Switching between all existing admin themes does not produce low-contrast text (e.g., labels, inputs, table text) or invisible borders.",
+        "Admin UI elements used throughout the admin panel keep consistent semantic token usage for backgrounds/foregrounds/borders so theme swaps remain predictable."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png",
-          "operation": "create",
-          "description": "Add the generated static image asset: Abstract clean futuristic grid/glow hero background, dark with subtle chrome accents (landing-hero-bg.dim_2400x1350.png)."
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Define/adjust admin theme class variable sets (e.g., .admin-theme-goth-black, .admin-theme-silver-steel, .admin-theme-white-luxury, .admin-theme-deep-purple, .admin-theme-fire-red) so each theme establishes readable semantic tokens (background/foreground/card/muted/border/input/ring) and consistent admin accent variables used by the admin panel; ensure theme switching does not create low contrast. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/LandingPage.tsx",
+          "path": "frontend/src/components/AdminThemeLayout.tsx",
           "operation": "modify",
-          "description": "Reference the static hero background image at frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png in the hero section (preferably via the existing getAssetUrl helper so it works with optional CDN base), and layer it subtly behind content with an overlay/gradient to preserve text readability across viewport sizes."
+          "description": "Ensure the admin theme wrapper applies appropriate semantic surface/text classes (bg-background text-foreground) in addition to theme class names so admin pages inherit readable defaults across all themes. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/utils/assetBase.ts",
+          "path": "frontend/src/components/admin/AdminThemeSwitcher.tsx",
           "operation": "modify",
-          "description": "Ensure LandingPage can use the existing getAssetUrl utility for resolving the hero background asset path consistently (including optional CDN configuration), without introducing any backend dependency."
+          "description": "Update the theme switcher styling to use semantic token classes for trigger/content text, borders, and focus rings so it remains readable across all admin themes without relying on fixed cyber colors. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Audit and adjust admin panel compositions that currently rely on fixed color utilities (borders/text/backgrounds for cards, tabs, inputs, badges, status highlights) to ensure they use predictable semantic tokens and remain readable across all existing admin themes (without changing routes or behaviors). Verify the component's usage instructions before implementing."
         }
       ]
     }

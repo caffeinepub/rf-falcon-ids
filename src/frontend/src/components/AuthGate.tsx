@@ -13,8 +13,8 @@ export default function AuthGate({ children }: AuthGateProps) {
   if (isInitializing) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-pulse text-cyan-400">Loading...</div>
+        <div className="text-center space-y-4">
+          <div className="animate-pulse text-muted-foreground font-medium">Loading...</div>
         </div>
       </div>
     );

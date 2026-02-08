@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T16:20:26.230Z",
+  "generatedAt": "2026-02-08T18:15:47.264Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,54 +12,62 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Redesign the public homepage (route \"/\") to feel like a clean, futuristic, user-friendly landing page rather than a basic dashboard-style page, while keeping the overall app navigation and authentication flow intact.",
+        "summary": "Update the global design tokens and typography so the public site has a modern, professional look consistent with the admin panel, while keeping all styling driven by semantic Tailwind token colors (background/foreground/card/muted/accent/etc.) rather than hard-coded one-off colors.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/tailwind.config.js",
+          "frontend/src/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LandingPage.tsx"
+          "frontend/tailwind.config.js",
+          "frontend/src/index.css"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Update the existing LandingPage implementation to include additional landing-page sections beyond the current hero + 4-step grid, such as a benefits/features section and a clear next-step section that directs users to sign in (and/or sign up) using Internet Identity.",
+        "summary": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/content/copy.ts"
+          "frontend/src/index.css",
+          "frontend/src/components/AuthGate.tsx",
+          "frontend/src/components/BrandHeader.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/content/copy.ts"
+          "frontend/src/index.css",
+          "frontend/src/components/AuthGate.tsx",
+          "frontend/src/components/BrandHeader.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Implement a consistent clean/futuristic visual theme for the homepage redesign (colors, typography, layout, subtle futuristic accents like grid lines/glow), aligned with the existing dark-mode default and current Tailwind token system.",
+        "summary": "Modernize the public-facing layout styling to match the admin panel’s professional feel (header, footer, and landing hero/sections), while keeping existing navigation and page content unchanged.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/index.css"
+          "frontend/src/components/AppShell.tsx",
+          "frontend/src/components/BrandHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/index.css"
+          "frontend/src/components/AppShell.tsx",
+          "frontend/src/components/BrandHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Add a new generated static hero background image asset and use it on the homepage hero section as a subtle futuristic backdrop (do not serve it from the backend).",
+        "summary": "Align admin panel theme readability by validating each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png",
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/utils/assetBase.ts"
+          "frontend/src/index.css",
+          "frontend/src/components/AdminThemeLayout.tsx",
+          "frontend/src/components/admin/AdminThemeSwitcher.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png",
-          "frontend/src/pages/LandingPage.tsx"
+          "frontend/src/index.css",
+          "frontend/src/components/AdminThemeLayout.tsx",
+          "frontend/src/components/admin/AdminThemeSwitcher.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
         ]
       }
     ]
@@ -69,9 +77,13 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/landing-hero-bg.dim_2400x1350.png",
-    "frontend/src/content/copy.ts",
+    "frontend/src/components/AdminThemeLayout.tsx",
+    "frontend/src/components/AppShell.tsx",
+    "frontend/src/components/AuthGate.tsx",
+    "frontend/src/components/BrandHeader.tsx",
+    "frontend/src/components/admin/AdminThemeSwitcher.tsx",
     "frontend/src/index.css",
+    "frontend/src/pages/AdminPanelPage.tsx",
     "frontend/src/pages/LandingPage.tsx",
     "frontend/tailwind.config.js",
     "project_state.json",
