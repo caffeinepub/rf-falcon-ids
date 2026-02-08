@@ -88,7 +88,7 @@ export default function AdminAccessSection() {
             Admin Access Management
           </CardTitle>
           <CardDescription className="text-admin-muted">
-            Owner-only: Grant or revoke admin access
+            Manage administrator privileges and access control
           </CardDescription>
         </CardHeader>
       </Card>

@@ -1,94 +1,73 @@
 {
   "kind": "build_request",
-  "title": "Fix admin access control, show accounts only after first order, and add admin account actions",
-  "priority": "high",
+  "title": "Allow any admin (not just owner) to grant admin access",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Change the admin “User Accounts” list so that an account only appears after the user has placed their first order (i.e., hide user profiles that have zero orders).",
-      "target": "both",
+      "text": "Update backend admin-access authorization so any caller who is an admin can grant admin access to another user (by email), instead of restricting this action to only the owner.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-6",
-          "recent-messages-10"
+          "msg-6"
         ],
         "quotes": [
-          "make there account only show up after they place there firsdt order"
+          "make it so any admin can give admin access not just owner"
         ]
       },
       "acceptanceCriteria": [
-        "If a principal has a saved UserProfile but has never created an order, that principal does not appear in the Admin Accounts section.",
-        "After a user successfully creates their first order, their account appears in the Admin Accounts section without requiring any manual refresh beyond normal React Query invalidation/refetch behavior.",
-        "No other admin dashboard data (orders, audit log, security stats) is removed or degraded."
+        "Calling the backend method that grants admin access (used by the frontend as actor.grantAdminAccess(email)) succeeds when invoked by any authenticated admin caller.",
+        "The same method traps/returns an authorization error when invoked by a non-admin caller.",
+        "A successful grant operation writes an audit log entry identifying the acting admin principal and the target email.",
+        "No migration is required (existing admin email/principal mappings continue to work after upgrade)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Fix the “Give admin access / Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access.",
-      "target": "both",
+      "text": "Update backend admin-access authorization so any caller who is an admin can revoke admin access (by email), instead of restricting this action to only the owner.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-6"
+          "msg-6"
         ],
         "quotes": [
-          "fixx the give admin access it does not work for me",
-          "i cant type and im logged into traviscastonguay@gmail.com"
+          "make it so any admin can give admin access not just owner"
         ]
       },
       "acceptanceCriteria": [
-        "The email input in the Admin Access section accepts typing normally (no disabled/blocked input behavior) when the logged-in user has permission to manage admin access.",
-        "Submitting a valid email calls the backend and either (a) grants access successfully or (b) shows a clear error explaining why it cannot be granted (e.g., not owner / email not associated with any principal yet), without silently failing.",
-        "The admin email list refreshes after granting/revoking access."
+        "Calling the backend method that revokes admin access (used by the frontend as actor.revokeAdminAccess(email)) succeeds when invoked by any authenticated admin caller.",
+        "The same method traps/returns an authorization error when invoked by a non-admin caller.",
+        "A successful revoke operation writes an audit log entry identifying the acting admin principal and the target email.",
+        "The owner email (traviscastonguay@gmail.com) remains protected from being revoked if the UI/logic currently enforces that behavior."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add admin account actions to support banning/unbanning a user account, and enforce bans by blocking banned users from creating new orders.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "recent-messages-6"
-        ],
-        "quotes": [
-          "then i can make edits to there order or account like ban give vip to threre account etc"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin UI provides a clear action to Ban/Unban a selected account in the Admin Accounts section.",
-        "Backend exposes admin-only methods to ban and unban a principal, and persists the ban state in the user profile/account record.",
-        "A banned user attempting to create an order receives a clear error and no order is created.",
-        "VIP toggling continues to work as it does today."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Ensure admins can make edits to orders and accounts from the admin panel, including: order status updates, tracking number updates, order deletion (existing), plus account actions (VIP toggle existing + ban/unban newly added).",
+      "text": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-6",
-          "recent-messages-10"
+          "msg-6"
         ],
         "quotes": [
-          "then i can make edits to there order or account"
+          "make it so any admin can give admin access not just owner"
         ]
       },
       "acceptanceCriteria": [
-        "Admin panel continues to support existing order edits (status, tracking number, delete) without regression.",
-        "Admin Accounts section supports both VIP toggle (existing) and Ban/Unban (new), with clear loading/disabled states while a mutation is pending.",
-        "Errors from backend mutations are shown in English and do not break the admin page rendering."
+        "In frontend/src/components/admin/AdminAccessSection.tsx, the description text \"Owner-only: Grant or revoke admin access\" is changed to English wording that indicates admins can grant/revoke admin access.",
+        "No functionality regressions in the Admin Access section: listing admin emails, granting access, and revoking access still use the existing hooks (useListAdminEmails/useGrantAdminAccess/useRevokeAdminAccess)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (compose existing UI components instead).",
-    "Do not edit any paths listed in frontend.immutablePaths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
-    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo)."
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Do not edit any files under frontend/src/components/ui or any paths listed in frontend.immutablePaths.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding external databases or non-IC storage systems.",
-    "Adding real-time features (WebSockets/push notifications)."
+    "Do not add new authentication providers (Internet Identity remains the only auth option).",
+    "Do not redesign the admin panel beyond the minimal copy/behavior changes required for admin delegation.",
+    "Do not change how the initial owner/admin bootstrap is configured during deployment (caffeineAdminToken / existing bootstrap flow)."
   ],
   "imageRequirements": {
     "required": [],

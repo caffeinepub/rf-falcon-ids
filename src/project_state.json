@@ -1,42 +1,18 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Admin panel for managing user accounts and orders, with role-based access controls.",
-  "architectural_notes": [],
-  "known_issues": [
-    "'Give admin access' UI/control is not working for traviscastonguay@gmail.com (cannot type)"
+  "summary": "New project",
+  "architectural_notes": [
+    "Implement role-based access control: admins can manage/administer other users' roles (including granting admin), not restricted to owner-only."
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-change-the-admin-user-accounts-list-so-that-an-account-only-appears-after-the-user-has-placed-their-first-order-i-e-hide-user-profiles-that-have-zero-orders",
-      "title": "Change the admin “User Accounts” list so that an account only appears after the user has placed their first order (i.e., hide user profiles that have zero orders).",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-give-admin-access-grant-admin-access-control-so-the-owner-traviscastonguay-gmail-com-can-type-into-the-email-input-and-successfully-grant-admin-access",
-      "title": "Fix the “Give admin access / Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-admin-account-actions-to-support-banning-unbanning-a-user-account-and-enforce-bans-by-blocking-banned-users-from-creating-new-orders",
-      "title": "Add admin account actions to support banning/unbanning a user account, and enforce bans by blocking banned users from creating new orders.",
+      "id": "feature-update-the-admin-access-management-ui-copy-so-it-no-longer-claims-the-feature-is-owner-only-and-reflects-that-any-admin-can-grant-revoke-admin-access",
+      "title": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-admins-can-make-edits-to-orders-and-accounts-from-the-admin-panel-including-order-status-updates-tracking-number-updates-order-deletion-existing-plus-account-actions-vip-toggle-existing-ban-unban-newly-added",
-      "title": "Ensure admins can make edits to orders and accounts from the admin panel, including: order status updates, tracking number updates, order deletion (existing), plus account actions (VIP toggle existing + ban/unban newly added).",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -44,24 +20,28 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Only create/show user accounts in admin after the user places their first order",
+      "summary": "Update permissions so any admin (not just the owner) can grant admin access to other users",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Enable admin actions on user accounts/orders (edit account, edit order, ban user, grant VIP)",
-      "reqIds": [],
+      "summary": "Update backend admin-access authorization so any caller who is an admin can grant admin access to another user (by email), instead of restricting this action to only the owner.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Fix 'Give admin access' control not working (cannot type while logged in as traviscastonguay@gmail.com)",
-      "reqIds": [],
+      "summary": "Update backend admin-access authorization so any caller who is an admin can revoke admin access (by email), instead of restricting this action to only the owner.",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Fix admin access control, show accounts only after first order, and add admin account actions",
+  "projectName": "Allow any admin (not just owner) to grant admin access",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

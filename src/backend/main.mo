@@ -13,11 +13,7 @@ import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-import Migration "migration";
 
-// Runs migration from previous version to current version on deployment.
-
-(with migration = Migration.run)
 actor {
   stable let bannedUsers = Set.empty<Principal>();
 
@@ -768,8 +764,8 @@ actor {
   };
 
   public shared ({ caller }) func grantAdminAccess(admin_email : Text) : async () {
-    if (not isOwner(caller)) {
-      Runtime.trap("Unauthorized: Only the owner (traviscastonguay@gmail.com) can grant admin access");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can grant admin access");
     };
 
     if (not checkRateLimit(caller, "grantAdminAccess")) {
@@ -789,8 +785,8 @@ actor {
   };
 
   public shared ({ caller }) func revokeAdminAccess(admin_email : Text) : async () {
-    if (not isOwner(caller)) {
-      Runtime.trap("Unauthorized: Only the owner (traviscastonguay@gmail.com) can revoke admin access");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can revoke admin access");
     };
 
     if (admin_email == OWNER_EMAIL) {

@@ -2,55 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-change-the-admin-user-accounts-list-so-that-an-account-only-appears-after-the-user-has-placed-their-first-order-i-e-hide-user-profiles-that-have-zero-orders",
-      "featureTitle": "Change the admin “User Accounts” list so that an account only appears after the user has placed their first order (i.e., hide user profiles that have zero orders).",
+      "featureId": "feature-update-the-admin-access-management-ui-copy-so-it-no-longer-claims-the-feature-is-owner-only-and-reflects-that-any-admin-can-grant-revoke-admin-access",
+      "featureTitle": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
       "files": [
-        "frontend/src/hooks/admin/useAdminAccounts.ts",
-        "frontend/src/hooks/orders/useCreateOrder.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-fix-the-give-admin-access-grant-admin-access-control-so-the-owner-traviscastonguay-gmail-com-can-type-into-the-email-input-and-successfully-grant-admin-access",
-      "featureTitle": "Fix the “Give admin access / Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access.",
-      "files": [
-        "frontend/src/components/admin/AdminAccessSection.tsx",
-        "frontend/src/hooks/admin/useAdminAccess.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-admin-account-actions-to-support-banning-unbanning-a-user-account-and-enforce-bans-by-blocking-banned-users-from-creating-new-orders",
-      "featureTitle": "Add admin account actions to support banning/unbanning a user account, and enforce bans by blocking banned users from creating new orders.",
-      "files": [
-        "frontend/src/components/admin/AdminAccountsSection.tsx",
-        "frontend/src/hooks/admin/useAdminAccounts.ts",
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/pages/NewOrderPage.tsx"
+        "frontend/src/components/admin/AdminAccessSection.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -63,27 +18,6 @@
       ],
       "testIds": [
         "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-admins-can-make-edits-to-orders-and-accounts-from-the-admin-panel-including-order-status-updates-tracking-number-updates-order-deletion-existing-plus-account-actions-vip-toggle-existing-ban-unban-newly-added",
-      "featureTitle": "Ensure admins can make edits to orders and accounts from the admin panel, including: order status updates, tracking number updates, order deletion (existing), plus account actions (VIP toggle existing + ban/unban newly added).",
-      "files": [
-        "frontend/src/components/admin/AdminAccountsSection.tsx",
-        "frontend/src/hooks/admin/useAdminAccounts.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

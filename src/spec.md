@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix admin access control, improve admin account visibility rules, and add admin account actions (ban/unban) while preserving existing admin order/account editing features.
+**Goal:** Allow any authenticated admin (not just the owner) to grant and revoke admin access, and update the admin UI copy to match.
 
 **Planned changes:**
-- Update the Admin “User Accounts” list to only show accounts after the user has placed their first order (hide profiles with zero orders).
-- Fix the “Give/Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access, with clear success/error feedback and list refresh.
-- Add admin actions to Ban/Unban user accounts, persist the ban state, and enforce bans by preventing banned users from creating new orders with a clear error message.
-- Ensure existing admin capabilities continue working without regression: order edits (status, tracking number, delete) and account VIP toggle, with proper loading/disabled states and readable error handling.
+- Update backend authorization for granting admin access so any authenticated admin can call the existing grant method (by email), while non-admin callers receive an authorization error.
+- Update backend authorization for revoking admin access so any authenticated admin can call the existing revoke method (by email), while non-admin callers receive an authorization error; keep owner protection behavior as currently enforced.
+- Add audit log entries for successful grant/revoke operations that include the acting admin principal and the target email.
+- Update the Admin Access Management UI description text to indicate admins (not only the owner) can grant/revoke admin access, without changing existing hooks/flows.
 
-**User-visible outcome:** Admins can grant admin access reliably, only see accounts after a first order is placed, ban/unban users from the admin panel, and banned users are blocked from placing new orders; existing order editing and VIP toggling continue to function.
+**User-visible outcome:** Any signed-in admin can grant or revoke admin access for other users by email, and the Admin Access section text reflects this change.

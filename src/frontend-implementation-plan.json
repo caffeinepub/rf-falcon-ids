@@ -1,100 +1,20 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin panel fixes: account visibility after first order, admin access input reliability, and ban/unban actions",
+  "title": "Admin delegation UI copy update",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Hide admin accounts with zero orders and ensure the list updates automatically after a user’s first order via normal React Query invalidation.",
+      "id": "REQ-3",
+      "summary": "Update Admin Access Management UI text to reflect that any admin (not just the owner) can grant/revoke admin access.",
       "acceptanceCriteria": [
-        "If a principal has a saved UserProfile but has never created an order, that principal does not appear in the Admin Accounts section.",
-        "After a user successfully creates their first order, their account appears in the Admin Accounts section without requiring any manual refresh beyond normal React Query invalidation/refetch behavior.",
-        "No other admin dashboard data (orders, audit log, security stats) is removed or degraded."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "operation": "modify",
-          "description": "Update the accounts query to derive the Admin Accounts list from admin dashboard data while filtering out principals that have zero orders (based on order ownership), without affecting orders/audit/security sections. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
-          "operation": "modify",
-          "description": "On successful order creation, invalidate relevant admin/account query keys (in addition to userOrders) so Admin Accounts can refetch and include the new account after the first order via normal React Query behavior. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Fix the Admin Access email input so authorized users (owner/admin) can type normally and granting admin access reliably reports success or a clear error and refreshes the list.",
-      "acceptanceCriteria": [
-        "The email input in the Admin Access section accepts typing normally (no disabled/blocked input behavior) when the logged-in user has permission to manage admin access.",
-        "Submitting a valid email calls the backend and either (a) grants access successfully or (b) shows a clear error explaining why it cannot be granted (e.g., not owner / email not associated with any principal yet), without silently failing.",
-        "The admin email list refreshes after granting/revoking access."
+        "In frontend/src/components/admin/AdminAccessSection.tsx, the description text \"Owner-only: Grant or revoke admin access\" is changed to English wording that indicates admins can grant/revoke admin access.",
+        "No functionality regressions in the Admin Access section: listing admin emails, granting access, and revoking access still use the existing hooks (useListAdminEmails/useGrantAdminAccess/useRevokeAdminAccess)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/admin/AdminAccessSection.tsx",
           "operation": "modify",
-          "description": "Harden the Grant Admin Access UX to avoid any blocked/disabled typing scenarios (ensure input remains editable except during explicit pending states), support Enter-to-submit, and present clear user-facing errors for authorization/validation failures. Use the authorization component’s role-based access control via existing admin gating patterns (e.g., admin-only sections) to keep this control visible/usable only to permitted users. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/admin/useAdminAccess.ts",
-          "operation": "modify",
-          "description": "Improve mutation/query error surfacing for grant/revoke flows (return actionable error messages) and ensure React Query invalidation consistently refreshes the admin email list and related admin views after changes. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add Ban/Unban actions to Admin Accounts and block banned users from creating new orders with a clear error message.",
-      "acceptanceCriteria": [
-        "Admin UI provides a clear action to Ban/Unban a selected account in the Admin Accounts section.",
-        "Backend exposes admin-only methods to ban and unban a principal, and persists the ban state in the user profile/account record.",
-        "A banned user attempting to create an order receives a clear error and no order is created.",
-        "VIP toggling continues to work as it does today."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "operation": "modify",
-          "description": "Extend admin accounts data fetching to include each account’s ban state (via backend capability checks) and add mutations for ban/unban that invalidate account/admin-related queries after changes. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "operation": "modify",
-          "description": "Add Ban/Unban controls alongside the existing VIP toggle for each account, including clear labels, disabled/loading states while mutations are pending, and visible indication of banned status. Use the authorization component’s role-based access control via existing AdminGate-protected admin panel so only admins can trigger these actions. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
-          "operation": "modify",
-          "description": "Add a pre-submit ban check for the current principal before calling order creation; if banned, throw a clear English error so the UI can display it and prevent order creation attempts from proceeding. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
-          "operation": "modify",
-          "description": "Display a clear user-facing error when order creation fails due to a ban (or other backend authorization failures), rather than only logging to console. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Maintain existing admin order/account edit capabilities and add robust pending/error UX for VIP and ban/unban account actions.",
-      "acceptanceCriteria": [
-        "Admin panel continues to support existing order edits (status, tracking number, delete) without regression.",
-        "Admin Accounts section supports both VIP toggle (existing) and Ban/Unban (new), with clear loading/disabled states while a mutation is pending.",
-        "Errors from backend mutations are shown in English and do not break the admin page rendering."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "operation": "modify",
-          "description": "Refine account action UX to ensure VIP toggle and Ban/Unban have independent pending/disabled states, and that backend mutation errors are rendered/announced in English without breaking list rendering. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "operation": "modify",
-          "description": "Ensure all account mutations (VIP and ban/unban) consistently handle and surface errors in a user-friendly way and invalidate the correct React Query keys to refresh accounts/audit data after changes. Verify the component's usage instructions before implementing."
+          "description": "Replace the owner-only description copy under \"Admin Access Management\" with English wording indicating that any admin can grant/revoke admin access (keeping all existing functionality and hook usage unchanged)."
         }
       ]
     }

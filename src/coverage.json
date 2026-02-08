@@ -1,90 +1,49 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T20:15:26.826Z",
+  "generatedAt": "2026-02-08T20:22:43.795Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Change the admin “User Accounts” list so that an account only appears after the user has placed their first order (i.e., hide user profiles that have zero orders).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/hooks/orders/useCreateOrder.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/hooks/orders/useCreateOrder.ts"
-        ]
+        "summary": "Update backend admin-access authorization so any caller who is an admin can grant admin access to another user (by email), instead of restricting this action to only the owner.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Fix the “Give admin access / Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/admin/AdminAccessSection.tsx",
-          "frontend/src/hooks/admin/useAdminAccess.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/admin/AdminAccessSection.tsx",
-          "frontend/src/hooks/admin/useAdminAccess.ts"
-        ]
+        "summary": "Update backend admin-access authorization so any caller who is an admin can revoke admin access (by email), instead of restricting this action to only the owner.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Add admin account actions to support banning/unbanning a user account, and enforce bans by blocking banned users from creating new orders.",
+        "summary": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/src/components/admin/AdminAccessSection.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/pages/NewOrderPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Ensure admins can make edits to orders and accounts from the admin panel, including: order status updates, tracking number updates, order deletion (existing), plus account actions (VIP toggle existing + ban/unban newly added).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "frontend/src/hooks/admin/useAdminAccounts.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "frontend/src/hooks/admin/useAdminAccounts.ts"
+          "frontend/src/components/admin/AdminAccessSection.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
     "frontend/src/components/admin/AdminAccessSection.tsx",
-    "frontend/src/components/admin/AdminAccountsSection.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/admin/useAdminAccess.ts",
-    "frontend/src/hooks/admin/useAdminAccounts.ts",
-    "frontend/src/hooks/orders/useCreateOrder.ts",
-    "frontend/src/pages/NewOrderPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

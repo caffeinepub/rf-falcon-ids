@@ -1,67 +1,54 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T20:15:26.823Z",
-  "summary": "Diff adds ban-state migration scaffolding and new admin/account hooks/UI, plus a client-side pre-check to block banned users from creating orders. However, key backend-side enforcement and admin-dashboard filtering changes are not evidenced in the provided backend diff excerpt, and the diff summary also indicates several unrelated frontend UI/page redesign changes not requested in the BuildRequest.",
+  "generatedAt": "2026-02-08T20:22:43.792Z",
+  "summary": "Frontend copy in AdminAccessSection appears updated to remove the owner-only wording. Backend changes required to allow any admin (not just owner) to grant/revoke admin access are not evidenced in the provided truncated diff, and the diff shows additional backend security/rate-limiting structures and metadata updates that were not requested.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Hide user profiles with zero orders from the Admin Accounts list (only show accounts after first order).",
-      "reason": "Frontend hook comments claim the backend filters accounts, but the provided backend/main.mo diff excerpt does not show any logic in getAdminDashboard (or equivalent) that filters userProfiles based on order count/ownership. Without visible implementation, this requirement cannot be confirmed.",
+      "requirement": "Update backend admin-access authorization so any caller who is an admin can grant admin access to another user (by email), instead of restricting this action to only the owner (including non-admin denial and audit log entry with acting admin principal + target email, no migration).",
+      "reason": "The diff snippet for backend/main.mo does not show the grantAdminAccess method or any authorization change that allows any admin to grant access, nor does it show an audit log write for a successful grant. Because the file is truncated, this may exist outside the snippet, but it is not evidenced in the provided diff summary.",
       "evidence": [
-        "frontend/src/hooks/admin/useAdminAccounts.ts",
-        "backend/main.mo (truncated)"
+        "backend/main.mo (truncated; no shown grantAdminAccess/auth change/audit write)"
       ]
     },
     {
-      "id": "REQ-3",
-      "requirement": "Backend exposes admin-only methods to ban/unban a principal, persists ban state, and blocks banned users from creating new orders with a clear error.",
-      "reason": "Frontend calls actor.banUser/unbanUser/isUserBanned, and a stable bannedUsers set/migration module is added, but the backend diff excerpt does not show the admin-only ban/unban methods, the isUserBanned query method, or any create-order guard that prevents order creation for banned principals. Therefore backend enforcement cannot be verified from the diff summary.",
+      "id": "REQ-2",
+      "requirement": "Update backend admin-access authorization so any caller who is an admin can revoke admin access (by email), instead of restricting this action to only the owner (including non-admin denial and audit log entry with acting admin principal + target email; protect owner email from being revoked if currently enforced).",
+      "reason": "The diff snippet for backend/main.mo does not show the revokeAdminAccess method or any authorization change that allows any admin to revoke access, nor does it show an audit log write for a successful revoke or any owner-email protection logic. Because the file is truncated, this may exist outside the snippet, but it is not evidenced in the provided diff summary.",
       "evidence": [
-        "frontend/src/hooks/admin/useAdminAccounts.ts",
-        "frontend/src/components/admin/AdminAccountsSection.tsx",
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "backend/migration.mo",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Admin panel continues to support existing order edits (status updates, tracking number updates, deletion) without regression, and surfaces English errors without breaking rendering.",
-      "reason": "The diff summary does not include the admin orders UI/hooks or backend order-mutation methods; only accounts/admin-access sections and create-order hook changes are shown. As a result, preserving and validating the existing order-edit capabilities and error handling cannot be confirmed from the provided diff evidence.",
-      "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend-file-summaries.txt (mentions AdminPanelPage but content not shown)"
+        "backend/main.mo (truncated; no shown revokeAdminAccess/auth change/audit write/owner protection)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Broad, unrelated frontend redesign/content changes across multiple non-admin pages/components (e.g., Landing page marketing copy removal, navigation updates, watermark removal, accessibility enhancements, theming/layout adjustments).",
-      "reason": "These changes are described in the diff summary but are not requested by REQ-1..REQ-4, which are focused on admin access control, account visibility after first order, banning/unbanning, and ensuring admin edits work without regression.",
+      "description": "Introduced/expanded backend security and rate-limiting system (SecurityEvent/SecurityConfig/SecurityStats, allowlist/blocklist, rate limit checks) beyond the requested admin delegation change.",
+      "reason": "BuildRequest only asks to adjust admin grant/revoke authorization and update UI copy; no requirement mentions adding a general rate limiter, block/allow lists, or security event tracking.",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "backend/main.mo (adds SecurityEvent/SecurityConfig/SecurityStats, callHistory, blocklist, allowlist, checkRateLimit)"
       ]
     },
     {
-      "description": "Client-side ban-status check in order creation flow (pre-flight call to isUserBanned) before submitting an order.",
-      "reason": "REQ-3 requires backend enforcement (block banned users from creating orders). Adding a frontend pre-check is extra behavior not explicitly requested (though it may be acceptable as defense-in-depth).",
+      "description": "Added/updated project metadata tracking for feature requests (project_state.json new_feature_requests entries AR-1..AR-4).",
+      "reason": "BuildRequest does not request adding or modifying project tracking/metadata files.",
       "evidence": [
-        "frontend/src/hooks/orders/useCreateOrder.ts"
+        "project_state.json"
+      ]
+    },
+    {
+      "description": "Updated/maintained a frontend file summary inventory (frontend-file-summaries.txt).",
+      "reason": "BuildRequest does not request generating or updating a file summaries document; only a specific UI copy change was requested.",
+      "evidence": [
+        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.64,
+  "confidence": 0.56,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
     "frontend/src/components/admin/AdminAccessSection.tsx",
-    "frontend/src/components/admin/AdminAccountsSection.tsx",
-    "frontend/src/hooks/admin/useAdminAccess.ts",
-    "frontend/src/hooks/admin/useAdminAccounts.ts",
-    "frontend/src/hooks/orders/useCreateOrder.ts",
-    "frontend/src/pages/NewOrderPage.tsx",
     "project_state.json"
   ]
 }
