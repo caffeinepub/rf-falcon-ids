@@ -108,7 +108,21 @@ export default function NewOrderPage() {
       navigate({ to: '/dashboard', search: { orderCreated: 'true' } });
     } catch (error: any) {
       console.error('Order creation error:', error);
-      const message = error.message || 'Failed to create order. Please try again.';
+      
+      // Extract user-friendly error message
+      let message = 'Failed to create order. Please try again.';
+      
+      if (error.message) {
+        // Check for ban-related errors
+        if (error.message.includes('banned')) {
+          message = 'Your account has been banned from placing orders. Please contact support.';
+        } else if (error.message.includes('Unauthorized')) {
+          message = 'You must be logged in to create an order.';
+        } else {
+          message = error.message;
+        }
+      }
+      
       setErrorMessage(message);
     }
   };
@@ -385,7 +399,7 @@ export default function NewOrderPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {US_STATES.map((state) => (
-                      <SelectItem key={state.code} value={state.name}>
+                      <SelectItem key={state.code} value={state.code}>
                         {state.name}
                       </SelectItem>
                     ))}
@@ -408,9 +422,9 @@ export default function NewOrderPage() {
         {/* Submit Button */}
         <Button
           type="submit"
-          disabled={!isFormValid || createOrder.isPending}
-          className="w-full"
           size="lg"
+          className="w-full"
+          disabled={!isFormValid || createOrder.isPending}
         >
           {createOrder.isPending ? (
             <>

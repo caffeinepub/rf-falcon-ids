@@ -218,6 +218,7 @@ export interface backendInterface {
     grantVIPStatus(user: Principal): Promise<void>;
     isAdminEmail(email: string): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
+    isCallerBanned(): Promise<boolean>;
     isCallerVIP(): Promise<boolean>;
     isOrderOwner(orderId: string): Promise<boolean>;
     isUserBanned(user: Principal): Promise<boolean>;
@@ -730,6 +731,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isCallerAdmin();
+            return result;
+        }
+    }
+    async isCallerBanned(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isCallerBanned();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isCallerBanned();
             return result;
         }
     }

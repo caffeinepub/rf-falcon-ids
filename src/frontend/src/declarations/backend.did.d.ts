@@ -154,6 +154,7 @@ export interface _SERVICE {
   'grantVIPStatus' : ActorMethod<[Principal], undefined>,
   'isAdminEmail' : ActorMethod<[string], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isCallerBanned' : ActorMethod<[], boolean>,
   'isCallerVIP' : ActorMethod<[], boolean>,
   'isOrderOwner' : ActorMethod<[string], boolean>,
   'isUserBanned' : ActorMethod<[Principal], boolean>,

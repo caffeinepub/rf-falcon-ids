@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-admin-access-management-ui-copy-so-it-no-longer-claims-the-feature-is-owner-only-and-reflects-that-any-admin-can-grant-revoke-admin-access",
-      "featureTitle": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
+      "featureId": "feature-fix-the-customer-order-flow-so-authenticated-non-banned-users-can-create-orders-without-failing-due-to-a-ban-status-pre-check-current-error-cannot-check-if-they-are-banned",
+      "featureTitle": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
       "files": [
-        "frontend/src/components/admin/AdminAccessSection.tsx"
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/pages/NewOrderPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,7 +18,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-1"
       ],
       "confidence": "high"
     }

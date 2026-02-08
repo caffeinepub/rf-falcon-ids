@@ -13,9 +13,11 @@ import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
-  stable let bannedUsers = Set.empty<Principal>();
+  let bannedUsers = Set.empty<Principal>();
 
   type Address = {
     first_name : Text;
@@ -104,7 +106,6 @@ actor {
 
   var orders = Map.empty<Text, Order>();
   var userProfiles = Map.empty<Principal, UserProfile>();
-
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
@@ -360,9 +361,8 @@ actor {
       Runtime.trap("Unauthorized: Only users can create orders");
     };
 
-    switch (bannedUsers.contains(caller)) {
-      case (true) { Runtime.trap("Your account has been banned from placing orders") };
-      case (false) {};
+    if (bannedUsers.contains(caller)) {
+      Runtime.trap("Your account has been banned from placing orders");
     };
 
     if (not checkRateLimit(caller, "createOrder")) {
@@ -500,9 +500,8 @@ actor {
       Runtime.trap("Unauthorized: Only users can create orders");
     };
 
-    switch (bannedUsers.contains(caller)) {
-      case (true) { Runtime.trap("Your account has been banned from placing orders") };
-      case (false) {};
+    if (bannedUsers.contains(caller)) {
+      Runtime.trap("Your account has been banned from placing orders");
     };
 
     if (not checkRateLimit(caller, "createOrderWithCallback")) {
@@ -810,8 +809,8 @@ actor {
   };
 
   public query ({ caller }) func listAdminEmails() : async [Text] {
-    if (not isOwner(caller)) {
-      Runtime.trap("Unauthorized: Only the owner can list admin emails");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can list admin emails");
     };
 
     let emailList = List.empty<Text>();
@@ -863,6 +862,13 @@ actor {
       Runtime.trap("Unauthorized: Only admins can check banned status");
     };
     bannedUsers.contains(user);
+  };
+
+  public query ({ caller }) func isCallerBanned() : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can check their ban status");
+    };
+    bannedUsers.contains(caller);
   };
 
   public query ({ caller }) func getAdminDashboard() : async AdminDashboardData {

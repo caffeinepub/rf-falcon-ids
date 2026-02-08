@@ -88,7 +88,7 @@ export default function AdminAccessSection() {
             Admin Access Management
           </CardTitle>
           <CardDescription className="text-admin-muted">
-            Manage administrator privileges and access control
+            Any admin can grant or revoke administrator privileges. The owner account cannot be revoked.
           </CardDescription>
         </CardHeader>
       </Card>

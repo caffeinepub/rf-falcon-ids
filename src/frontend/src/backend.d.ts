@@ -125,6 +125,7 @@ export interface backendInterface {
     grantVIPStatus(user: Principal): Promise<void>;
     isAdminEmail(email: string): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
+    isCallerBanned(): Promise<boolean>;
     isCallerVIP(): Promise<boolean>;
     isOrderOwner(orderId: string): Promise<boolean>;
     isUserBanned(user: Principal): Promise<boolean>;

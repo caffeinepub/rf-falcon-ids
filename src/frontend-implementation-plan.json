@@ -1,20 +1,26 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin delegation UI copy update",
+  "title": "Fix order ban pre-check to use caller-safe ban status and unblock non-banned ordering",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Update Admin Access Management UI text to reflect that any admin (not just the owner) can grant/revoke admin access.",
+      "id": "REQ-1",
+      "summary": "Update the New Order creation flow to use a caller-safe ban check (and graceful fallback) so non-banned authenticated users can place orders, while banned users see a clear error.",
       "acceptanceCriteria": [
-        "In frontend/src/components/admin/AdminAccessSection.tsx, the description text \"Owner-only: Grant or revoke admin access\" is changed to English wording that indicates admins can grant/revoke admin access.",
-        "No functionality regressions in the Admin Access section: listing admin emails, granting access, and revoking access still use the existing hooks (useListAdminEmails/useGrantAdminAccess/useRevokeAdminAccess)."
+        "From a signed-in (Internet Identity) account that is not banned, submitting the New Order form successfully creates an order and shows the success confirmation UI.",
+        "If the UI performs a ban check before order creation, that ban check does not fail due to missing backend method or authorization errors.",
+        "If the caller is banned, order creation is blocked and the user sees a clear English error message indicating they are banned."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/admin/AdminAccessSection.tsx",
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
           "operation": "modify",
-          "description": "Replace the owner-only description copy under \"Admin Access Management\" with English wording indicating that any admin can grant/revoke admin access (keeping all existing functionality and hook usage unchanged)."
+          "description": "Replace the current pre-check that calls isUserBanned(principal) (which can fail for non-admins) with the backend-provided caller-safe ban check (isCallerBanned()). Ensure the mutation blocks immediately with a clear English message when banned, and if the ban pre-check unexpectedly errors (network/actor issues), it logs and proceeds to attempt order creation (server-side enforcement still applies). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Harden UI error handling for order submission so ban-related failures surface as a clear, user-friendly banned message (including cases where the backend rejects order creation). Keep existing success redirect behavior to /dashboard?orderCreated=true for successful creates. Verify the component's usage instructions before implementing."
         }
       ]
     }

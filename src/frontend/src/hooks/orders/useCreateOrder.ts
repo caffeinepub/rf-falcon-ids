@@ -33,10 +33,9 @@ export function useCreateOrder() {
       if (!actor) throw new Error('Actor not available');
       if (!identity) throw new Error('You must be logged in to create an order');
 
-      // Check if user is banned before proceeding
+      // Check if caller is banned before proceeding using caller-safe method
       try {
-        const principal = identity.getPrincipal();
-        const isBanned = await actor.isUserBanned(principal);
+        const isBanned = await actor.isCallerBanned();
         if (isBanned) {
           throw new Error('Your account has been banned from placing orders. Please contact support.');
         }
@@ -45,8 +44,8 @@ export function useCreateOrder() {
         if (error.message && error.message.includes('banned')) {
           throw error;
         }
-        // Otherwise, it might be a permission error - let it proceed to the backend
-        console.warn('Could not check ban status:', error);
+        // If it's a network/actor error, log and proceed (backend will enforce)
+        console.warn('Could not check ban status, proceeding with order creation:', error);
       }
 
       // Validate and normalize all fields before submission (defense-in-depth)

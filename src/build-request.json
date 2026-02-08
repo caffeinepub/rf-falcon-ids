@@ -1,76 +1,103 @@
 {
   "kind": "build_request",
-  "title": "Allow any admin (not just owner) to grant admin access",
-  "priority": "normal",
+  "title": "Fix customer ordering ban-check failure and allow any admin to delegate admin access",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update backend admin-access authorization so any caller who is an admin can grant admin access to another user (by email), instead of restricting this action to only the owner.",
-      "target": "backend",
+      "text": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-user-1"
         ],
         "quotes": [
-          "make it so any admin can give admin access not just owner"
+          "It’s not working for customers to order it says it can’t check if there banned fix it make sure everything works for everyone"
         ]
       },
       "acceptanceCriteria": [
-        "Calling the backend method that grants admin access (used by the frontend as actor.grantAdminAccess(email)) succeeds when invoked by any authenticated admin caller.",
-        "The same method traps/returns an authorization error when invoked by a non-admin caller.",
-        "A successful grant operation writes an audit log entry identifying the acting admin principal and the target email.",
-        "No migration is required (existing admin email/principal mappings continue to work after upgrade)."
+        "From a signed-in (Internet Identity) account that is not banned, submitting the New Order form successfully creates an order and shows the success confirmation UI.",
+        "If the UI performs a ban check before order creation, that ban check does not fail due to missing backend method or authorization errors.",
+        "If the caller is banned, order creation is blocked and the user sees a clear English error message indicating they are banned."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update backend admin-access authorization so any caller who is an admin can revoke admin access (by email), instead of restricting this action to only the owner.",
+      "text": "Add/adjust backend ban-check APIs so the frontend can reliably determine ban status for the currently authenticated caller without requiring admin permissions (e.g., a query like isCallerBanned()), and ensure order creation still enforces the ban server-side.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-user-1"
         ],
         "quotes": [
-          "make it so any admin can give admin access not just owner"
+          "it says it can’t check if there banned"
         ]
       },
       "acceptanceCriteria": [
-        "Calling the backend method that revokes admin access (used by the frontend as actor.revokeAdminAccess(email)) succeeds when invoked by any authenticated admin caller.",
-        "The same method traps/returns an authorization error when invoked by a non-admin caller.",
-        "A successful revoke operation writes an audit log entry identifying the acting admin principal and the target email.",
-        "The owner email (traviscastonguay@gmail.com) remains protected from being revoked if the UI/logic currently enforces that behavior."
+        "Backend exposes a query method that lets an authenticated user check their own ban status without trapping for authorization reasons.",
+        "Order creation endpoints continue to enforce ban status on the backend (banned users cannot create orders even if the frontend skips the pre-check).",
+        "The frontend ban-check call used during order creation aligns with the backend method signature and does not produce runtime errors."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
-      "target": "frontend",
+      "text": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can grant admin access to another user by email via the existing admin-access API used by the UI.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-user-1"
         ],
         "quotes": [
-          "make it so any admin can give admin access not just owner"
+          "make sure ... any admin can give admin access not just owner"
         ]
       },
       "acceptanceCriteria": [
-        "In frontend/src/components/admin/AdminAccessSection.tsx, the description text \"Owner-only: Grant or revoke admin access\" is changed to English wording that indicates admins can grant/revoke admin access.",
-        "No functionality regressions in the Admin Access section: listing admin emails, granting access, and revoking access still use the existing hooks (useListAdminEmails/useGrantAdminAccess/useRevokeAdminAccess)."
+        "A caller who is an admin can successfully grant admin access using the backend method invoked by the frontend (grantAdminAccess(email)).",
+        "A non-admin caller cannot grant admin access and receives an English unauthorized error.",
+        "Granting admin access is recorded in the audit log with the granting admin principal and the target email/principal details."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can revoke admin access by email via the existing admin-access API used by the UI, while preventing removal of the owner’s admin access.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-user-1"
+        ],
+        "quotes": [
+          "any admin can give admin access not just owner"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A caller who is an admin can successfully revoke admin access using the backend method invoked by the frontend (revokeAdminAccess(email)).",
+        "The backend prevents revoking admin access for the configured owner email (OWNER_EMAIL) even if attempted directly, returning an English error.",
+        "A non-admin caller cannot revoke admin access and receives an English unauthorized error.",
+        "Revoking admin access is recorded in the audit log with the revoking admin principal and the target email/principal details."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
-    "Do not edit any files under frontend/src/components/ui or any paths listed in frontend.immutablePaths.",
-    "Use English for any user-facing text."
+    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if state schema changes require it.",
+    "Do not edit any files under frontend/src/components/ui or other frontend immutablePaths; compose existing UI components instead."
   ],
   "nonGoals": [
-    "Do not add new authentication providers (Internet Identity remains the only auth option).",
-    "Do not redesign the admin panel beyond the minimal copy/behavior changes required for admin delegation.",
-    "Do not change how the initial owner/admin bootstrap is configured during deployment (caffeineAdminToken / existing bootstrap flow)."
+    "Implementing third-party authentication providers (only Internet Identity is supported).",
+    "Adding external databases or off-chain storage.",
+    "Adding real-time/WebSocket order updates."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

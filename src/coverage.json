@@ -1,49 +1,65 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T20:22:43.795Z",
+  "generatedAt": "2026-02-08T23:34:49.987Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 4,
     "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update backend admin-access authorization so any caller who is an admin can grant admin access to another user (by email), instead of restricting this action to only the owner.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/pages/NewOrderPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/pages/NewOrderPage.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Update backend admin-access authorization so any caller who is an admin can revoke admin access (by email), instead of restricting this action to only the owner.",
+        "summary": "Add/adjust backend ban-check APIs so the frontend can reliably determine ban status for the currently authenticated caller without requiring admin permissions (e.g., a query like isCallerBanned()), and ensure order creation still enforces the ban server-side.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/admin/AdminAccessSection.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/admin/AdminAccessSection.tsx"
-        ]
+        "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can grant admin access to another user by email via the existing admin-access API used by the UI.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can revoke admin access by email via the existing admin-access API used by the UI, while preventing removal of the owner’s admin access.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
     "frontend/src/components/admin/AdminAccessSection.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/orders/useCreateOrder.ts",
+    "frontend/src/pages/NewOrderPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

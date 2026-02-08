@@ -1,18 +1,20 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Customer ordering and admin permissions system (including ban checks and admin role delegation).",
   "architectural_notes": [
-    "Implement role-based access control: admins can manage/administer other users' roles (including granting admin), not restricted to owner-only."
+    "Review/define role-based access control rules: owner vs admin permissions (including who can assign admin role)."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Customers cannot place orders due to ban-status check failing (error: can't check if they're banned)."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-admin-access-management-ui-copy-so-it-no-longer-claims-the-feature-is-owner-only-and-reflects-that-any-admin-can-grant-revoke-admin-access",
-      "title": "Update the Admin Access Management UI copy so it no longer claims the feature is owner-only, and reflects that any admin can grant/revoke admin access.",
+      "id": "feature-fix-the-customer-order-flow-so-authenticated-non-banned-users-can-create-orders-without-failing-due-to-a-ban-status-pre-check-current-error-cannot-check-if-they-are-banned",
+      "title": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
       "reqIds": [
-        "REQ-3"
+        "REQ-1"
       ],
       "version": 1
     }
@@ -20,28 +22,36 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Update permissions so any admin (not just the owner) can grant admin access to other users",
+      "summary": "Allow any admin (not just owner) to grant admin access to other users.",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-2",
-      "summary": "Update backend admin-access authorization so any caller who is an admin can grant admin access to another user (by email), instead of restricting this action to only the owner.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
       "id": "AR-3",
-      "summary": "Update backend admin-access authorization so any caller who is an admin can revoke admin access (by email), instead of restricting this action to only the owner.",
+      "summary": "Add/adjust backend ban-check APIs so the frontend can reliably determine ban status for the currently authenticated caller without requiring admin permissions (e.g., a query like isCallerBanned()), and ensure order creation still enforces the ban server-side.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can grant admin access to another user by email via the existing admin-access API used by the UI.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can revoke admin access by email via the existing admin-access API used by the UI, while preventing removal of the owner’s admin access.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Allow any admin (not just owner) to grant admin access",
+  "projectName": "Fix customer ordering ban-check failure and allow any admin to delegate admin access",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

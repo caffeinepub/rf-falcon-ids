@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Allow any authenticated admin (not just the owner) to grant and revoke admin access, and update the admin UI copy to match.
+**Goal:** Fix order creation failures caused by ban-status pre-check issues, and allow any admin (not just the owner) to grant/revoke admin access.
 
 **Planned changes:**
-- Update backend authorization for granting admin access so any authenticated admin can call the existing grant method (by email), while non-admin callers receive an authorization error.
-- Update backend authorization for revoking admin access so any authenticated admin can call the existing revoke method (by email), while non-admin callers receive an authorization error; keep owner protection behavior as currently enforced.
-- Add audit log entries for successful grant/revoke operations that include the acting admin principal and the target email.
-- Update the Admin Access Management UI description text to indicate admins (not only the owner) can grant/revoke admin access, without changing existing hooks/flows.
+- Update the customer New Order flow so signed-in, non-banned users can create orders successfully and see a confirmation.
+- Add/adjust backend ban-status query API so the authenticated caller can reliably check their own ban status without admin permissions, while still enforcing bans server-side during order creation.
+- Change backend authorization so any authenticated admin can grant admin access by email via the existing API used by the UI, and record the action in the audit log.
+- Change backend authorization so any authenticated admin can revoke admin access by email via the existing API used by the UI, prevent revoking the configured owner’s admin access, and record the action in the audit log.
 
-**User-visible outcome:** Any signed-in admin can grant or revoke admin access for other users by email, and the Admin Access section text reflects this change.
+**User-visible outcome:** Non-banned signed-in users can submit the New Order form without ban-check errors; banned users see a clear message that they are banned; any admin can grant or revoke admin access (except the owner) with actions recorded for auditing.
