@@ -25,9 +25,15 @@ export function useGrantAdminAccess() {
       if (!actor) throw new Error('Actor not available');
       return actor.grantAdminAccess(email);
     },
-    onSuccess: () => {
+    onSuccess: (_, email) => {
       queryClient.invalidateQueries({ queryKey: ['adminEmails'] });
       queryClient.invalidateQueries({ queryKey: ['auditLog'] });
+      toast.success(`Admin access granted to ${email}`);
+    },
+    onError: (error: any) => {
+      console.error('Grant admin access error:', error);
+      const message = error.message || 'Failed to grant admin access';
+      toast.error(message);
     },
   });
 }
@@ -41,9 +47,15 @@ export function useRevokeAdminAccess() {
       if (!actor) throw new Error('Actor not available');
       return actor.revokeAdminAccess(email);
     },
-    onSuccess: () => {
+    onSuccess: (_, email) => {
       queryClient.invalidateQueries({ queryKey: ['adminEmails'] });
       queryClient.invalidateQueries({ queryKey: ['auditLog'] });
+      toast.success(`Admin access revoked for ${email}`);
+    },
+    onError: (error: any) => {
+      console.error('Revoke admin access error:', error);
+      const message = error.message || 'Failed to revoke admin access';
+      toast.error(message);
     },
   });
 }

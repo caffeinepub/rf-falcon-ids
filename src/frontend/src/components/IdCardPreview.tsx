@@ -121,13 +121,6 @@ export default function IdCardPreview({
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="mt-auto pt-2 sm:pt-3 border-t border-chrome-300/10">
-          <div className="text-chrome-300 text-[7px] sm:text-[8px] tracking-widest text-center font-semibold">
-            ORDER NOW
-          </div>
-        </div>
       </div>
     </div>
   );

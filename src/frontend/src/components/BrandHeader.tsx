@@ -18,6 +18,9 @@ export default function BrandHeader() {
 
   const navItems = [
     { label: 'Home', path: '/', show: true },
+    { label: 'About', path: '/about', show: true },
+    { label: 'Features', path: '/features', show: true },
+    { label: 'Contact', path: '/contact', show: true },
     { label: 'Dashboard', path: '/dashboard', show: isAuthenticated },
     { label: 'Admin', path: '/admin', show: isAdmin },
   ];

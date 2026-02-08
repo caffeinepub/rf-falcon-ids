@@ -62,17 +62,17 @@ export default function BulkOrderActionsBar({ selectedOrderIds, onClearSelection
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="bg-cyber-card border border-cyber-primary/50 rounded-lg shadow-cyber p-4 flex items-center gap-4">
-        <div className="text-cyber-primary font-mono text-sm">
+      <div className="bg-admin-card border border-admin-border rounded-lg shadow-lg p-4 flex items-center gap-4">
+        <div className="text-admin-foreground text-sm">
           <span className="font-bold">{selectedOrderIds.length}</span> order{selectedOrderIds.length !== 1 ? 's' : ''} selected
         </div>
-        <div className="h-6 w-px bg-cyber-primary/30" />
+        <div className="h-6 w-px bg-admin-border" />
         <div className="flex gap-2">
           <Button
             size="sm"
             onClick={handleBulkApprove}
             disabled={isApproving || isShipping || isDeleting}
-            className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-400 font-mono text-xs"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {isApproving ? (
               <Loader2 className="w-3 h-3 mr-1 animate-spin" />
@@ -85,7 +85,7 @@ export default function BulkOrderActionsBar({ selectedOrderIds, onClearSelection
             size="sm"
             onClick={handleBulkShip}
             disabled={isApproving || isShipping || isDeleting}
-            className="bg-green-600/20 hover:bg-green-600/30 border border-green-500/50 text-green-400 font-mono text-xs"
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
             {isShipping ? (
               <Loader2 className="w-3 h-3 mr-1 animate-spin" />
@@ -99,27 +99,27 @@ export default function BulkOrderActionsBar({ selectedOrderIds, onClearSelection
               <Button
                 size="sm"
                 disabled={isApproving || isShipping || isDeleting}
-                className="bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-400 font-mono text-xs"
+                variant="destructive"
               >
                 <Trash2 className="w-3 h-3 mr-1" />
                 Delete All
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="bg-cyber-card border-cyber-primary/30">
+            <AlertDialogContent className="bg-admin-card border-admin-border">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-cyber-primary font-mono">
+                <AlertDialogTitle className="text-admin-foreground">
                   Delete {selectedOrderIds.length} Order{selectedOrderIds.length !== 1 ? 's' : ''}?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="text-cyber-muted font-mono">
+                <AlertDialogDescription className="text-admin-muted">
                   This action cannot be undone. All selected orders will be permanently deleted.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="border-cyber-primary/30 font-mono">Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="border-admin-border text-admin-foreground hover:bg-admin-card">Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleBulkDelete}
                   disabled={isDeleting}
-                  className="bg-destructive hover:bg-destructive/90 font-mono"
+                  className="bg-destructive hover:bg-destructive/90"
                 >
                   {isDeleting ? 'Deleting...' : 'Delete All'}
                 </AlertDialogAction>
@@ -127,12 +127,12 @@ export default function BulkOrderActionsBar({ selectedOrderIds, onClearSelection
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        <div className="h-6 w-px bg-cyber-primary/30" />
+        <div className="h-6 w-px bg-admin-border" />
         <Button
           size="sm"
           variant="ghost"
           onClick={onClearSelection}
-          className="text-cyber-muted hover:text-cyber-primary font-mono text-xs"
+          className="text-admin-muted hover:text-admin-foreground"
         >
           <X className="w-3 h-3 mr-1" />
           Clear

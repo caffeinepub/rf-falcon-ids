@@ -1,18 +1,17 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Home, RefreshCw } from 'lucide-react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 
-interface ErrorPageProps {
-  error?: Error;
-  reset?: () => void;
-}
-
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
+export default function ErrorPage() {
   const navigate = useNavigate();
   const { identity } = useInternetIdentity();
+  const routerState = useRouterState();
   const isAuthenticated = !!identity;
+
+  const error = routerState.matches.find((match) => match.error)?.error;
+  const isDev = import.meta.env.DEV;
 
   const handleGoHome = () => {
     if (isAuthenticated) {
@@ -23,63 +22,56 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   };
 
   const handleRetry = () => {
-    if (reset) {
-      reset();
-    } else {
-      window.location.reload();
-    }
+    window.location.reload();
   };
 
-  // Don't show sensitive error details in production
-  const isDevelopment = import.meta.env.DEV;
-  const errorMessage = error?.message || 'An unexpected error occurred';
+  const errorMessage = error instanceof Error ? error.message : String(error || 'Unknown error');
+  const errorStack = error instanceof Error ? error.stack : undefined;
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4">
-      <Card className="max-w-md w-full bg-card/80 border-chrome-300/20">
+    <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4">
+      <Card className="w-full max-w-2xl bg-card/90 backdrop-blur border-border shadow-glow">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center">
-            <AlertCircle className="w-10 h-10 text-red-400" />
+          <div className="w-20 h-20 mx-auto bg-destructive/10 rounded-full flex items-center justify-center border-2 border-destructive/30">
+            <AlertTriangle className="w-10 h-10 text-destructive" aria-hidden="true" />
           </div>
-          <div>
-            <CardTitle className="text-3xl font-bold tracking-wide mb-2">
-              Something Went Wrong
-            </CardTitle>
-            <CardDescription className="text-base">
-              We encountered an unexpected error while processing your request.
-            </CardDescription>
-          </div>
+          <CardTitle className="text-3xl font-display text-foreground">Something Went Wrong</CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
+            We encountered an unexpected error. Please try again or return home.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isDevelopment && error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
-              <p className="text-xs font-mono text-red-300 break-words">
-                {errorMessage}
-              </p>
-            </div>
-          )}
-          <p className="text-sm text-chrome-300 text-center">
-            Please try again or return to the home page. If the problem persists, contact support.
-          </p>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={handleRetry}
               variant="outline"
-              className="flex-1"
+              className="flex-1 h-12 border-border hover:bg-accent hover:text-accent-foreground font-semibold"
               size="lg"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-5 h-5 mr-2" aria-hidden="true" />
               Try Again
             </Button>
             <Button
               onClick={handleGoHome}
-              className="flex-1"
+              className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-glow"
               size="lg"
             >
-              <Home className="w-4 h-4 mr-2" />
-              Go Home
+              <Home className="w-5 h-5 mr-2" aria-hidden="true" />
+              {isAuthenticated ? 'Go to Dashboard' : 'Go to Home'}
             </Button>
           </div>
+
+          {isDev && error ? (
+            <details className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
+              <summary className="cursor-pointer font-semibold text-sm text-foreground mb-2">
+                Error Details (Development Only)
+              </summary>
+              <pre className="text-xs text-muted-foreground overflow-auto max-h-48 whitespace-pre-wrap break-words">
+                {errorMessage}
+                {errorStack && `\n\n${errorStack}`}
+              </pre>
+            </details>
+          ) : null}
         </CardContent>
       </Card>
     </div>

@@ -1,136 +1,129 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useListAdminEmails, useGrantAdminAccess, useRevokeAdminAccess } from '../../hooks/admin/useAdminAccess';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { UserPlus, Loader2, Shield, Mail } from 'lucide-react';
-import { toast } from 'sonner';
-import { useListAdminEmails, useGrantAdminAccess, useRevokeAdminAccess } from '../../hooks/admin/useAdminAccess';
-import { useCallerUserProfile } from '../../hooks/auth/useCallerUserProfile';
-
-const OWNER_EMAIL = 'traviscastonguay@gmail.com';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { UserPlus, Users, Trash2, Loader2, Shield, AlertTriangle } from 'lucide-react';
 
 export default function AdminAccessSection() {
-  const { data: adminEmails, isLoading: emailsLoading } = useListAdminEmails();
-  const { data: userProfile } = useCallerUserProfile();
+  const { data: adminEmails, isLoading, error, refetch } = useListAdminEmails();
   const grantAccess = useGrantAdminAccess();
   const revokeAccess = useRevokeAdminAccess();
 
-  const [emailInput, setEmailInput] = useState('');
-
-  const isOwner = userProfile?.email === OWNER_EMAIL;
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [revokingEmail, setRevokingEmail] = useState<string | null>(null);
 
   const handleGrantAccess = async () => {
-    const email = emailInput.trim();
+    const email = newAdminEmail.trim();
     if (!email) {
-      toast.error('Please enter an email address');
-      return;
-    }
-
-    if (!isOwner) {
-      toast.error('Unauthorized: Only the owner can grant admin access');
       return;
     }
 
     try {
       await grantAccess.mutateAsync(email);
-      toast.success(`Admin access granted to ${email}`);
-      setEmailInput('');
-    } catch (error: any) {
-      console.error('Grant access error:', error);
-      if (error.message?.includes('Unauthorized')) {
-        toast.error('Unauthorized: Only the owner can grant admin access');
-      } else if (error.message?.includes('not found') || error.message?.includes('not yet associated')) {
-        toast.error('Email not found: User must sign up and set their email first');
-      } else {
-        toast.error(error.message || 'Failed to grant admin access');
-      }
+      setNewAdminEmail('');
+    } catch (error) {
+      // Error is already handled by the mutation's onError
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !grantAccess.isPending && newAdminEmail.trim()) {
+      e.preventDefault();
+      handleGrantAccess();
     }
   };
 
   const handleRevokeAccess = async (email: string) => {
-    if (!isOwner) {
-      toast.error('Unauthorized: Only the owner can revoke admin access');
-      return;
-    }
-
-    if (email === OWNER_EMAIL) {
-      toast.error('Cannot revoke owner admin access');
-      return;
-    }
-
+    setRevokingEmail(email);
     try {
       await revokeAccess.mutateAsync(email);
-      toast.success(`Admin access revoked for ${email}`);
-    } catch (error: any) {
-      console.error('Revoke access error:', error);
-      toast.error(error.message || 'Failed to revoke admin access');
+    } catch (error) {
+      // Error is already handled by the mutation's onError
+    } finally {
+      setRevokingEmail(null);
     }
   };
 
-  if (emailsLoading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-cyber-primary" />
+      <div className="space-y-4">
+        <Skeleton className="h-16 w-full bg-admin-card" />
+        <Skeleton className="h-32 w-full bg-admin-card" />
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-admin-card border-admin-border shadow-lg">
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <AlertTriangle className="w-12 h-12 mx-auto text-destructive mb-4" />
+            <p className="text-destructive">Error loading admin access list</p>
+            <p className="text-admin-muted text-sm mt-2">{(error as Error).message}</p>
+            <Button
+              onClick={() => refetch()}
+              className="mt-4 bg-admin-primary hover:bg-admin-primary/90"
+            >
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 bg-cyber-card rounded-lg flex items-center justify-center border border-cyber-primary/30 shadow-cyber">
-          <UserPlus className="w-7 h-7 text-cyber-primary" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold tracking-wider text-cyber-primary font-mono uppercase">
-            Admin Access Management
-          </h2>
-          <p className="text-cyber-muted mt-1 font-mono text-sm">
-            [OWNER-ONLY CONTROL PANEL]
-          </p>
-        </div>
-      </div>
-
-      {/* Grant Access Form */}
-      <Card className="bg-cyber-card border-cyber-primary/30 shadow-cyber">
+      <Card className="bg-admin-card border-admin-border shadow-lg">
         <CardHeader>
-          <CardTitle className="text-cyber-primary font-mono uppercase tracking-wider flex items-center gap-2">
-            <Shield className="w-5 h-5" />
+          <CardTitle className="text-admin-foreground flex items-center gap-2">
+            <Shield className="w-5 h-5 text-admin-primary" />
+            Admin Access Management
+          </CardTitle>
+          <CardDescription className="text-admin-muted">
+            Owner-only: Grant or revoke admin access
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
+      {/* Grant Access */}
+      <Card className="bg-admin-card border-admin-border shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-admin-foreground flex items-center gap-2">
+            <UserPlus className="w-5 h-5 text-admin-primary" />
             Grant Admin Access
           </CardTitle>
+          <CardDescription className="text-admin-muted">
+            Add a new administrator by email address
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!isOwner && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 text-sm font-mono">
-                ⚠ Only the owner ({OWNER_EMAIL}) can grant admin access
-              </p>
-            </div>
-          )}
           <div className="space-y-2">
-            <Label className="text-cyber-muted font-mono text-xs uppercase tracking-wider flex items-center gap-2">
-              <Mail className="w-3 h-3" />
+            <Label htmlFor="admin-email" className="text-admin-muted text-xs uppercase tracking-wider">
               Email Address
             </Label>
             <Input
+              id="admin-email"
               type="email"
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              placeholder="user@example.com"
-              className="bg-cyber-bg border-cyber-primary/30 text-cyber-primary font-mono"
-              disabled={!isOwner}
+              placeholder="admin@example.com"
+              value={newAdminEmail}
+              onChange={(e) => setNewAdminEmail(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={grantAccess.isPending}
+              className="bg-admin-bg border-admin-border text-admin-foreground focus:ring-admin-primary"
             />
-            <p className="text-cyber-muted text-xs font-mono">
-              Note: User must already be registered with this email in the system
-            </p>
           </div>
           <Button
             onClick={handleGrantAccess}
-            disabled={!isOwner || grantAccess.isPending || !emailInput.trim()}
-            className="w-full bg-cyber-primary/20 hover:bg-cyber-primary/30 border border-cyber-primary/50 text-cyber-primary font-mono"
+            disabled={grantAccess.isPending || !newAdminEmail.trim()}
+            className="w-full bg-admin-primary hover:bg-admin-primary/90"
           >
             {grantAccess.isPending ? (
               <>
@@ -147,48 +140,81 @@ export default function AdminAccessSection() {
         </CardContent>
       </Card>
 
-      {/* Current Admins List */}
-      <Card className="bg-cyber-card border-cyber-primary/30 shadow-cyber">
+      {/* Current Admins */}
+      <Card className="bg-admin-card border-admin-border shadow-lg">
         <CardHeader>
-          <CardTitle className="text-cyber-primary font-mono uppercase tracking-wider">
-            Current Admin Emails
+          <CardTitle className="text-admin-foreground flex items-center gap-2">
+            <Users className="w-5 h-5 text-admin-primary" />
+            Current Administrators ({adminEmails?.length || 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {adminEmails && adminEmails.length > 0 ? (
-            <div className="space-y-2">
-              {adminEmails.map((email) => (
-                <div
-                  key={email}
-                  className="flex items-center justify-between p-3 bg-cyber-bg rounded-lg border border-cyber-primary/20"
-                >
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-cyber-primary" />
-                    <span className="text-cyber-primary font-mono text-sm">{email}</span>
-                    {email === OWNER_EMAIL && (
-                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 font-mono text-xs">
-                        OWNER
-                      </Badge>
-                    )}
-                  </div>
-                  {email !== OWNER_EMAIL && isOwner && (
-                    <Button
-                      onClick={() => handleRevokeAccess(email)}
-                      disabled={revokeAccess.isPending}
-                      variant="destructive"
-                      size="sm"
-                      className="font-mono text-xs"
-                    >
-                      Revoke
-                    </Button>
-                  )}
-                </div>
-              ))}
+          {!adminEmails || adminEmails.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 mx-auto text-admin-muted mb-4" />
+              <p className="text-admin-muted">No administrators found</p>
             </div>
           ) : (
-            <p className="text-cyber-muted text-sm font-mono text-center py-4">
-              No admin emails found
-            </p>
+            <div className="space-y-2">
+              {adminEmails.map((email) => {
+                const isOwner = email === 'traviscastonguay@gmail.com';
+                const isRevoking = revokingEmail === email;
+
+                return (
+                  <div
+                    key={email}
+                    className="flex items-center justify-between p-4 bg-admin-bg border border-admin-border rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-admin-primary" />
+                      <div>
+                        <p className="text-admin-foreground font-medium">{email}</p>
+                        {isOwner && (
+                          <Badge className="mt-1 bg-admin-primary/20 text-admin-primary border-admin-primary/30">
+                            Owner
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    {!isOwner && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={isRevoking}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            {isRevoking ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Revoke Admin Access</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to revoke admin access for {email}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleRevokeAccess(email)}
+                              className="bg-destructive hover:bg-destructive/90"
+                            >
+                              Revoke Access
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>

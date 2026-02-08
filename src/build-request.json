@@ -1,88 +1,94 @@
 {
   "kind": "build_request",
-  "title": "Modernize public site theme to match admin panel and ensure readable typography across all colors",
-  "priority": "normal",
+  "title": "Fix admin access control, show accounts only after first order, and add admin account actions",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the global design tokens and typography so the public site has a modern, professional look consistent with the admin panel, while keeping all styling driven by semantic Tailwind token colors (background/foreground/card/muted/accent/etc.) rather than hard-coded one-off colors.",
-      "target": "frontend",
+      "text": "Change the admin “User Accounts” list so that an account only appears after the user has placed their first order (i.e., hide user profiles that have zero orders).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-6",
+          "recent-messages-10"
         ],
         "quotes": [
-          "make it look more modern and make sure themes and fonts and everything can be seen no mater the color make the website look more like a professional modern theme same as the admin panel make it more modern like professional theme."
+          "make there account only show up after they place there firsdt order"
         ]
       },
       "acceptanceCriteria": [
-        "Global styles are updated in frontend/src/index.css (and related Tailwind token usage) so primary UI surfaces use semantic tokens (bg-background, text-foreground, bg-card, text-muted-foreground, border-border, etc.).",
-        "Typography is standardized (body, headings, labels) with consistent font-family usage and a modern, professional scale across the public pages.",
-        "No public-facing components rely on hard-coded colors that reduce legibility (e.g., fixed chrome text on similarly bright backgrounds)."
+        "If a principal has a saved UserProfile but has never created an order, that principal does not appear in the Admin Accounts section.",
+        "After a user successfully creates their first order, their account appears in the Admin Accounts section without requiring any manual refresh beyond normal React Query invalidation/refetch behavior.",
+        "No other admin dashboard data (orders, audit log, security stats) is removed or degraded."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
-      "target": "frontend",
+      "text": "Fix the “Give admin access / Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-6"
         ],
         "quotes": [
-          "make sure themes and fonts and everything can be seen no mater the color"
+          "fixx the give admin access it does not work for me",
+          "i cant type and im logged into traviscastonguay@gmail.com"
         ]
       },
       "acceptanceCriteria": [
-        "Primary text, muted text, borders, and interactive states remain clearly legible in light mode and dark mode.",
-        "Interactive states (hover/focus/active/disabled) remain readable and clearly distinguishable.",
-        "Focus indicators remain visible on all backgrounds (keyboard navigation)."
+        "The email input in the Admin Access section accepts typing normally (no disabled/blocked input behavior) when the logged-in user has permission to manage admin access.",
+        "Submitting a valid email calls the backend and either (a) grants access successfully or (b) shows a clear error explaining why it cannot be granted (e.g., not owner / email not associated with any principal yet), without silently failing.",
+        "The admin email list refreshes after granting/revoking access."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Modernize the public-facing layout styling to match the admin panel’s professional feel (header, footer, and landing hero/sections), while keeping existing navigation and page content unchanged.",
-      "target": "frontend",
+      "text": "Add admin account actions to support banning/unbanning a user account, and enforce bans by blocking banned users from creating new orders.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-6"
         ],
         "quotes": [
-          "make the website look more like a professional modern theme same as the admin panel"
+          "then i can make edits to there order or account like ban give vip to threre account etc"
         ]
       },
       "acceptanceCriteria": [
-        "Brand header (frontend/src/components/BrandHeader.tsx), shell/footer (frontend/src/components/AppShell.tsx), and landing page (frontend/src/pages/LandingPage.tsx) have a cohesive modern/professional visual treatment (spacing, borders, surfaces, typography).",
-        "No routes, copy, or core behaviors change—this is a styling/theme modernization only.",
-        "The landing page remains responsive and visually consistent from mobile to desktop."
+        "Admin UI provides a clear action to Ban/Unban a selected account in the Admin Accounts section.",
+        "Backend exposes admin-only methods to ban and unban a principal, and persists the ban state in the user profile/account record.",
+        "A banned user attempting to create an order receives a clear error and no order is created.",
+        "VIP toggling continues to work as it does today."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Align admin panel theme readability by validating each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
+      "text": "Ensure admins can make edits to orders and accounts from the admin panel, including: order status updates, tracking number updates, order deletion (existing), plus account actions (VIP toggle existing + ban/unban newly added).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-6",
+          "recent-messages-10"
         ],
         "quotes": [
-          "same as the admin panel"
+          "then i can make edits to there order or account"
         ]
       },
       "acceptanceCriteria": [
-        "Switching between all existing admin themes does not produce low-contrast text (e.g., labels, inputs, table text) or invisible borders.",
-        "Admin UI elements used throughout the admin panel keep consistent semantic token usage for backgrounds/foregrounds/borders so theme swaps remain predictable."
+        "Admin panel continues to support existing order edits (status, tracking number, delete) without regression.",
+        "Admin Accounts section supports both VIP toggle (existing) and Ban/Unban (new), with clear loading/disabled states while a mutation is pending.",
+        "Errors from backend mutations are shown in English and do not break the admin page rendering."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/components/ui (Shadcn UI sources must be composed, not edited).",
-    "Do not edit any paths listed as immutable in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx)."
+    "Do not edit files under frontend/src/components/ui (compose existing UI components instead).",
+    "Do not edit any paths listed in frontend.immutablePaths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo)."
   ],
   "nonGoals": [
-    "Adding new backend features or changing any Motoko canister logic.",
-    "Changing app routes, authentication behavior, or admin permissions.",
-    "Adding new theme types beyond the existing admin themes unless explicitly requested."
+    "Implementing third-party authentication providers (only Internet Identity is supported).",
+    "Adding external databases or non-IC storage systems.",
+    "Adding real-time features (WebSockets/push notifications)."
   ],
   "imageRequirements": {
     "required": [],

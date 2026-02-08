@@ -37,16 +37,16 @@ export default function AuthStatusButton() {
       variant={isAuthenticated ? 'outline' : 'default'}
       size="sm"
       disabled={disabled}
-      className={isAuthenticated ? 'border-chrome-300/30 hover:bg-chrome-900/50' : 'bg-chrome-300 hover:bg-chrome-200 text-black font-semibold'}
+      className={isAuthenticated ? 'border-border hover:bg-accent hover:text-accent-foreground' : 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow'}
     >
       {isAuthenticated ? (
         <>
-          <LogOut className="w-4 h-4 mr-2" />
+          <LogOut className="w-4 h-4 mr-2" aria-hidden="true" />
           Sign Out
         </>
       ) : (
         <>
-          <LogIn className="w-4 h-4 mr-2" />
+          <LogIn className="w-4 h-4 mr-2" aria-hidden="true" />
           {isLoggingIn ? 'Connecting...' : 'Sign In'}
         </>
       )}

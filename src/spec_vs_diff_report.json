@@ -1,74 +1,67 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T18:15:47.261Z",
-  "summary": "Diff implements a new token-driven typography/theme foundation (index.css + tailwind config), modernizes public shell/header/landing styling, and adds admin-theme semantic tokens + admin theme switcher styling. However, the diff summary also indicates changes outside the styling-only scope (copy/content changes, watermark behavior, and possibly routing/error page behavior), and it’s not fully evidenced that contrast/readability was audited across all key components for both public and admin themes.",
+  "generatedAt": "2026-02-08T20:15:26.823Z",
+  "summary": "Diff adds ban-state migration scaffolding and new admin/account hooks/UI, plus a client-side pre-check to block banned users from creating orders. However, key backend-side enforcement and admin-dashboard filtering changes are not evidenced in the provided backend diff excerpt, and the diff summary also indicates several unrelated frontend UI/page redesign changes not requested in the BuildRequest.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
-      "reason": "While some focus/contrast improvements are visible in AppShell/BrandHeader and global tokens were updated, the diff summary does not provide clear evidence of an explicit audit/adjustment across the full set of key components (buttons, inputs, cards, badges, tabs/menus) and their interactive states in both light and dark mode.",
+      "id": "REQ-1",
+      "requirement": "Hide user profiles with zero orders from the Admin Accounts list (only show accounts after first order).",
+      "reason": "Frontend hook comments claim the backend filters accounts, but the provided backend/main.mo diff excerpt does not show any logic in getAdminDashboard (or equivalent) that filters userProfiles based on order count/ownership. Without visible implementation, this requirement cannot be confirmed.",
       "evidence": [
-        "frontend/src/components/AppShell.tsx",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
+        "frontend/src/hooks/admin/useAdminAccounts.ts",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Backend exposes admin-only methods to ban/unban a principal, persists ban state, and blocks banned users from creating new orders with a clear error.",
+      "reason": "Frontend calls actor.banUser/unbanUser/isUserBanned, and a stable bannedUsers set/migration module is added, but the backend diff excerpt does not show the admin-only ban/unban methods, the isUserBanned query method, or any create-order guard that prevents order creation for banned principals. Therefore backend enforcement cannot be verified from the diff summary.",
+      "evidence": [
+        "frontend/src/hooks/admin/useAdminAccounts.ts",
+        "frontend/src/components/admin/AdminAccountsSection.tsx",
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "backend/migration.mo",
+        "backend/main.mo (truncated)"
       ]
     },
     {
       "id": "REQ-4",
-      "requirement": "Validate each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
-      "reason": "Admin theme variables and the theme switcher styles were updated, but the diff summary does not show evidence that admin panel components broadly (e.g., labels, inputs, table text/borders, tabs) were audited/adjusted to ensure readable contrast across all listed themes beyond the switcher and root variables.",
+      "requirement": "Admin panel continues to support existing order edits (status updates, tracking number updates, deletion) without regression, and surfaces English errors without breaking rendering.",
+      "reason": "The diff summary does not include the admin orders UI/hooks or backend order-mutation methods; only accounts/admin-access sections and create-order hook changes are shown. As a result, preserving and validating the existing order-edit capabilities and error handling cannot be confirmed from the provided diff evidence.",
       "evidence": [
-        "frontend/src/components/admin/AdminThemeSwitcher.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
+        "backend/main.mo (truncated)",
+        "frontend-file-summaries.txt (mentions AdminPanelPage but content not shown)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Changing public-facing copy/content (e.g., ID card preview footer text changed to \"ORDER NOW\", and removing disclaimer text).",
-      "reason": "BuildRequest explicitly states no navigation/page content changes (styling/theme modernization only). These are content/behavior changes not requested.",
+      "description": "Broad, unrelated frontend redesign/content changes across multiple non-admin pages/components (e.g., Landing page marketing copy removal, navigation updates, watermark removal, accessibility enhancements, theming/layout adjustments).",
+      "reason": "These changes are described in the diff summary but are not requested by REQ-1..REQ-4, which are focused on admin access control, account visibility after first order, banning/unbanning, and ensuring admin edits work without regression.",
       "evidence": [
-        "frontend-file-summaries.txt (mentions \"IdCardPreview\" footer text change and disclaimer removals)"
+        "frontend-file-summaries.txt"
       ]
     },
     {
-      "description": "Making IdWatermark a no-op that renders nothing.",
-      "reason": "Not requested by any REQ; also changes functional UI behavior rather than styling tokens/typography/layout modernization.",
+      "description": "Client-side ban-status check in order creation flow (pre-flight call to isUserBanned) before submitting an order.",
+      "reason": "REQ-3 requires backend enforcement (block banned users from creating orders). Adding a frontend pre-check is extra behavior not explicitly requested (though it may be acceptable as defense-in-depth).",
       "evidence": [
-        "frontend-file-summaries.txt (mentions \"IdWatermark\" no-op)"
-      ]
-    },
-    {
-      "description": "Adding/modifying router-level behavior such as integrated 404/notFound and error handling pages in App.tsx.",
-      "reason": "Non-goals include changing app routes/behavior; adding router-level error/404 handling is not part of the requested theme modernization and may affect navigation/behavior.",
-      "evidence": [
-        "frontend-file-summaries.txt (mentions \"frontend/src/App.tsx\" TanStack Router 404/error handling)"
-      ]
-    },
-    {
-      "description": "Adding/expanding admin panel functionality such as advanced search/filter/sort and bulk actions.",
-      "reason": "BuildRequest is about theming/readability; new admin panel features are outside scope (and could be considered new product functionality).",
-      "evidence": [
-        "frontend/src/pages/AdminPanelPage.tsx (shows searchQuery/statusFilter/sortBy logic)",
-        "frontend/src/pages/AdminPanelPage.tsx (imports BulkOrderActionsBar)"
+        "frontend/src/hooks/orders/useCreateOrder.ts"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.64,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/AdminThemeLayout.tsx",
-    "frontend/src/components/AppShell.tsx",
-    "frontend/src/components/AuthGate.tsx",
-    "frontend/src/components/BrandHeader.tsx",
-    "frontend/src/components/admin/AdminThemeSwitcher.tsx",
-    "frontend/src/index.css",
-    "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/LandingPage.tsx",
-    "frontend/tailwind.config.js",
+    "frontend/src/components/admin/AdminAccessSection.tsx",
+    "frontend/src/components/admin/AdminAccountsSection.tsx",
+    "frontend/src/hooks/admin/useAdminAccess.ts",
+    "frontend/src/hooks/admin/useAdminAccounts.ts",
+    "frontend/src/hooks/orders/useCreateOrder.ts",
+    "frontend/src/pages/NewOrderPage.tsx",
     "project_state.json"
   ]
 }

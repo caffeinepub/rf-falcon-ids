@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-global-design-tokens-and-typography-so-the-public-site-has-a-modern-professional-look-consistent-with-the-admin-panel-while-keeping-all-styling-driven-by-semantic-tailwind-token-colors-background-foreground-card-muted-accent-etc-rather-than-hard-coded-one-off-colors",
-      "featureTitle": "Update the global design tokens and typography so the public site has a modern, professional look consistent with the admin panel, while keeping all styling driven by semantic Tailwind token colors (background/foreground/card/muted/accent/etc.) rather than hard-coded one-off colors.",
+      "featureId": "feature-change-the-admin-user-accounts-list-so-that-an-account-only-appears-after-the-user-has-placed-their-first-order-i-e-hide-user-profiles-that-have-zero-orders",
+      "featureTitle": "Change the admin “User Accounts” list so that an account only appears after the user has placed their first order (i.e., hide user profiles that have zero orders).",
       "files": [
-        "frontend/src/index.css",
-        "frontend/tailwind.config.js"
+        "frontend/src/hooks/admin/useAdminAccounts.ts",
+        "frontend/src/hooks/orders/useCreateOrder.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -23,12 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-text-and-ui-element-contrast-remains-readable-across-theme-color-combinations-by-auditing-and-adjusting-foreground-background-pairings-for-key-components-buttons-inputs-cards-badges-nav-header-tabs-menus-and-providing-accessible-defaults-for-both-light-and-dark-mode",
-      "featureTitle": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
+      "featureId": "feature-fix-the-give-admin-access-grant-admin-access-control-so-the-owner-traviscastonguay-gmail-com-can-type-into-the-email-input-and-successfully-grant-admin-access",
+      "featureTitle": "Fix the “Give admin access / Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access.",
       "files": [
-        "frontend/src/components/AuthGate.tsx",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/index.css"
+        "frontend/src/components/admin/AdminAccessSection.tsx",
+        "frontend/src/hooks/admin/useAdminAccess.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -45,12 +44,13 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-modernize-the-public-facing-layout-styling-to-match-the-admin-panel-s-professional-feel-header-footer-and-landing-hero-sections-while-keeping-existing-navigation-and-page-content-unchanged",
-      "featureTitle": "Modernize the public-facing layout styling to match the admin panel’s professional feel (header, footer, and landing hero/sections), while keeping existing navigation and page content unchanged.",
+      "featureId": "feature-add-admin-account-actions-to-support-banning-unbanning-a-user-account-and-enforce-bans-by-blocking-banned-users-from-creating-new-orders",
+      "featureTitle": "Add admin account actions to support banning/unbanning a user account, and enforce bans by blocking banned users from creating new orders.",
       "files": [
-        "frontend/src/components/AppShell.tsx",
-        "frontend/src/components/BrandHeader.tsx",
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/components/admin/AdminAccountsSection.tsx",
+        "frontend/src/hooks/admin/useAdminAccounts.ts",
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/pages/NewOrderPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -67,13 +67,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-align-admin-panel-theme-readability-by-validating-each-existing-admin-theme-option-goth-black-silver-steel-white-luxury-deep-purple-fire-red-maintains-readable-text-and-ui-contrast-for-admin-panel-components-and-theme-switcher-states",
-      "featureTitle": "Align admin panel theme readability by validating each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
+      "featureId": "feature-ensure-admins-can-make-edits-to-orders-and-accounts-from-the-admin-panel-including-order-status-updates-tracking-number-updates-order-deletion-existing-plus-account-actions-vip-toggle-existing-ban-unban-newly-added",
+      "featureTitle": "Ensure admins can make edits to orders and accounts from the admin panel, including: order status updates, tracking number updates, order deletion (existing), plus account actions (VIP toggle existing + ban/unban newly added).",
       "files": [
-        "frontend/src/components/AdminThemeLayout.tsx",
-        "frontend/src/components/admin/AdminThemeSwitcher.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/AdminPanelPage.tsx"
+        "frontend/src/components/admin/AdminAccountsSection.tsx",
+        "frontend/src/hooks/admin/useAdminAccounts.ts"
       ],
       "components": [
         "authorization@4.0.0",

@@ -1,40 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Modernize the website UI to match the professional theme of the admin panel, ensuring fonts and UI elements remain readable across all theme/color combinations (accessibility/contrast).",
-  "architectural_notes": [
-    "Establish a consistent design system between public site and admin panel, including theme tokens and accessibility/contrast requirements for typography and UI components."
+  "summary": "Admin panel for managing user accounts and orders, with role-based access controls.",
+  "architectural_notes": [],
+  "known_issues": [
+    "'Give admin access' UI/control is not working for traviscastonguay@gmail.com (cannot type)"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-global-design-tokens-and-typography-so-the-public-site-has-a-modern-professional-look-consistent-with-the-admin-panel-while-keeping-all-styling-driven-by-semantic-tailwind-token-colors-background-foreground-card-muted-accent-etc-rather-than-hard-coded-one-off-colors",
-      "title": "Update the global design tokens and typography so the public site has a modern, professional look consistent with the admin panel, while keeping all styling driven by semantic Tailwind token colors (background/foreground/card/muted/accent/etc.) rather than hard-coded one-off colors.",
+      "id": "feature-change-the-admin-user-accounts-list-so-that-an-account-only-appears-after-the-user-has-placed-their-first-order-i-e-hide-user-profiles-that-have-zero-orders",
+      "title": "Change the admin “User Accounts” list so that an account only appears after the user has placed their first order (i.e., hide user profiles that have zero orders).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-text-and-ui-element-contrast-remains-readable-across-theme-color-combinations-by-auditing-and-adjusting-foreground-background-pairings-for-key-components-buttons-inputs-cards-badges-nav-header-tabs-menus-and-providing-accessible-defaults-for-both-light-and-dark-mode",
-      "title": "Ensure text and UI element contrast remains readable across theme/color combinations by auditing and adjusting foreground/background pairings for key components (buttons, inputs, cards, badges, nav/header, tabs/menus) and providing accessible defaults for both light and dark mode.",
+      "id": "feature-fix-the-give-admin-access-grant-admin-access-control-so-the-owner-traviscastonguay-gmail-com-can-type-into-the-email-input-and-successfully-grant-admin-access",
+      "title": "Fix the “Give admin access / Grant Admin Access” control so the owner (traviscastonguay@gmail.com) can type into the email input and successfully grant admin access.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-modernize-the-public-facing-layout-styling-to-match-the-admin-panel-s-professional-feel-header-footer-and-landing-hero-sections-while-keeping-existing-navigation-and-page-content-unchanged",
-      "title": "Modernize the public-facing layout styling to match the admin panel’s professional feel (header, footer, and landing hero/sections), while keeping existing navigation and page content unchanged.",
+      "id": "feature-add-admin-account-actions-to-support-banning-unbanning-a-user-account-and-enforce-bans-by-blocking-banned-users-from-creating-new-orders",
+      "title": "Add admin account actions to support banning/unbanning a user account, and enforce bans by blocking banned users from creating new orders.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-align-admin-panel-theme-readability-by-validating-each-existing-admin-theme-option-goth-black-silver-steel-white-luxury-deep-purple-fire-red-maintains-readable-text-and-ui-contrast-for-admin-panel-components-and-theme-switcher-states",
-      "title": "Align admin panel theme readability by validating each existing admin theme option (goth-black, silver-steel, white-luxury, deep-purple, fire-red) maintains readable text and UI contrast for admin panel components and theme switcher states.",
+      "id": "feature-ensure-admins-can-make-edits-to-orders-and-accounts-from-the-admin-panel-including-order-status-updates-tracking-number-updates-order-deletion-existing-plus-account-actions-vip-toggle-existing-ban-unban-newly-added",
+      "title": "Ensure admins can make edits to orders and accounts from the admin panel, including: order status updates, tracking number updates, order deletion (existing), plus account actions (VIP toggle existing + ban/unban newly added).",
       "reqIds": [
         "REQ-4"
       ],
@@ -44,12 +44,24 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Update public site styling to a more modern, professional theme consistent with the admin panel, with readable fonts/UI across all themes/colors (contrast/accessibility)",
+      "summary": "Only create/show user accounts in admin after the user places their first order",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Enable admin actions on user accounts/orders (edit account, edit order, ban user, grant VIP)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Fix 'Give admin access' control not working (cannot type while logged in as traviscastonguay@gmail.com)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Modernize public site theme to match admin panel and ensure readable typography across all colors",
+  "projectName": "Fix admin access control, show accounts only after first order, and add admin account actions",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -11,27 +11,26 @@ import {
   useAddToAllowlist,
   useRemoveFromAllowlist,
 } from '../../hooks/security/useSecurityMutations';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Shield, Activity, Ban, CheckCircle2, XCircle, Clock, Loader2, AlertTriangle, Lock, Unlock, RefreshCw } from 'lucide-react';
+import { Shield, Activity, AlertTriangle, CheckCircle2, XCircle, Clock, Loader2, Trash2, Ban, CheckSquare } from 'lucide-react';
+import { Principal } from '@dfinity/principal';
 import { toast } from 'sonner';
 
 export default function TreyCSecuritySection() {
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useSecurityStats();
   const { data: events, isLoading: eventsLoading, error: eventsError, refetch: refetchEvents } = useSecurityEvents(50);
   const { data: config, isLoading: configLoading, error: configError, refetch: refetchConfig } = useSecurityConfig();
-
-  const toggleSecurity = useToggleSecurity();
+  
+  const setSecurityEnabled = useToggleSecurity();
   const updateRateLimits = useUpdateRateLimits();
-  const clearCounters = useClearSecurityCounters();
+  const clearSecurityCounters = useClearSecurityCounters();
   const addToBlocklist = useAddToBlocklist();
   const removeFromBlocklist = useRemoveFromBlocklist();
   const addToAllowlist = useAddToAllowlist();
@@ -42,30 +41,29 @@ export default function TreyCSecuritySection() {
   const [blocklistPrincipal, setBlocklistPrincipal] = useState('');
   const [allowlistPrincipal, setAllowlistPrincipal] = useState('');
 
-  const handleToggleSecurity = async () => {
+  const handleToggleSecurity = async (enabled: boolean) => {
     try {
-      await toggleSecurity.mutateAsync(!config?.enabled);
-      toast.success(config?.enabled ? 'TREY C SECURITY disabled' : 'TREY C SECURITY enabled');
+      await setSecurityEnabled.mutateAsync(enabled);
+      toast.success(`Security ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to toggle security');
+      toast.error(error.message || 'Failed to update security status');
     }
   };
 
   const handleUpdateRateLimits = async () => {
-    const window = parseInt(rateLimitWindow);
-    const maxCalls = parseInt(maxCallsPerWindow);
+    const window = parseInt(rateLimitWindow, 10);
+    const maxCalls = parseInt(maxCallsPerWindow, 10);
 
-    if (isNaN(window) || window <= 0) {
-      toast.error('Invalid rate limit window');
-      return;
-    }
-    if (isNaN(maxCalls) || maxCalls <= 0) {
-      toast.error('Invalid max calls per window');
+    if (isNaN(window) || window <= 0 || isNaN(maxCalls) || maxCalls <= 0) {
+      toast.error('Please enter valid positive numbers');
       return;
     }
 
     try {
-      await updateRateLimits.mutateAsync({ window: window * 1_000_000_000, maxCalls });
+      await updateRateLimits.mutateAsync({
+        window: window * 1_000_000_000,
+        maxCalls: maxCalls,
+      });
       toast.success('Rate limits updated');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update rate limits');
@@ -74,7 +72,7 @@ export default function TreyCSecuritySection() {
 
   const handleClearCounters = async () => {
     try {
-      await clearCounters.mutateAsync();
+      await clearSecurityCounters.mutateAsync();
       toast.success('Security counters cleared');
     } catch (error: any) {
       toast.error(error.message || 'Failed to clear counters');
@@ -92,7 +90,7 @@ export default function TreyCSecuritySection() {
       toast.success('Principal added to blocklist');
       setBlocklistPrincipal('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to add to blocklist');
+      toast.error(error.message || 'Invalid principal or operation failed');
     }
   };
 
@@ -107,7 +105,7 @@ export default function TreyCSecuritySection() {
       toast.success('Principal removed from blocklist');
       setBlocklistPrincipal('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to remove from blocklist');
+      toast.error(error.message || 'Invalid principal or operation failed');
     }
   };
 
@@ -122,7 +120,7 @@ export default function TreyCSecuritySection() {
       toast.success('Principal added to allowlist');
       setAllowlistPrincipal('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to add to allowlist');
+      toast.error(error.message || 'Invalid principal or operation failed');
     }
   };
 
@@ -137,460 +135,325 @@ export default function TreyCSecuritySection() {
       toast.success('Principal removed from allowlist');
       setAllowlistPrincipal('');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to remove from allowlist');
+      toast.error(error.message || 'Invalid principal or operation failed');
     }
   };
+
+  if (statsLoading || eventsLoading || configLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-16 w-full bg-admin-card" />
+        <Skeleton className="h-32 w-full bg-admin-card" />
+        <Skeleton className="h-32 w-full bg-admin-card" />
+      </div>
+    );
+  }
+
+  if (statsError || eventsError || configError) {
+    return (
+      <Card className="bg-admin-card border-admin-border shadow-lg">
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <AlertTriangle className="w-12 h-12 mx-auto text-destructive mb-4" />
+            <p className="text-destructive">Error loading security data</p>
+            <p className="text-admin-muted text-sm mt-2">
+              {(statsError || eventsError || configError)?.message}
+            </p>
+            <Button
+              onClick={() => {
+                refetchStats();
+                refetchEvents();
+                refetchConfig();
+              }}
+              className="mt-4 bg-admin-primary hover:bg-admin-primary/90"
+            >
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 bg-cyber-card rounded-lg flex items-center justify-center border border-cyber-primary/30 shadow-cyber">
-          <Shield className="w-7 h-7 text-cyber-primary" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold tracking-wider text-cyber-primary font-mono uppercase">
-            TREY C SECURITY
-          </h2>
-          <p className="text-cyber-muted mt-1 font-mono text-sm">
-            [ADVANCED ANTI-DDOS PROTECTION SYSTEM]
-          </p>
-        </div>
-      </div>
+      <Card className="bg-admin-card border-admin-border shadow-lg">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-admin-foreground flex items-center gap-2">
+                <Shield className="w-5 h-5 text-admin-primary" />
+                Security Dashboard
+              </CardTitle>
+              <CardDescription className="text-admin-muted mt-1">
+                Monitor and manage system security settings
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-3">
+              <Label className="text-admin-muted text-sm">Security System</Label>
+              <Switch
+                checked={config?.enabled || false}
+                onCheckedChange={handleToggleSecurity}
+                disabled={setSecurityEnabled.isPending}
+              />
+              <Badge variant={config?.enabled ? 'default' : 'secondary'} className={config?.enabled ? 'bg-green-500/20 text-green-400 border-green-500/30' : ''}>
+                {config?.enabled ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
-      {/* Stats Dashboard */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-cyber-card border-green-500/30 shadow-cyber">
+        <Card className="bg-admin-card border-green-500/30 shadow-lg">
           <CardContent className="pt-6">
-            {statsLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24 bg-cyber-primary/20" />
-                <Skeleton className="h-8 w-32 bg-cyber-primary/20" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-admin-muted text-xs uppercase tracking-wider">Allowed Calls</p>
+                <p className="text-3xl font-bold text-green-400 mt-1">{stats?.allowedCalls.toString() || '0'}</p>
               </div>
-            ) : statsError ? (
-              <div className="space-y-2">
-                <p className="text-red-400 text-xs font-mono">Error loading stats</p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => refetchStats()}
-                  className="text-xs font-mono"
-                >
-                  <RefreshCw className="w-3 h-3 mr-1" />
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-cyber-muted text-xs font-mono uppercase tracking-wider">Allowed Calls</p>
-                  <p className="text-3xl font-bold text-green-400 font-mono mt-1">
-                    {stats ? Number(stats.allowedCalls).toLocaleString() : '0'}
-                  </p>
-                </div>
-                <CheckCircle2 className="w-8 h-8 text-green-400/50" />
-              </div>
-            )}
+              <CheckCircle2 className="w-8 h-8 text-green-400 opacity-50" />
+            </div>
           </CardContent>
         </Card>
-        <Card className="bg-cyber-card border-red-500/30 shadow-cyber">
+        <Card className="bg-admin-card border-red-500/30 shadow-lg">
           <CardContent className="pt-6">
-            {statsLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24 bg-cyber-primary/20" />
-                <Skeleton className="h-8 w-32 bg-cyber-primary/20" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-admin-muted text-xs uppercase tracking-wider">Denied Calls</p>
+                <p className="text-3xl font-bold text-red-400 mt-1">{stats?.deniedCalls.toString() || '0'}</p>
               </div>
-            ) : statsError ? (
-              <div className="space-y-2">
-                <p className="text-red-400 text-xs font-mono">Error loading stats</p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => refetchStats()}
-                  className="text-xs font-mono"
-                >
-                  <RefreshCw className="w-3 h-3 mr-1" />
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-cyber-muted text-xs font-mono uppercase tracking-wider">Denied Calls</p>
-                  <p className="text-3xl font-bold text-red-400 font-mono mt-1">
-                    {stats ? Number(stats.deniedCalls).toLocaleString() : '0'}
-                  </p>
-                </div>
-                <XCircle className="w-8 h-8 text-red-400/50" />
-              </div>
-            )}
+              <XCircle className="w-8 h-8 text-red-400 opacity-50" />
+            </div>
           </CardContent>
         </Card>
-        <Card className="bg-cyber-card border-yellow-500/30 shadow-cyber">
+        <Card className="bg-admin-card border-yellow-500/30 shadow-lg">
           <CardContent className="pt-6">
-            {statsLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-24 bg-cyber-primary/20" />
-                <Skeleton className="h-8 w-32 bg-cyber-primary/20" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-admin-muted text-xs uppercase tracking-wider">Throttled Calls</p>
+                <p className="text-3xl font-bold text-yellow-400 mt-1">{stats?.throttledCalls.toString() || '0'}</p>
               </div>
-            ) : statsError ? (
-              <div className="space-y-2">
-                <p className="text-red-400 text-xs font-mono">Error loading stats</p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => refetchStats()}
-                  className="text-xs font-mono"
-                >
-                  <RefreshCw className="w-3 h-3 mr-1" />
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-cyber-muted text-xs font-mono uppercase tracking-wider">Throttled Calls</p>
-                  <p className="text-3xl font-bold text-yellow-400 font-mono mt-1">
-                    {stats ? Number(stats.throttledCalls).toLocaleString() : '0'}
-                  </p>
-                </div>
-                <Clock className="w-8 h-8 text-yellow-400/50" />
-              </div>
-            )}
+              <Clock className="w-8 h-8 text-yellow-400 opacity-50" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Configuration */}
-      <Card className="bg-cyber-card border-cyber-primary/30 shadow-cyber">
+      <Card className="bg-admin-card border-admin-border shadow-lg">
         <CardHeader>
-          <CardTitle className="text-cyber-primary font-mono uppercase tracking-wider flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Security Configuration
-            {configError && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => refetchConfig()}
-                className="ml-auto text-xs font-mono"
-              >
-                <RefreshCw className="w-3 h-3 mr-1" />
-                Retry
-              </Button>
-            )}
-          </CardTitle>
+          <CardTitle className="text-admin-foreground">Rate Limit Configuration</CardTitle>
+          <CardDescription className="text-admin-muted">
+            Configure rate limiting parameters
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {configLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-16 w-full bg-cyber-primary/20" />
-              <Skeleton className="h-24 w-full bg-cyber-primary/20" />
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-admin-muted text-xs uppercase tracking-wider">Window (seconds)</Label>
+              <Input
+                type="number"
+                value={rateLimitWindow}
+                onChange={(e) => setRateLimitWindow(e.target.value)}
+                className="bg-admin-bg border-admin-border text-admin-foreground"
+              />
             </div>
-          ) : configError ? (
-            <div className="text-center py-8 space-y-4">
-              <p className="text-red-400 font-mono text-sm">Failed to load security configuration</p>
-              <Button
-                onClick={() => refetchConfig()}
-                variant="outline"
-                className="font-mono"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retry
-              </Button>
+            <div className="space-y-2">
+              <Label className="text-admin-muted text-xs uppercase tracking-wider">Max Calls per Window</Label>
+              <Input
+                type="number"
+                value={maxCallsPerWindow}
+                onChange={(e) => setMaxCallsPerWindow(e.target.value)}
+                className="bg-admin-bg border-admin-border text-admin-foreground"
+              />
             </div>
-          ) : (
-            <>
-              {/* Enable/Disable */}
-              <div className="flex items-center justify-between p-4 bg-cyber-bg rounded-lg border border-cyber-primary/20">
-                <div className="flex items-center gap-3">
-                  {config?.enabled ? (
-                    <Lock className="w-5 h-5 text-green-400" />
-                  ) : (
-                    <Unlock className="w-5 h-5 text-red-400" />
-                  )}
-                  <div>
-                    <Label className="text-cyber-primary font-mono text-sm">
-                      TREY C SECURITY Status
-                    </Label>
-                    <p className="text-cyber-muted text-xs font-mono mt-1">
-                      {config?.enabled ? 'Protection active' : 'Protection disabled'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={config?.enabled || false}
-                  onCheckedChange={handleToggleSecurity}
-                  disabled={toggleSecurity.isPending}
-                />
-              </div>
-
-              {/* Rate Limits */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-cyber-muted font-mono text-xs uppercase tracking-wider">
-                    Rate Limit Window (seconds)
-                  </Label>
-                  <Input
-                    type="number"
-                    value={rateLimitWindow}
-                    onChange={(e) => setRateLimitWindow(e.target.value)}
-                    className="bg-cyber-bg border-cyber-primary/30 text-cyber-primary font-mono"
-                    placeholder="60"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-cyber-muted font-mono text-xs uppercase tracking-wider">
-                    Max Calls Per Window
-                  </Label>
-                  <Input
-                    type="number"
-                    value={maxCallsPerWindow}
-                    onChange={(e) => setMaxCallsPerWindow(e.target.value)}
-                    className="bg-cyber-bg border-cyber-primary/30 text-cyber-primary font-mono"
-                    placeholder="100"
-                  />
-                </div>
-              </div>
-              <Button
-                onClick={handleUpdateRateLimits}
-                disabled={updateRateLimits.isPending}
-                className="w-full bg-cyber-primary/20 hover:bg-cyber-primary/30 border border-cyber-primary/50 text-cyber-primary font-mono"
-              >
-                {updateRateLimits.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  'Update Rate Limits'
-                )}
-              </Button>
-
-              {/* Current Config Info */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-cyber-bg rounded-lg border border-cyber-primary/20">
-                <div>
-                  <p className="text-cyber-muted text-xs font-mono uppercase">Blocklist Size</p>
-                  <p className="text-cyber-primary font-mono text-lg font-bold">
-                    {config ? Number(config.blocklistSize) : 0}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-cyber-muted text-xs font-mono uppercase">Allowlist Size</p>
-                  <p className="text-cyber-primary font-mono text-lg font-bold">
-                    {config ? Number(config.allowlistSize) : 0}
-                  </p>
-                </div>
-              </div>
-
-              {/* Clear Counters */}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10 font-mono"
-                    disabled={clearCounters.isPending}
-                  >
-                    <AlertTriangle className="w-4 h-4 mr-2" />
-                    Clear Security Counters
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="bg-cyber-card border-cyber-primary/30">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-cyber-primary font-mono">
-                      Clear Security Counters?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-cyber-muted font-mono">
-                      This will reset all security statistics and clear the event log.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="border-cyber-primary/30 font-mono">Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleClearCounters}
-                      disabled={clearCounters.isPending}
-                      className="bg-yellow-600 hover:bg-yellow-700 font-mono"
-                    >
-                      {clearCounters.isPending ? 'Clearing...' : 'Clear Counters'}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
-          )}
+          </div>
+          <div className="flex items-center justify-between pt-4 border-t border-admin-border">
+            <div className="text-admin-muted text-sm">
+              Current: {config?.rateLimitWindow ? Number(config.rateLimitWindow) / 1_000_000_000 : 0}s window, {config?.maxCallsPerWindow?.toString() || 0} max calls
+            </div>
+            <Button
+              onClick={handleUpdateRateLimits}
+              disabled={updateRateLimits.isPending}
+              className="bg-admin-primary hover:bg-admin-primary/90"
+            >
+              {updateRateLimits.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Update Limits
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Blocklist/Allowlist Management */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Blocklist */}
-        <Card className="bg-cyber-card border-red-500/30 shadow-cyber">
+      {/* Blocklist & Allowlist */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="bg-admin-card border-admin-border shadow-lg">
           <CardHeader>
-            <CardTitle className="text-red-400 font-mono uppercase tracking-wider flex items-center gap-2">
-              <Ban className="w-5 h-5" />
-              Blocklist Management
+            <CardTitle className="text-admin-foreground flex items-center gap-2">
+              <Ban className="w-5 h-5 text-red-400" />
+              Blocklist
             </CardTitle>
+            <CardDescription className="text-admin-muted">
+              {config?.blocklistSize?.toString() || 0} principals blocked
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-cyber-muted font-mono text-xs uppercase tracking-wider">
-                Principal ID
-              </Label>
+              <Label className="text-admin-muted text-xs uppercase tracking-wider">Principal ID</Label>
               <Input
+                placeholder="Enter principal to block..."
                 value={blocklistPrincipal}
                 onChange={(e) => setBlocklistPrincipal(e.target.value)}
-                className="bg-cyber-bg border-cyber-primary/30 text-cyber-primary font-mono text-xs"
-                placeholder="Enter principal ID..."
+                className="bg-admin-bg border-admin-border text-admin-foreground"
               />
             </div>
             <div className="flex gap-2">
               <Button
                 onClick={handleAddToBlocklist}
-                disabled={addToBlocklist.isPending}
-                className="flex-1 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-400 font-mono text-xs"
+                disabled={addToBlocklist.isPending || !blocklistPrincipal.trim()}
+                className="flex-1 bg-red-600 hover:bg-red-700"
               >
-                {addToBlocklist.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
+                {addToBlocklist.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Ban className="w-4 h-4 mr-2" />}
+                Block
               </Button>
               <Button
                 onClick={handleRemoveFromBlocklist}
-                disabled={removeFromBlocklist.isPending}
+                disabled={removeFromBlocklist.isPending || !blocklistPrincipal.trim()}
                 variant="outline"
-                className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/10 font-mono text-xs"
+                className="flex-1 border-admin-border text-admin-foreground hover:bg-admin-primary/10"
               >
-                {removeFromBlocklist.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Remove'}
+                {removeFromBlocklist.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Unblock
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Allowlist */}
-        <Card className="bg-cyber-card border-green-500/30 shadow-cyber">
+        <Card className="bg-admin-card border-admin-border shadow-lg">
           <CardHeader>
-            <CardTitle className="text-green-400 font-mono uppercase tracking-wider flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
-              Allowlist Management
+            <CardTitle className="text-admin-foreground flex items-center gap-2">
+              <CheckSquare className="w-5 h-5 text-green-400" />
+              Allowlist
             </CardTitle>
+            <CardDescription className="text-admin-muted">
+              {config?.allowlistSize?.toString() || 0} principals allowed
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-cyber-muted font-mono text-xs uppercase tracking-wider">
-                Principal ID
-              </Label>
+              <Label className="text-admin-muted text-xs uppercase tracking-wider">Principal ID</Label>
               <Input
+                placeholder="Enter principal to allow..."
                 value={allowlistPrincipal}
                 onChange={(e) => setAllowlistPrincipal(e.target.value)}
-                className="bg-cyber-bg border-cyber-primary/30 text-cyber-primary font-mono text-xs"
-                placeholder="Enter principal ID..."
+                className="bg-admin-bg border-admin-border text-admin-foreground"
               />
             </div>
             <div className="flex gap-2">
               <Button
                 onClick={handleAddToAllowlist}
-                disabled={addToAllowlist.isPending}
-                className="flex-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/50 text-green-400 font-mono text-xs"
+                disabled={addToAllowlist.isPending || !allowlistPrincipal.trim()}
+                className="flex-1 bg-green-600 hover:bg-green-700"
               >
-                {addToAllowlist.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Add'}
+                {addToAllowlist.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckSquare className="w-4 h-4 mr-2" />}
+                Allow
               </Button>
               <Button
                 onClick={handleRemoveFromAllowlist}
-                disabled={removeFromAllowlist.isPending}
+                disabled={removeFromAllowlist.isPending || !allowlistPrincipal.trim()}
                 variant="outline"
-                className="flex-1 border-green-500/50 text-green-400 hover:bg-green-500/10 font-mono text-xs"
+                className="flex-1 border-admin-border text-admin-foreground hover:bg-admin-primary/10"
               >
-                {removeFromAllowlist.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Remove'}
+                {removeFromAllowlist.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Remove
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Security Events */}
-      <Card className="bg-cyber-card border-cyber-primary/30 shadow-cyber">
+      {/* Recent Events */}
+      <Card className="bg-admin-card border-admin-border shadow-lg">
         <CardHeader>
-          <CardTitle className="text-cyber-primary font-mono uppercase tracking-wider flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Recent Security Events
-            {eventsError && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => refetchEvents()}
-                className="ml-auto text-xs font-mono"
-              >
-                <RefreshCw className="w-3 h-3 mr-1" />
-                Retry
-              </Button>
-            )}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-admin-foreground flex items-center gap-2">
+                <Activity className="w-5 h-5 text-admin-primary" />
+                Recent Security Events
+              </CardTitle>
+              <CardDescription className="text-admin-muted mt-1">
+                Last 50 security events
+              </CardDescription>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="border-admin-border text-admin-foreground hover:bg-admin-primary/10">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Clear Counters
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-admin-card border-admin-border">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-admin-foreground">Clear Security Counters</AlertDialogTitle>
+                  <AlertDialogDescription className="text-admin-muted">
+                    This will reset all security statistics and clear the event log. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="border-admin-border text-admin-foreground hover:bg-admin-card">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleClearCounters}
+                    disabled={clearSecurityCounters.isPending}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    {clearSecurityCounters.isPending ? 'Clearing...' : 'Clear Counters'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardHeader>
         <CardContent>
-          {eventsLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
-              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
-              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
-            </div>
-          ) : eventsError ? (
-            <div className="text-center py-8 space-y-4">
-              <p className="text-red-400 font-mono text-sm">Failed to load security events</p>
-              <Button
-                onClick={() => refetchEvents()}
-                variant="outline"
-                className="font-mono"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retry
-              </Button>
-            </div>
-          ) : !events || events.length === 0 ? (
-            <div className="text-center py-12 text-cyber-muted font-mono text-sm">
-              No security events recorded
+          {!events || events.length === 0 ? (
+            <div className="text-center py-8">
+              <Activity className="w-12 h-12 mx-auto text-admin-muted mb-4" />
+              <p className="text-admin-muted">No security events recorded</p>
             </div>
           ) : (
-            <ScrollArea className="h-[400px]">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-cyber-primary/20">
-                    <TableHead className="text-cyber-muted font-mono text-xs">Timestamp</TableHead>
-                    <TableHead className="text-cyber-muted font-mono text-xs">Principal</TableHead>
-                    <TableHead className="text-cyber-muted font-mono text-xs">Action</TableHead>
-                    <TableHead className="text-cyber-muted font-mono text-xs">Result</TableHead>
-                    <TableHead className="text-cyber-muted font-mono text-xs">Reason</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {events.map((event, idx) => (
-                    <TableRow key={idx} className="border-cyber-primary/10">
-                      <TableCell className="text-cyber-primary font-mono text-xs">
-                        {new Date(Number(event.timestamp) / 1000000).toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-cyber-primary font-mono text-xs truncate max-w-[150px]">
-                        {event.principal.toString().slice(0, 15)}...
-                      </TableCell>
-                      <TableCell className="text-cyber-accent font-mono text-xs">
-                        {event.action}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            event.result === 'allowed'
-                              ? 'default'
-                              : event.result === 'denied'
-                              ? 'destructive'
-                              : 'secondary'
-                          }
-                          className="font-mono text-xs"
-                        >
-                          {event.result}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-cyber-muted font-mono text-xs">
-                        {event.reason}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {events.map((event, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-admin-bg border border-admin-border rounded-lg"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    {event.result === 'allowed' ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    ) : event.result === 'denied' ? (
+                      <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-admin-foreground text-sm truncate">{event.action}</p>
+                      <p className="text-admin-muted text-xs truncate">{event.principal.toText()}</p>
+                    </div>
+                  </div>
+                  <Badge
+                    variant={event.result === 'allowed' ? 'default' : 'secondary'}
+                    className={
+                      event.result === 'allowed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                      event.result === 'denied' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                      'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                    }
+                  >
+                    {event.result}
+                  </Badge>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

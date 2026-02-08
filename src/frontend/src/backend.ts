@@ -155,6 +155,7 @@ export interface SecurityStats {
 export interface UserProfile {
     name: string;
     email?: string;
+    isVIP: boolean;
 }
 export interface _CaffeineStorageRefillResult {
     success?: boolean;
@@ -186,6 +187,7 @@ export interface backendInterface {
     addToAllowlist(principal: Principal): Promise<void>;
     addToBlocklist(principal: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    banUser(user: Principal): Promise<void>;
     bulkApproveOrders(orderIds: Array<string>): Promise<void>;
     bulkDeleteOrders(orderIds: Array<string>): Promise<void>;
     bulkShipOrders(orderIds: Array<string>): Promise<void>;
@@ -196,6 +198,7 @@ export interface backendInterface {
     exportOrdersCSV(): Promise<string>;
     getAdminDashboard(): Promise<AdminDashboardData>;
     getAllOrders(): Promise<Array<Order>>;
+    getAllVIPAccounts(): Promise<Array<[Principal, boolean]>>;
     getAuditLog(limit: bigint): Promise<Array<AuditLogEntry>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -212,17 +215,22 @@ export interface backendInterface {
     getSecurityStats(): Promise<SecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     grantAdminAccess(admin_email: string): Promise<void>;
+    grantVIPStatus(user: Principal): Promise<void>;
     isAdminEmail(email: string): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
+    isCallerVIP(): Promise<boolean>;
     isOrderOwner(orderId: string): Promise<boolean>;
+    isUserBanned(user: Principal): Promise<boolean>;
     listAdminEmails(): Promise<Array<string>>;
     removeFromAllowlist(principal: Principal): Promise<void>;
     removeFromBlocklist(principal: Principal): Promise<void>;
     resetAllData(): Promise<void>;
     revokeAdminAccess(admin_email: string): Promise<void>;
+    revokeVIPStatus(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setSecurityEnabled(enabled: boolean): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
+    unbanUser(user: Principal): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
     updateRateLimits(rateLimitWindow: bigint, maxCallsPerWindow: bigint): Promise<void>;
 }
@@ -369,6 +377,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async banUser(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.banUser(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.banUser(arg0);
+            return result;
+        }
+    }
     async bulkApproveOrders(arg0: Array<string>): Promise<void> {
         if (this.processError) {
             try {
@@ -507,6 +529,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getAllOrders();
             return from_candid_vec_n20(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAllVIPAccounts(): Promise<Array<[Principal, boolean]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllVIPAccounts();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllVIPAccounts();
+            return result;
         }
     }
     async getAuditLog(arg0: bigint): Promise<Array<AuditLogEntry>> {
@@ -655,6 +691,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async grantVIPStatus(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.grantVIPStatus(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.grantVIPStatus(arg0);
+            return result;
+        }
+    }
     async isAdminEmail(arg0: string): Promise<boolean> {
         if (this.processError) {
             try {
@@ -683,6 +733,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async isCallerVIP(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isCallerVIP();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isCallerVIP();
+            return result;
+        }
+    }
     async isOrderOwner(arg0: string): Promise<boolean> {
         if (this.processError) {
             try {
@@ -694,6 +758,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isOrderOwner(arg0);
+            return result;
+        }
+    }
+    async isUserBanned(arg0: Principal): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isUserBanned(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isUserBanned(arg0);
             return result;
         }
     }
@@ -767,6 +845,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async revokeVIPStatus(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.revokeVIPStatus(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.revokeVIPStatus(arg0);
+            return result;
+        }
+    }
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
@@ -806,6 +898,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.setTrackingNumber(arg0, arg1);
+            return result;
+        }
+    }
+    async unbanUser(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.unbanUser(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.unbanUser(arg0);
             return result;
         }
     }
@@ -931,13 +1037,16 @@ async function from_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promi
 function from_candid_record_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     name: string;
     email: [] | [string];
+    isVIP: boolean;
 }): {
     name: string;
     email?: string;
+    isVIP: boolean;
 } {
     return {
         name: value.name,
-        email: record_opt_to_undefined(from_candid_opt_n15(_uploadFile, _downloadFile, value.email))
+        email: record_opt_to_undefined(from_candid_opt_n15(_uploadFile, _downloadFile, value.email)),
+        isVIP: value.isVIP
     };
 }
 function from_candid_record_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -1051,13 +1160,16 @@ function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function to_candid_record_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     name: string;
     email?: string;
+    isVIP: boolean;
 }): {
     name: string;
     email: [] | [string];
+    isVIP: boolean;
 } {
     return {
         name: value.name,
-        email: value.email ? candid_some(value.email) : candid_none()
+        email: value.email ? candid_some(value.email) : candid_none(),
+        isVIP: value.isVIP
     };
 }
 function to_candid_variant_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: OrderStatus): {

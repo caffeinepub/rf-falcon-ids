@@ -9,15 +9,27 @@ interface RouteMetadata {
 
 const routeMetadata: Record<string, RouteMetadata> = {
   '/': {
-    title: 'Falcon IDs - Professional Identification Ordering System',
-    description: 'High-end identification ordering system with professional-grade design and secure processing. Create custom ID cards with Internet Identity authentication.',
+    title: 'Falcon IDs - Next-Gen Blockchain Identification System',
+    description: 'Secure, fast, and decentralized identification powered by Internet Computer blockchain. Professional ID cards with AI-powered design and tamper-proof verification.',
     structuredData: {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'Falcon IDs',
-      description: 'Professional identification ordering system with secure processing',
+      description: 'Next-generation blockchain identification system with secure processing',
       url: typeof window !== 'undefined' ? window.location.origin : '',
     },
+  },
+  '/about': {
+    title: 'About Us - Falcon IDs',
+    description: 'Learn about Falcon IDs mission to revolutionize identification through blockchain technology, decentralized systems, and user-centric design.',
+  },
+  '/features': {
+    title: 'Features - Falcon IDs',
+    description: 'Discover powerful features: AI-powered design, blockchain security, instant processing, privacy protection, and global delivery with tracking.',
+  },
+  '/contact': {
+    title: 'Contact Us - Falcon IDs',
+    description: 'Get in touch with Falcon IDs. Send us a message and we\'ll respond as soon as possible. Email, social links, and support information.',
   },
   '/signin': {
     title: 'Sign In - Falcon IDs',

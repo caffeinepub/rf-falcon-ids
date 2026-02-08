@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { useInternetIdentity } from '../useInternetIdentity';
-import { orderKeys } from './queryKeys';
+import { orderKeys, accountKeys, authKeys } from './queryKeys';
 import type { Details, Address, ExternalBlob } from '../../backend';
 import {
   normalizeText,
@@ -31,6 +31,23 @@ export function useCreateOrder() {
   return useMutation({
     mutationFn: async ({ id, details, address, photo }: CreateOrderParams) => {
       if (!actor) throw new Error('Actor not available');
+      if (!identity) throw new Error('You must be logged in to create an order');
+
+      // Check if user is banned before proceeding
+      try {
+        const principal = identity.getPrincipal();
+        const isBanned = await actor.isUserBanned(principal);
+        if (isBanned) {
+          throw new Error('Your account has been banned from placing orders. Please contact support.');
+        }
+      } catch (error: any) {
+        // If the error is about being banned, re-throw it
+        if (error.message && error.message.includes('banned')) {
+          throw error;
+        }
+        // Otherwise, it might be a permission error - let it proceed to the backend
+        console.warn('Could not check ban status:', error);
+      }
 
       // Validate and normalize all fields before submission (defense-in-depth)
       const firstNameValidation = validateName(details.first_name, 'First name');
@@ -119,7 +136,11 @@ export function useCreateOrder() {
       }
     },
     onSuccess: () => {
+      // Invalidate user orders and admin-related queries
       queryClient.invalidateQueries({ queryKey: orderKeys.userOrders() });
+      queryClient.invalidateQueries({ queryKey: orderKeys.allOrders() });
+      queryClient.invalidateQueries({ queryKey: accountKeys.all });
+      queryClient.invalidateQueries({ queryKey: authKeys.all });
     },
   });
 }

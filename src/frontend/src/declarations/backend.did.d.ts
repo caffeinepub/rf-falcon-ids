@@ -75,7 +75,11 @@ export type Status = { 'shipped' : null } |
   { 'pending' : null } |
   { 'approved' : null };
 export type Time = bigint;
-export interface UserProfile { 'name' : string, 'email' : [] | [string] }
+export interface UserProfile {
+  'name' : string,
+  'email' : [] | [string],
+  'isVIP' : boolean,
+}
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -110,6 +114,7 @@ export interface _SERVICE {
   'addToAllowlist' : ActorMethod<[Principal], undefined>,
   'addToBlocklist' : ActorMethod<[Principal], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'banUser' : ActorMethod<[Principal], undefined>,
   'bulkApproveOrders' : ActorMethod<[Array<string>], undefined>,
   'bulkDeleteOrders' : ActorMethod<[Array<string>], undefined>,
   'bulkShipOrders' : ActorMethod<[Array<string>], undefined>,
@@ -126,6 +131,7 @@ export interface _SERVICE {
   'exportOrdersCSV' : ActorMethod<[], string>,
   'getAdminDashboard' : ActorMethod<[], AdminDashboardData>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getAllVIPAccounts' : ActorMethod<[], Array<[Principal, boolean]>>,
   'getAuditLog' : ActorMethod<[bigint], Array<AuditLogEntry>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -145,17 +151,22 @@ export interface _SERVICE {
   'getSecurityStats' : ActorMethod<[], SecurityStats>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'grantAdminAccess' : ActorMethod<[string], undefined>,
+  'grantVIPStatus' : ActorMethod<[Principal], undefined>,
   'isAdminEmail' : ActorMethod<[string], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isCallerVIP' : ActorMethod<[], boolean>,
   'isOrderOwner' : ActorMethod<[string], boolean>,
+  'isUserBanned' : ActorMethod<[Principal], boolean>,
   'listAdminEmails' : ActorMethod<[], Array<string>>,
   'removeFromAllowlist' : ActorMethod<[Principal], undefined>,
   'removeFromBlocklist' : ActorMethod<[Principal], undefined>,
   'resetAllData' : ActorMethod<[], undefined>,
   'revokeAdminAccess' : ActorMethod<[string], undefined>,
+  'revokeVIPStatus' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setSecurityEnabled' : ActorMethod<[boolean], undefined>,
   'setTrackingNumber' : ActorMethod<[string, string], undefined>,
+  'unbanUser' : ActorMethod<[Principal], undefined>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
   'updateRateLimits' : ActorMethod<[bigint, bigint], undefined>,
 }

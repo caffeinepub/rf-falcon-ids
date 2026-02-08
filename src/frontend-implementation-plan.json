@@ -1,108 +1,100 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Modernize public theme with semantic Tailwind tokens and accessible typography/contrast",
+  "title": "Admin panel fixes: account visibility after first order, admin access input reliability, and ban/unban actions",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Modernize global design tokens and typography using semantic Tailwind token colors (no hard-coded one-off colors) for a professional public-site look consistent with admin styling foundations.",
+      "summary": "Hide admin accounts with zero orders and ensure the list updates automatically after a user’s first order via normal React Query invalidation.",
       "acceptanceCriteria": [
-        "Global styles are updated in frontend/src/index.css (and related Tailwind token usage) so primary UI surfaces use semantic tokens (bg-background, text-foreground, bg-card, text-muted-foreground, border-border, etc.).",
-        "Typography is standardized (body, headings, labels) with consistent font-family usage and a modern, professional scale across the public pages.",
-        "No public-facing components rely on hard-coded colors that reduce legibility (e.g., fixed chrome text on similarly bright backgrounds)."
+        "If a principal has a saved UserProfile but has never created an order, that principal does not appear in the Admin Accounts section.",
+        "After a user successfully creates their first order, their account appears in the Admin Accounts section without requiring any manual refresh beyond normal React Query invalidation/refetch behavior.",
+        "No other admin dashboard data (orders, audit log, security stats) is removed or degraded."
       ],
       "file_operations": [
         {
-          "path": "frontend/tailwind.config.js",
+          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
           "operation": "modify",
-          "description": "Adjust Tailwind theme extensions to better support a modern typographic system (font families for sans/serif/mono) and ensure semantic tokens (background/foreground/card/muted/accent/border/ring) are the preferred primitives for public UI styling. Verify the component's usage instructions before implementing."
+          "description": "Update the accounts query to derive the Admin Accounts list from admin dashboard data while filtering out principals that have zero orders (based on order ownership), without affecting orders/audit/security sections. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
           "operation": "modify",
-          "description": "Update global CSS variables (light/dark) to provide consistent semantic token mapping (background/foreground/card/muted/accent/border/input/ring) and add standardized base typography (body + heading scale, label defaults) using the existing fonts; ensure globals avoid hard-coded foreground/background pairings that can reduce legibility. Verify the component's usage instructions before implementing."
+          "description": "On successful order creation, invalidate relevant admin/account query keys (in addition to userOrders) so Admin Accounts can refetch and include the new account after the first order via normal React Query behavior. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Ensure readable contrast and accessible interactive/focus states across light/dark mode by auditing key UI compositions (buttons, inputs, cards, nav/header, menus/tabs) and adjusting foreground/background pairings to semantic defaults.",
+      "summary": "Fix the Admin Access email input so authorized users (owner/admin) can type normally and granting admin access reliably reports success or a clear error and refreshes the list.",
       "acceptanceCriteria": [
-        "Primary text, muted text, borders, and interactive states remain clearly legible in light mode and dark mode.",
-        "Interactive states (hover/focus/active/disabled) remain readable and clearly distinguishable.",
-        "Focus indicators remain visible on all backgrounds (keyboard navigation)."
+        "The email input in the Admin Access section accepts typing normally (no disabled/blocked input behavior) when the logged-in user has permission to manage admin access.",
+        "Submitting a valid email calls the backend and either (a) grants access successfully or (b) shows a clear error explaining why it cannot be granted (e.g., not owner / email not associated with any principal yet), without silently failing.",
+        "The admin email list refreshes after granting/revoking access."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/components/admin/AdminAccessSection.tsx",
           "operation": "modify",
-          "description": "Revise global focus-visible styling to use semantic ring tokens (ring, ring-offset-background) rather than fixed colors, and ensure base element defaults (links/buttons/inputs) maintain readable contrast in both themes without relying on hard-coded outline colors. Verify the component's usage instructions before implementing."
+          "description": "Harden the Grant Admin Access UX to avoid any blocked/disabled typing scenarios (ensure input remains editable except during explicit pending states), support Enter-to-submit, and present clear user-facing errors for authorization/validation failures. Use the authorization component’s role-based access control via existing admin gating patterns (e.g., admin-only sections) to keep this control visible/usable only to permitted users. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/AuthGate.tsx",
+          "path": "frontend/src/hooks/admin/useAdminAccess.ts",
           "operation": "modify",
-          "description": "Replace any hard-coded loading text colors with semantic token classes (e.g., text-muted-foreground / text-foreground) and ensure loading/fallback UI remains readable in both light and dark mode. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/BrandHeader.tsx",
-          "operation": "modify",
-          "description": "Audit and update navigation/menu button styling to ensure readable contrast for default/active/hover/focus states using semantic tokens (background/foreground/muted/accent/border/ring), avoiding fixed chrome color classes that can reduce legibility across themes. Verify the component's usage instructions before implementing."
+          "description": "Improve mutation/query error surfacing for grant/revoke flows (return actionable error messages) and ensure React Query invalidation consistently refreshes the admin email list and related admin views after changes. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Modernize public-facing layout styling (header, footer, landing hero/sections) for a cohesive professional feel while keeping existing navigation and content unchanged.",
+      "summary": "Add Ban/Unban actions to Admin Accounts and block banned users from creating new orders with a clear error message.",
       "acceptanceCriteria": [
-        "Brand header (frontend/src/components/BrandHeader.tsx), shell/footer (frontend/src/components/AppShell.tsx), and landing page (frontend/src/pages/LandingPage.tsx) have a cohesive modern/professional visual treatment (spacing, borders, surfaces, typography).",
-        "No routes, copy, or core behaviors change—this is a styling/theme modernization only.",
-        "The landing page remains responsive and visually consistent from mobile to desktop."
+        "Admin UI provides a clear action to Ban/Unban a selected account in the Admin Accounts section.",
+        "Backend exposes admin-only methods to ban and unban a principal, and persists the ban state in the user profile/account record.",
+        "A banned user attempting to create an order receives a clear error and no order is created.",
+        "VIP toggling continues to work as it does today."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AppShell.tsx",
+          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
           "operation": "modify",
-          "description": "Update shell/footer surface styling to match the admin panel’s polished feel using semantic tokens (bg-background/bg-card, text-foreground/text-muted-foreground, border-border) and refined spacing; keep structure, navigation, and copy unchanged. Verify the component's usage instructions before implementing."
+          "description": "Extend admin accounts data fetching to include each account’s ban state (via backend capability checks) and add mutations for ban/unban that invalidate account/admin-related queries after changes. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/BrandHeader.tsx",
+          "path": "frontend/src/components/admin/AdminAccountsSection.tsx",
           "operation": "modify",
-          "description": "Modernize header layout styling (sticky header surface, borders, active nav styling, mobile sheet trigger styling) using semantic tokens instead of chrome-specific classes; preserve current nav items and behavior. Verify the component's usage instructions before implementing."
+          "description": "Add Ban/Unban controls alongside the existing VIP toggle for each account, including clear labels, disabled/loading states while mutations are pending, and visible indication of banned status. Use the authorization component’s role-based access control via existing AdminGate-protected admin panel so only admins can trigger these actions. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/LandingPage.tsx",
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
           "operation": "modify",
-          "description": "Refresh landing hero/sections styling to be more modern/professional (typography scale alignment, card surfaces, gradients/overlays, spacing) while keeping existing content and navigation actions intact; replace hard-coded chrome color usage with semantic token usage where possible. Verify the component's usage instructions before implementing."
+          "description": "Add a pre-submit ban check for the current principal before calling order creation; if banned, throw a clear English error so the UI can display it and prevent order creation attempts from proceeding. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Display a clear user-facing error when order creation fails due to a ban (or other backend authorization failures), rather than only logging to console. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Validate and align readability/contrast across all existing admin themes (goth-black, silver-steel, white-luxury, deep-purple, fire-red) by ensuring admin UI compositions consistently use semantic token variables and predictable theme-scoped values.",
+      "summary": "Maintain existing admin order/account edit capabilities and add robust pending/error UX for VIP and ban/unban account actions.",
       "acceptanceCriteria": [
-        "Switching between all existing admin themes does not produce low-contrast text (e.g., labels, inputs, table text) or invisible borders.",
-        "Admin UI elements used throughout the admin panel keep consistent semantic token usage for backgrounds/foregrounds/borders so theme swaps remain predictable."
+        "Admin panel continues to support existing order edits (status, tracking number, delete) without regression.",
+        "Admin Accounts section supports both VIP toggle (existing) and Ban/Unban (new), with clear loading/disabled states while a mutation is pending.",
+        "Errors from backend mutations are shown in English and do not break the admin page rendering."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/components/admin/AdminAccountsSection.tsx",
           "operation": "modify",
-          "description": "Define/adjust admin theme class variable sets (e.g., .admin-theme-goth-black, .admin-theme-silver-steel, .admin-theme-white-luxury, .admin-theme-deep-purple, .admin-theme-fire-red) so each theme establishes readable semantic tokens (background/foreground/card/muted/border/input/ring) and consistent admin accent variables used by the admin panel; ensure theme switching does not create low contrast. Verify the component's usage instructions before implementing."
+          "description": "Refine account action UX to ensure VIP toggle and Ban/Unban have independent pending/disabled states, and that backend mutation errors are rendered/announced in English without breaking list rendering. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/AdminThemeLayout.tsx",
+          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
           "operation": "modify",
-          "description": "Ensure the admin theme wrapper applies appropriate semantic surface/text classes (bg-background text-foreground) in addition to theme class names so admin pages inherit readable defaults across all themes. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/admin/AdminThemeSwitcher.tsx",
-          "operation": "modify",
-          "description": "Update the theme switcher styling to use semantic token classes for trigger/content text, borders, and focus rings so it remains readable across all admin themes without relying on fixed cyber colors. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
-          "operation": "modify",
-          "description": "Audit and adjust admin panel compositions that currently rely on fixed color utilities (borders/text/backgrounds for cards, tabs, inputs, badges, status highlights) to ensure they use predictable semantic tokens and remain readable across all existing admin themes (without changing routes or behaviors). Verify the component's usage instructions before implementing."
+          "description": "Ensure all account mutations (VIP and ban/unban) consistently handle and surface errors in a user-friendly way and invalidate the correct React Query keys to refresh accounts/audit data after changes. Verify the component's usage instructions before implementing."
         }
       ]
     }

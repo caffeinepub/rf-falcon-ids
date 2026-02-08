@@ -1,8 +1,11 @@
-import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet, useNavigate, ErrorComponent } from '@tanstack/react-router';
+import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useIsAdmin } from './hooks/auth/useIsAdmin';
 import { useEffect, lazy, Suspense } from 'react';
 import LandingPage from './pages/LandingPage';
+import AboutPage from './pages/AboutPage';
+import FeaturesPage from './pages/FeaturesPage';
+import ContactPage from './pages/ContactPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -10,11 +13,9 @@ import ErrorPage from './pages/ErrorPage';
 import AppShell from './components/AppShell';
 import AuthGate from './components/AuthGate';
 import AdminGate from './components/AdminGate';
-import { AdminThemeProvider } from './hooks/admin/AdminThemeProvider';
-import AdminThemeLayout from './components/AdminThemeLayout';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from 'next-themes';
-import { Terminal, Loader2 } from 'lucide-react';
+import { Loader2, LayoutDashboard } from 'lucide-react';
 
 // Lazy load dashboard and admin pages for code splitting
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -22,20 +23,10 @@ const NewOrderPage = lazy(() => import('./pages/NewOrderPage'));
 const OrderDetailPage = lazy(() => import('./pages/OrderDetailPage'));
 const AdminPanelPage = lazy(() => import('./pages/AdminPanelPage'));
 
-function Layout() {
-  return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
-  );
-}
-
 const rootRoute = createRootRoute({
-  component: Layout,
+  component: AppShell,
   notFoundComponent: NotFoundPage,
-  errorComponent: ({ error, reset }) => (
-    <ErrorPage error={error} reset={reset} />
-  ),
+  errorComponent: ErrorPage,
 });
 
 function IndexComponent() {
@@ -57,7 +48,7 @@ function IndexComponent() {
   if (isAuthenticated && (adminLoading || !isFetched)) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-pulse text-chrome-300">Loading...</div>
+        <div className="animate-pulse text-primary">Loading...</div>
       </div>
     );
   }
@@ -73,6 +64,24 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: IndexComponent,
+});
+
+const aboutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/about',
+  component: AboutPage,
+});
+
+const featuresRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/features',
+  component: FeaturesPage,
+});
+
+const contactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/contact',
+  component: ContactPage,
 });
 
 const signInRoute = createRoute({
@@ -92,8 +101,8 @@ function DashboardLoadingFallback() {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center space-y-4">
-        <Loader2 className="w-12 h-12 mx-auto text-chrome-300 animate-spin" />
-        <div className="text-chrome-300 text-sm">Loading dashboard...</div>
+        <Loader2 className="w-12 h-12 mx-auto text-primary animate-spin" />
+        <div className="text-primary text-sm">Loading dashboard...</div>
       </div>
     </div>
   );
@@ -140,9 +149,9 @@ function AdminLoadingFallback() {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center space-y-4">
-        <Terminal className="w-12 h-12 mx-auto text-cyber-primary animate-pulse" />
-        <div className="text-cyber-primary font-mono text-sm tracking-wider">
-          [LOADING ADMIN INTERFACE...]
+        <LayoutDashboard className="w-12 h-12 mx-auto text-admin-primary animate-pulse" />
+        <div className="text-admin-primary text-sm">
+          Loading admin panel...
         </div>
       </div>
     </div>
@@ -155,13 +164,9 @@ const adminRoute = createRoute({
   component: () => (
     <AuthGate>
       <AdminGate>
-        <AdminThemeProvider>
-          <AdminThemeLayout>
-            <Suspense fallback={<AdminLoadingFallback />}>
-              <AdminPanelPage />
-            </Suspense>
-          </AdminThemeLayout>
-        </AdminThemeProvider>
+        <Suspense fallback={<AdminLoadingFallback />}>
+          <AdminPanelPage />
+        </Suspense>
       </AdminGate>
     </AuthGate>
   ),
@@ -169,6 +174,9 @@ const adminRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  aboutRoute,
+  featuresRoute,
+  contactRoute,
   signInRoute,
   signUpRoute,
   dashboardRoute,

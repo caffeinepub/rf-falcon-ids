@@ -6,19 +6,20 @@ import Nat "mo:core/Nat";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Set "mo:core/Set";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Storage "blob-storage/Storage";
-
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+// Runs migration from previous version to current version on deployment.
+
+(with migration = Migration.run)
 actor {
-  module State {
-    public type State = { /* Persistent state goes here */ };
-  };
-  var state = { /* Initialize persistent state */ };
+  stable let bannedUsers = Set.empty<Principal>();
 
   type Address = {
     first_name : Text;
@@ -66,6 +67,7 @@ actor {
   public type UserProfile = {
     name : Text;
     email : ?Text;
+    isVIP : Bool;
   };
 
   public type SecurityEvent = {
@@ -276,6 +278,57 @@ actor {
     userProfiles.get(user);
   };
 
+  public query ({ caller }) func isCallerVIP() : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check VIP status");
+    };
+    switch (userProfiles.get(caller)) {
+      case (?profile) { profile.isVIP };
+      case (null) { false };
+    };
+  };
+
+  public shared ({ caller }) func grantVIPStatus(user : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can grant VIP status");
+    };
+
+    switch (userProfiles.get(user)) {
+      case (?profile) {
+        let updatedProfile = { profile with isVIP = true };
+        userProfiles.add(user, updatedProfile);
+        logAuditEntry(caller, "grantVIPStatus", "VIP status granted to " # user.toText());
+      };
+      case (null) { Runtime.trap("User not found") };
+    };
+  };
+
+  public shared ({ caller }) func revokeVIPStatus(user : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can revoke VIP status");
+    };
+
+    switch (userProfiles.get(user)) {
+      case (?profile) {
+        let updatedProfile = { profile with isVIP = false };
+        userProfiles.add(user, updatedProfile);
+        logAuditEntry(caller, "revokeVIPStatus", "VIP status revoked for " # user.toText());
+      };
+      case (null) { Runtime.trap("User not found") };
+    };
+  };
+
+  public query ({ caller }) func getAllVIPAccounts() : async [(Principal, Bool)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view VIP accounts");
+    };
+    let vipList = List.empty<(Principal, Bool)>();
+    for ((principal, profile) in userProfiles.entries()) {
+      vipList.add((principal, profile.isVIP));
+    };
+    vipList.toArray();
+  };
+
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
@@ -298,7 +351,7 @@ actor {
       case (null) { };
     };
 
-    userProfiles.add(caller, profile);
+    userProfiles.add(caller, { profile with isVIP = false });
   };
 
   public shared ({ caller }) func createOrder(
@@ -309,6 +362,11 @@ actor {
   ) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create orders");
+    };
+
+    switch (bannedUsers.contains(caller)) {
+      case (true) { Runtime.trap("Your account has been banned from placing orders") };
+      case (false) {};
     };
 
     if (not checkRateLimit(caller, "createOrder")) {
@@ -444,6 +502,11 @@ actor {
   public shared ({ caller }) func createOrderWithCallback(id : Text, details : Details, address : Address, photo : Storage.ExternalBlob) : async Order {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create orders");
+    };
+
+    switch (bannedUsers.contains(caller)) {
+      case (true) { Runtime.trap("Your account has been banned from placing orders") };
+      case (false) {};
     };
 
     if (not checkRateLimit(caller, "createOrderWithCallback")) {
@@ -769,13 +832,71 @@ actor {
     adminEmails.containsKey(email);
   };
 
+  public shared ({ caller }) func banUser(user : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can perform account actions");
+    };
+
+    if (user == caller) {
+      Runtime.trap("Cannot ban yourself");
+    };
+
+    if (isOwner(user)) {
+      Runtime.trap("Cannot ban the owner");
+    };
+
+    if (AccessControl.isAdmin(accessControlState, user)) {
+      Runtime.trap("Cannot ban other admins");
+    };
+
+    bannedUsers.add(user);
+    logAuditEntry(caller, "banUser", "User " # user.toText() # " banned");
+  };
+
+  public shared ({ caller }) func unbanUser(user : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can perform account actions");
+    };
+
+    bannedUsers.remove(user);
+    logAuditEntry(caller, "unbanUser", "User " # user.toText() # " unbanned");
+  };
+
+  public query ({ caller }) func isUserBanned(user : Principal) : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can check banned status");
+    };
+    bannedUsers.contains(user);
+  };
+
   public query ({ caller }) func getAdminDashboard() : async AdminDashboardData {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access dashboard");
     };
 
     let ordersArray = orders.values().toArray();
-    let userProfilesArray = userProfiles.toArray();
+
+    let userProfilesArray = (func() : [(Principal, UserProfile)] {
+      let filteredList = List.empty<(Principal, UserProfile)>();
+      for ((principal, profile) in userProfiles.entries()) {
+        var hasOrders = false;
+        for ((_, order) in orders.entries()) {
+          switch (order.owner) {
+            case (?o) {
+              if (o == principal) {
+                hasOrders := true;
+              };
+            };
+            case (null) { };
+          };
+        };
+        if (hasOrders) {
+          filteredList.add((principal, profile));
+        };
+      };
+      filteredList.toArray();
+    })();
+
     let auditLogArray = auditLog.toArray();
 
     {

@@ -73,6 +73,7 @@ export interface SecurityStats {
 export interface UserProfile {
     name: string;
     email?: string;
+    isVIP: boolean;
 }
 export enum OrderStatus {
     shipped = "shipped",
@@ -93,6 +94,7 @@ export interface backendInterface {
     addToAllowlist(principal: Principal): Promise<void>;
     addToBlocklist(principal: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    banUser(user: Principal): Promise<void>;
     bulkApproveOrders(orderIds: Array<string>): Promise<void>;
     bulkDeleteOrders(orderIds: Array<string>): Promise<void>;
     bulkShipOrders(orderIds: Array<string>): Promise<void>;
@@ -103,6 +105,7 @@ export interface backendInterface {
     exportOrdersCSV(): Promise<string>;
     getAdminDashboard(): Promise<AdminDashboardData>;
     getAllOrders(): Promise<Array<Order>>;
+    getAllVIPAccounts(): Promise<Array<[Principal, boolean]>>;
     getAuditLog(limit: bigint): Promise<Array<AuditLogEntry>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -119,17 +122,22 @@ export interface backendInterface {
     getSecurityStats(): Promise<SecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     grantAdminAccess(admin_email: string): Promise<void>;
+    grantVIPStatus(user: Principal): Promise<void>;
     isAdminEmail(email: string): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
+    isCallerVIP(): Promise<boolean>;
     isOrderOwner(orderId: string): Promise<boolean>;
+    isUserBanned(user: Principal): Promise<boolean>;
     listAdminEmails(): Promise<Array<string>>;
     removeFromAllowlist(principal: Principal): Promise<void>;
     removeFromBlocklist(principal: Principal): Promise<void>;
     resetAllData(): Promise<void>;
     revokeAdminAccess(admin_email: string): Promise<void>;
+    revokeVIPStatus(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setSecurityEnabled(enabled: boolean): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
+    unbanUser(user: Principal): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
     updateRateLimits(rateLimitWindow: bigint, maxCallsPerWindow: bigint): Promise<void>;
 }
