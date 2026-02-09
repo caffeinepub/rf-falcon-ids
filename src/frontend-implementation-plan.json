@@ -1,63 +1,134 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove Admin Accounts tab and manage order-linked accounts from Orders UI",
+  "title": "VIP source-of-truth alignment, VIP pricing, height select, and landing delivery-time message",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Remove the standalone Admin “Accounts” tab/section (and related lazy imports) and update admin dashboard copy to reflect the new UI.",
+      "summary": "Align customer VIP detection with the backend VIP source of truth so admin VIP toggles reliably reflect in the customer UI.",
       "acceptanceCriteria": [
-        "Admin panel no longer shows an “Accounts” tab/section.",
-        "No unused/lazy imports remain for the removed Accounts section (e.g., AdminAccountsSection).",
-        "Admin Panel header/description text is updated so it does not claim admins manage accounts from the dashboard if the accounts area was removed."
+        "When an admin grants VIP to a user, that same user is recognized as VIP in the customer UI (without requiring manual hacks like clearing storage).",
+        "When an admin revokes VIP, the user is no longer recognized as VIP in the customer UI.",
+        "VIP status is consistent across backend endpoints and frontend hooks (no mismatch between profile.isVIP and backend VIP tracking)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "path": "frontend/src/hooks/auth/useIsCallerVIP.ts",
           "operation": "modify",
-          "description": "Remove the Accounts tab trigger and tab content from the Admin Panel UI, and delete the related lazy import(s) (e.g., AdminAccountsSection). Update the Admin Dashboard header/description text so it no longer advertises a separate accounts area."
+          "description": "Update the VIP check to use the backend VIP source of truth (prefer actor.isCallerVIP()) instead of relying on profile.isVIP; ensure the query refetches often enough (e.g., refetchOnWindowFocus and/or a short refetchInterval) so VIP changes made by admins propagate to the customer UI without manual cache/storage clearing."
         },
         {
-          "path": "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "operation": "delete",
-          "description": "Delete the standalone Admin Accounts section UI component so it cannot be navigated to from the admin tabs and does not leave dead code behind."
+          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
+          "operation": "modify",
+          "description": "Ensure VIP-toggle success invalidates the specific VIP status query key (authKeys.vipStatus()) and any related cached auth/profile queries so admin actions do not leave stale VIP state in the UI."
         },
         {
-          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "path": "frontend/src/components/VipCongratsDialog.tsx",
           "operation": "modify",
-          "description": "Remove any accounts-list-specific query keys that are now unused by the UI after deleting the standalone Accounts section (keep/add only keys needed for order-linked account status)."
+          "description": "Adjust VIP dialog visibility logic to rely solely on the updated useIsCallerVIP source-of-truth state (and not any cached/stored VIP assumptions) so it does not show VIP UX when VIP is revoked."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add per-order account management controls in the admin Orders UI to view owner status and ban/unban or grant/revoke VIP for the owner principal.",
+      "summary": "Apply and display the 10% VIP discount consistently in the new order pricing breakdown and final total.",
       "acceptanceCriteria": [
-        "For any order that has an owner principal, the admin UI exposes controls to: (1) ban/unban the owner, and (2) grant/revoke VIP for the owner, without navigating to a separate Accounts page.",
-        "If an order has no owner (owner is null), the UI clearly indicates that account management is unavailable for that order and does not show broken controls.",
-        "After a ban/unban or VIP change, the UI refreshes to reflect the updated account status and does not require a manual page reload.",
-        "User-facing text for these controls and confirmations is in English."
+        "If the signed-in caller is VIP, the order form pricing section shows a line item for “VIP 10% Discount” and the total reflects 10% off the base order price.",
+        "If the signed-in caller is not VIP, no VIP discount line item is shown and the total equals the non-discounted pricing (plus/minus any other existing discounts already implemented).",
+        "The VIP discount amount equals exactly 10% of the base order price used by the app."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "path": "frontend/src/pages/NewOrderPage.tsx",
           "operation": "modify",
-          "description": "Add a targeted account-status query key (e.g., accountKeys.info(principalText)) to support fetching/updating account status per order owner without relying on a full accounts list."
+          "description": "Ensure VIP pricing uses the existing vipPricing helpers and the VIP label renders exactly as “VIP 10% Discount”; verify the breakdown line item and final total reflect a precise 10% discount of the base order price for VIP users and show no VIP line item for non-VIP users."
         },
         {
-          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
+          "path": "frontend/src/components/OrderSuccessModal.tsx",
           "operation": "modify",
-          "description": "Refactor admin account hooks to support targeted order-linked account management: add a React Query hook that fetches account status for a single Principal using the backend function typed as getAccountInfo(user). Ensure VIP/ban mutations invalidate the targeted account-status query key (and other relevant keys) so the UI refreshes automatically. Use the selected \"authorization\" component patterns for handling authorization failures gracefully on the frontend; verify the component's usage instructions before implementing."
+          "description": "Confirm the VIP savings messaging uses the same VIP source-of-truth hook and vipPricing calculation to avoid discrepancies between the order form and success messaging."
+        },
+        {
+          "path": "frontend/src/utils/vipPricing.ts",
+          "operation": "modify",
+          "description": "Add/adjust helpers as needed to guarantee the VIP discount amount is exactly 10% of the base order price used by the app and provide a single canonical label for the VIP discount line item."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Replace the height text input on the new order form with a dropdown/select while preserving the existing create-order payload field.",
+      "acceptanceCriteria": [
+        "The height field on the new order form is a dropdown/select control instead of a freeform text input.",
+        "Submitting an order sends the selected height value through the existing create-order payload field for height.",
+        "Form validation and UX do not block selection-based height entry (i.e., dropdown values are considered valid inputs)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/constants/heights.ts",
+          "operation": "create",
+          "description": "Add a centralized list of supported height options (string values) for the new order form dropdown to ensure consistent display and payload values."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Replace the Height <Input> with the existing shadcn/ui Select components already used elsewhere on the form; wire the selected value into formData.height so order submission continues to send height via the existing create-order payload field. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/utils/validation.ts",
+          "operation": "modify",
+          "description": "Update/align any height validation/normalization to treat the dropdown’s predefined height values as valid inputs (and avoid blocking submission due to format expectations)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Display a clear “2–3 week Delivery time” message on the landing page.",
+      "acceptanceCriteria": [
+        "The landing page displays the text “2–3 week Delivery time” in a clearly visible location (e.g., within the hero section).",
+        "The text is written in English exactly as “2–3 week Delivery time” (or “2–3 week delivery time” if styling requires capitalization consistency), and is not hidden behind interactions."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/content/copy.ts",
+          "operation": "modify",
+          "description": "Add a dedicated landing-page copy string for the delivery-time message so the text can be consistently rendered and maintained."
+        },
+        {
+          "path": "frontend/src/pages/LandingPage.tsx",
+          "operation": "modify",
+          "description": "Render the delivery-time message in a clearly visible location within the hero content (e.g., near the subtitle/CTAs), ensuring the displayed text matches “2–3 week Delivery time” (or the capitalization-consistent variant) and is visible without interaction."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Stabilize VIP- and order-related UI flows after changes so order creation, pricing display, and admin VIP toggling do not produce runtime errors.",
+      "acceptanceCriteria": [
+        "Creating an order works successfully for both VIP and non-VIP users.",
+        "No console errors occur during the VIP check, order creation, or when loading the landing page.",
+        "Admin VIP toggle actions complete without trapping/uncaught errors and the customer UI reflects the updated VIP state per REQ-1."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/auth/useIsCallerVIP.ts",
+          "operation": "modify",
+          "description": "Harden VIP-check error handling and loading states so failures do not break order pages or global UI (e.g., dialogs) and do not spam console errors during normal navigation."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the updated height Select and VIP pricing logic do not introduce uncontrolled/invalid state transitions; verify submission still sends the required fields and that pricing UI renders without runtime errors for VIP and non-VIP users."
         },
         {
           "path": "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
-          "operation": "create",
-          "description": "Create an admin-only UI component to be embedded in each order card that: (1) shows current account status for the order owner (VIP/banned/orderCount/profile name/email when present), (2) provides ban/unban and grant/revoke VIP controls with English confirmation dialogs, and (3) renders a clear disabled/unavailable state when order.owner is missing. Use existing shadcn-ui composed components (e.g., Card/Badge/Button/AlertDialog) for consistent styling; verify the component's usage instructions before implementing."
+          "operation": "modify",
+          "description": "Verify the admin VIP toggle UI remains stable after VIP-source-of-truth changes (loading/error states, button disablement, and post-toggle UI state), avoiding uncaught errors during grant/revoke actions."
         },
         {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "path": "frontend/src/pages/LandingPage.tsx",
           "operation": "modify",
-          "description": "Wire the new per-order account management component into the Orders tab UI for each order row/card. When an order has no owner, show a clear message (e.g., 'No owner on this order; account management unavailable') and do not render action buttons. Ensure successful mutations trigger a status refresh via React Query invalidation (no manual reload needed)."
+          "description": "Verify the added delivery-time message does not introduce layout/runtime errors and renders correctly across responsive breakpoints."
         }
       ]
     }

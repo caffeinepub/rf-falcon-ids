@@ -8,10 +8,12 @@ import Set "mo:core/Set";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Storage "blob-storage/Storage";
+import Migration "migration";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
+(with migration = Migration.run)
 actor {
   public type Address = {
     first_name : Text;
@@ -416,8 +418,19 @@ actor {
     bannedUsers.contains(user);
   };
 
-  // Public: Check if user is VIP
-  public query func isUserVIP(user : Principal) : async Bool {
+  // Authenticated: Check caller's own VIP status
+  public query ({ caller }) func isCallerVIP() : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check VIP status");
+    };
+    vipUsers.contains(caller);
+  };
+
+  // Authenticated: Check VIP status (self or admin)
+  public query ({ caller }) func isUserVIP(user : Principal) : async Bool {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only check your own VIP status");
+    };
     vipUsers.contains(user);
   };
 };

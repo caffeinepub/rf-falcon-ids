@@ -11,12 +11,13 @@ export function useIsCallerVIP() {
     queryKey: authKeys.vipStatus(),
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      const profile = await actor.getCallerUserProfile();
-      return profile?.isVIP ?? false;
+      // Use the backend VIP source of truth
+      return actor.isCallerVIP();
     },
     enabled: !!actor && !!identity && !actorFetching,
     retry: false,
-    staleTime: 30_000,
+    staleTime: 5_000, // Reduced to 5 seconds for faster VIP status updates
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   return {

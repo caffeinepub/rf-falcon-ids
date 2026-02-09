@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, CreditCard, Crown, AlertCircle, Tag, CheckCircle2, XCircle } from 'lucide-react';
 import { US_STATES } from '../constants/usStates';
+import { HEIGHT_OPTIONS } from '../constants/heights';
 import PhotoUploader from '../components/PhotoUploader';
 import { COPY } from '../content/copy';
 import { ExternalBlob } from '../backend';
@@ -160,7 +161,7 @@ export default function NewOrderPage() {
     formData.shippingZip &&
     photoBlob;
 
-  // Calculate pricing with promo discount
+  // Calculate pricing with VIP discount
   const vipDiscount = isVIP ? calculateVIPDiscount(BASE_ORDER_PRICE) : 0;
   const priceAfterVIP = isVIP ? calculateVIPTotal(BASE_ORDER_PRICE) : BASE_ORDER_PRICE;
   const promoDiscount = promoValidation.isValid ? Math.round(priceAfterVIP * 0.05) : 0;
@@ -418,14 +419,22 @@ export default function NewOrderPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="height">Height</Label>
-                <Input
-                  id="height"
-                  placeholder="e.g., 5'10&quot;"
-                  value={formData.height}
-                  onChange={(e) => handleInputChange('height', e.target.value)}
-                  required
+                <Select 
+                  value={formData.height} 
+                  onValueChange={(value) => handleInputChange('height', value)}
                   disabled={createOrder.isPending}
-                />
+                >
+                  <SelectTrigger id="height">
+                    <SelectValue placeholder="Select height" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HEIGHT_OPTIONS.map((height) => (
+                      <SelectItem key={height} value={height}>
+                        {height}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="eyeColor">Eye Color</Label>
@@ -535,21 +544,23 @@ export default function NewOrderPage() {
         </Card>
 
         {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={!isFormValid || createOrder.isPending || vipLoading}
-          className="w-full"
-          size="lg"
-        >
-          {createOrder.isPending ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Creating Order...
-            </>
-          ) : (
-            'Create Order'
-          )}
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={!isFormValid || createOrder.isPending}
+            className="min-w-[200px]"
+          >
+            {createOrder.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Creating Order...
+              </>
+            ) : (
+              'Create Order'
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   );

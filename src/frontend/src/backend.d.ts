@@ -101,6 +101,7 @@ export interface backendInterface {
     getOrder(orderId: string): Promise<Order | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    isCallerVIP(): Promise<boolean>;
     isUserBanned(user: Principal): Promise<boolean>;
     isUserVIP(user: Principal): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;

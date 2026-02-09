@@ -10,6 +10,7 @@ export const COPY = {
   LANDING_FEATURE_3_TITLE: 'Secure Platform',
   LANDING_FEATURE_3_DESC: 'Your information is protected with Internet Identity authentication and encrypted storage',
   LANDING_DISCLAIMER: '',
+  LANDING_DELIVERY_TIME: '2–3 week Delivery time',
 
   // Order form
   ORDER_FORM_SUBTITLE: 'Create your custom identification card',

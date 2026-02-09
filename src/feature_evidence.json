@@ -2,12 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-the-standalone-accounts-area-from-the-admin-panel-ui-including-its-tab-trigger-tab-content-and-any-related-lazy-imports-so-admins-no-longer-manage-accounts-from-a-separate-admin-accounts-section",
-      "featureTitle": "Remove the standalone “Accounts” area from the Admin Panel UI (including its tab trigger, tab content, and any related lazy imports) so admins no longer manage accounts from a separate Admin Accounts section.",
+      "featureId": "feature-make-vip-status-work-end-to-end-by-ensuring-the-frontend-vip-check-reflects-the-same-vip-source-of-truth-that-admins-toggle-in-the-backend-so-a-vip-user-consistently-receives-the-vip-experience-and-pricing",
+      "featureTitle": "Make VIP status work end-to-end by ensuring the frontend VIP check reflects the same VIP source of truth that admins toggle in the backend (so a VIP user consistently receives the VIP experience and pricing).",
       "files": [
-        "frontend/src/components/admin/AdminAccountsSection.tsx",
-        "frontend/src/hooks/orders/queryKeys.ts",
-        "frontend/src/pages/AdminPanelPage.tsx"
+        "frontend/src/components/VipCongratsDialog.tsx",
+        "frontend/src/hooks/admin/useAdminAccounts.ts",
+        "frontend/src/hooks/auth/useIsCallerVIP.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,13 +24,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-account-management-controls-to-admin-order-management-so-an-admin-can-ban-unban-and-manage-vip-status-for-the-account-tied-to-an-order-directly-from-the-order-ui",
-      "featureTitle": "Add account management controls to admin order management so an admin can ban/unban and manage VIP status for the account tied to an order directly from the order UI.",
+      "featureId": "feature-apply-a-10-vip-discount-to-order-pricing-everywhere-the-user-sees-pricing-for-a-new-order-including-the-order-pricing-breakdown-and-the-final-total-using-the-existing-vip-pricing-logic",
+      "featureTitle": "Apply a 10% VIP discount to order pricing everywhere the user sees pricing for a new order (including the order pricing breakdown and the final total), using the existing VIP pricing logic.",
       "files": [
-        "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
-        "frontend/src/hooks/admin/useAdminAccounts.ts",
-        "frontend/src/hooks/orders/queryKeys.ts",
-        "frontend/src/pages/AdminPanelPage.tsx"
+        "frontend/src/pages/NewOrderPage.tsx",
+        "frontend/src/utils/vipPricing.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,6 +41,70 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-change-the-height-input-on-the-new-order-form-to-a-dropdown-select-for-height-selection",
+      "featureTitle": "Change the height input on the new order form to a dropdown (select) for height selection.",
+      "files": [
+        "frontend/src/constants/heights.ts",
+        "frontend/src/pages/NewOrderPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-visible-2-3-week-delivery-time-message-on-the-main-landing-page",
+      "featureTitle": "Add a visible “2–3 week Delivery time” message on the main (landing) page.",
+      "files": [
+        "frontend/src/content/copy.ts",
+        "frontend/src/pages/LandingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-any-broken-vip-and-order-related-flows-introduced-by-the-above-changes-so-that-creating-an-order-viewing-pricing-and-toggling-vip-as-an-admin-work-without-runtime-errors",
+      "featureTitle": "Fix any broken VIP- and order-related flows introduced by the above changes so that creating an order, viewing pricing, and toggling VIP as an admin work without runtime errors.",
+      "files": [
+        "frontend/src/hooks/auth/useIsCallerVIP.ts",
+        "frontend/src/pages/LandingPage.tsx",
+        "frontend/src/pages/NewOrderPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

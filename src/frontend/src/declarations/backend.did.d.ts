@@ -127,6 +127,7 @@ export interface _SERVICE {
   'getOrder' : ActorMethod<[string], [] | [Order]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isCallerVIP' : ActorMethod<[], boolean>,
   'isUserBanned' : ActorMethod<[Principal], boolean>,
   'isUserVIP' : ActorMethod<[Principal], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,

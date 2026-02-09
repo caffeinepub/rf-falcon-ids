@@ -1,71 +1,108 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T04:02:53.661Z",
+  "generatedAt": "2026-02-09T04:25:54.281Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 2,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Remove the standalone “Accounts” area from the Admin Panel UI (including its tab trigger, tab content, and any related lazy imports) so admins no longer manage accounts from a separate Admin Accounts section.",
+        "summary": "Make VIP status work end-to-end by ensuring the frontend VIP check reflects the same VIP source of truth that admins toggle in the backend (so a VIP user consistently receives the VIP experience and pricing).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "frontend/src/hooks/orders/queryKeys.ts"
+          "frontend/src/hooks/auth/useIsCallerVIP.ts",
+          "frontend/src/hooks/admin/useAdminAccounts.ts",
+          "frontend/src/components/VipCongratsDialog.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/components/admin/AdminAccountsSection.tsx",
-          "frontend/src/hooks/orders/queryKeys.ts"
+          "frontend/src/hooks/auth/useIsCallerVIP.ts",
+          "frontend/src/hooks/admin/useAdminAccounts.ts",
+          "frontend/src/components/VipCongratsDialog.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add account management controls to admin order management so an admin can ban/unban and manage VIP status for the account tied to an order directly from the order UI.",
+        "summary": "Apply a 10% VIP discount to order pricing everywhere the user sees pricing for a new order (including the order pricing breakdown and the final total), using the existing VIP pricing logic.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/orders/queryKeys.ts",
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx"
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/components/OrderSuccessModal.tsx",
+          "frontend/src/utils/vipPricing.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/orders/queryKeys.ts",
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx"
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/utils/vipPricing.ts"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Provide a backend API to fetch account status for a specific principal (used by the order-linked account management UI) without requiring loading the entire accounts list.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Change the height input on the new order form to a dropdown (select) for height selection.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/constants/heights.ts",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/utils/validation.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/constants/heights.ts",
+          "frontend/src/pages/NewOrderPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Add a visible “2–3 week Delivery time” message on the main (landing) page.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/content/copy.ts",
+          "frontend/src/pages/LandingPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/content/copy.ts",
+          "frontend/src/pages/LandingPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Fix any broken VIP- and order-related flows introduced by the above changes so that creating an order, viewing pricing, and toggling VIP as an admin work without runtime errors.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/auth/useIsCallerVIP.ts",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
+          "frontend/src/pages/LandingPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/auth/useIsCallerVIP.ts",
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/pages/LandingPage.tsx"
+        ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/admin/AdminAccountsSection.tsx",
-    "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
+    "frontend/src/components/VipCongratsDialog.tsx",
+    "frontend/src/constants/heights.ts",
+    "frontend/src/content/copy.ts",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/admin/useAdminAccounts.ts",
-    "frontend/src/hooks/orders/queryKeys.ts",
-    "frontend/src/pages/AdminPanelPage.tsx",
+    "frontend/src/hooks/auth/useIsCallerVIP.ts",
+    "frontend/src/pages/LandingPage.tsx",
+    "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/src/utils/vipPricing.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,72 +1,107 @@
 {
   "kind": "build_request",
-  "title": "Remove Admin Accounts tab and manage user accounts from Orders",
+  "title": "Fix VIP 10% discount, add height dropdown, and show delivery-time message on landing page",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove the standalone “Accounts” area from the Admin Panel UI (including its tab trigger, tab content, and any related lazy imports) so admins no longer manage accounts from a separate Admin Accounts section.",
-      "target": "frontend",
+      "text": "Make VIP status work end-to-end by ensuring the frontend VIP check reflects the same VIP source of truth that admins toggle in the backend (so a VIP user consistently receives the VIP experience and pricing).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-5"
         ],
         "quotes": [
-          "Ok yes remove the accounts area in the admin panel"
+          "Make sure VIP works make sure if they are it takes off %10 off order pricing"
         ]
       },
       "acceptanceCriteria": [
-        "Admin panel no longer shows an “Accounts” tab/section.",
-        "No unused/lazy imports remain for the removed Accounts section (e.g., AdminAccountsSection).",
-        "Admin Panel header/description text is updated so it does not claim admins manage accounts from the dashboard if the accounts area was removed."
+        "When an admin grants VIP to a user, that same user is recognized as VIP in the customer UI (without requiring manual hacks like clearing storage).",
+        "When an admin revokes VIP, the user is no longer recognized as VIP in the customer UI.",
+        "VIP status is consistent across backend endpoints and frontend hooks (no mismatch between profile.isVIP and backend VIP tracking)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add account management controls to admin order management so an admin can ban/unban and manage VIP status for the account tied to an order directly from the order UI.",
-      "target": "both",
+      "text": "Apply a 10% VIP discount to order pricing everywhere the user sees pricing for a new order (including the order pricing breakdown and the final total), using the existing VIP pricing logic.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-5"
         ],
         "quotes": [
-          "make me be able to ban and manage people accounts from there order so if they place a order i can manage there account from the order"
+          "Make sure VIP works make sure if they are it takes off %10 off order pricing"
         ]
       },
       "acceptanceCriteria": [
-        "For any order that has an owner principal, the admin UI exposes controls to: (1) ban/unban the owner, and (2) grant/revoke VIP for the owner, without navigating to a separate Accounts page.",
-        "If an order has no owner (owner is null), the UI clearly indicates that account management is unavailable for that order and does not show broken controls.",
-        "After a ban/unban or VIP change, the UI refreshes to reflect the updated account status and does not require a manual page reload.",
-        "User-facing text for these controls and confirmations is in English."
+        "If the signed-in caller is VIP, the order form pricing section shows a line item for “VIP 10% Discount” and the total reflects 10% off the base order price.",
+        "If the signed-in caller is not VIP, no VIP discount line item is shown and the total equals the non-discounted pricing (plus/minus any other existing discounts already implemented).",
+        "The VIP discount amount equals exactly 10% of the base order price used by the app."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Provide a backend API to fetch account status for a specific principal (used by the order-linked account management UI) without requiring loading the entire accounts list.",
-      "target": "backend",
+      "text": "Change the height input on the new order form to a dropdown (select) for height selection.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-5"
         ],
         "quotes": [
-          "ban and manage people accounts from there order"
+          "also make it so for the height make a dropdrop for height selection"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes an admin-only query method to fetch account info for a given Principal (including at least: isBanned, isVIP, profile if present, and orderCount).",
-        "The method traps with an authorization error when called by a non-admin.",
-        "Frontend order-linked account management UI uses this targeted API (or an equivalent targeted mechanism) to display current status for the order owner."
+        "The height field on the new order form is a dropdown/select control instead of a freeform text input.",
+        "Submitting an order sends the selected height value through the existing create-order payload field for height.",
+        "Form validation and UX do not block selection-based height entry (i.e., dropdown values are considered valid inputs)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Add a visible “2–3 week Delivery time” message on the main (landing) page.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "also put on main page 2-3 week Delivery time"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The landing page displays the text “2–3 week Delivery time” in a clearly visible location (e.g., within the hero section).",
+        "The text is written in English exactly as “2–3 week Delivery time” (or “2–3 week delivery time” if styling requires capitalization consistency), and is not hidden behind interactions."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Fix any broken VIP- and order-related flows introduced by the above changes so that creating an order, viewing pricing, and toggling VIP as an admin work without runtime errors.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "fix anything not working etc"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Creating an order works successfully for both VIP and non-VIP users.",
+        "No console errors occur during the VIP check, order creation, or when loading the landing page.",
+        "Admin VIP toggle actions complete without trapping/uncaught errors and the customer UI reflects the updated VIP state per REQ-1."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
-    "Do not edit any frontend files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT; compose those components instead."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit any files under frontend/src/components/ui (compose them instead).",
+    "Do not edit immutable hook/bootstrap files: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx."
   ],
   "nonGoals": [
-    "Do not add third-party authentication providers (Internet Identity only).",
-    "Do not add promo-code backend functionality or other unrelated admin features.",
-    "Do not implement bulk account actions beyond per-order/per-owner management."
+    "Implementing a full promo code system (backend validation/storage) beyond what already exists.",
+    "Changing product pricing beyond the requested VIP 10% discount behavior.",
+    "Adding new authentication providers (only Internet Identity is supported)."
   ],
   "imageRequirements": {
     "required": [],

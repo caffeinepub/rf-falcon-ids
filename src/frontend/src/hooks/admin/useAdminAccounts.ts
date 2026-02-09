@@ -1,30 +1,20 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
-import { accountKeys, auditKeys, authKeys } from '../orders/queryKeys';
-import { Principal } from '@dfinity/principal';
+import { accountKeys, auditKeys, authKeys, orderKeys } from '../orders/queryKeys';
 import type { AccountInfo } from '../../backend';
-import { toast } from 'sonner';
+import { Principal } from '@dfinity/principal';
 
 export function useAccountInfo(principal: Principal | null) {
-  const { actor, isFetching: actorFetching } = useActor();
+  const { actor } = useActor();
 
   return useQuery<AccountInfo | null>({
-    queryKey: accountKeys.info(principal?.toText() || ''),
+    queryKey: principal ? accountKeys.info(principal.toText()) : ['accounts', 'null'],
     queryFn: async () => {
       if (!actor || !principal) return null;
-      try {
-        const accountInfo = await actor.getAccountInfo(principal);
-        return accountInfo || null;
-      } catch (error: any) {
-        // Normalize authorization errors
-        if (error.message?.includes('Unauthorized') || error.message?.includes('Only admins')) {
-          throw new Error('You do not have permission to view account information');
-        }
-        throw error;
-      }
+      return actor.getAccountInfo(principal);
     },
-    enabled: !!actor && !actorFetching && !!principal,
-    retry: false,
+    enabled: !!actor && !!principal,
+    staleTime: 10_000,
   });
 }
 
@@ -35,19 +25,15 @@ export function useSetVIPStatus() {
   return useMutation({
     mutationFn: async ({ principal, isVIP }: { principal: Principal; isVIP: boolean }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.setVIPStatus(principal, isVIP);
+      return actor.setVIPStatus(principal, isVIP);
     },
-    onSuccess: (_, { principal, isVIP }) => {
-      queryClient.invalidateQueries({ queryKey: accountKeys.all });
+    onSuccess: (_, { principal }) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: accountKeys.info(principal.toText()) });
+      queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: auditKeys.all });
-      queryClient.invalidateQueries({ queryKey: authKeys.all });
-      toast.success(isVIP ? 'VIP status granted successfully' : 'VIP status revoked successfully');
-    },
-    onError: (error: any) => {
-      console.error('Set VIP status error:', error);
-      const message = error.message || 'Failed to update VIP status';
-      toast.error(message);
+      queryClient.invalidateQueries({ queryKey: authKeys.all }); // Invalidate all auth queries including VIP status
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
   });
 }
@@ -59,18 +45,13 @@ export function useBanUser() {
   return useMutation({
     mutationFn: async (principal: Principal) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.banUser(principal);
+      return actor.banUser(principal);
     },
     onSuccess: (_, principal) => {
-      queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: accountKeys.info(principal.toText()) });
+      queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: auditKeys.all });
-      toast.success('User banned successfully');
-    },
-    onError: (error: any) => {
-      console.error('Ban user error:', error);
-      const message = error.message || 'Failed to ban user';
-      toast.error(message);
+      queryClient.invalidateQueries({ queryKey: authKeys.all });
     },
   });
 }
@@ -82,18 +63,13 @@ export function useUnbanUser() {
   return useMutation({
     mutationFn: async (principal: Principal) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.unbanUser(principal);
+      return actor.unbanUser(principal);
     },
     onSuccess: (_, principal) => {
-      queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: accountKeys.info(principal.toText()) });
+      queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: auditKeys.all });
-      toast.success('User unbanned successfully');
-    },
-    onError: (error: any) => {
-      console.error('Unban user error:', error);
-      const message = error.message || 'Failed to unban user';
-      toast.error(message);
+      queryClient.invalidateQueries({ queryKey: authKeys.all });
     },
   });
 }
