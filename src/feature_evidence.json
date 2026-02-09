@@ -2,10 +2,9 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-home-landing-page-cta-buttons-including-the-order-now-button-so-they-reliably-navigate-to-the-intended-routes-and-never-appear-unclickable-due-to-layout-overlay-issues",
-      "featureTitle": "Fix the Home (Landing) page CTA buttons (including the \"Order Now\" button) so they reliably navigate to the intended routes and never appear unclickable due to layout/overlay issues.",
+      "featureId": "feature-update-the-landing-page-cta-buttons-so-that-clicking-get-started-or-order-now-routes-authenticated-users-to-the-dashboard-instead-of-the-sign-in-page-unauthenticated-users-should-still-be-routed-to-sign-in",
+      "featureTitle": "Update the Landing page CTA buttons so that clicking \"Get Started\" or \"Order Now\" routes authenticated users to the Dashboard instead of the Sign In page; unauthenticated users should still be routed to Sign In.",
       "files": [
-        "frontend/src/components/AppShell.tsx",
         "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
@@ -19,52 +18,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-replace-the-current-placeholder-unavailable-trey-c-security-ui-in-the-admin-panel-with-a-functional-dashboard-that-reads-real-security-config-stats-events-from-the-backend-and-allows-admins-to-manage-security-settings",
-      "featureTitle": "Replace the current placeholder/unavailable TREY-C security UI in the Admin panel with a functional dashboard that reads real security config/stats/events from the backend and allows admins to manage security settings.",
-      "files": [
-        "frontend/src/components/admin/TreyCSecuritySection.tsx",
-        "frontend/src/hooks/security/useSecurityConfig.ts",
-        "frontend/src/hooks/security/useSecurityEvents.ts",
-        "frontend/src/hooks/security/useSecurityMutations.ts",
-        "frontend/src/hooks/security/useSecurityStats.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-and-display-a-working-trey-c-security-protection-modal-banner-component-currently-empty-in-a-way-that-does-not-interfere-with-clicking-underlying-buttons-links",
-      "featureTitle": "Implement and display a working TREY-C security protection modal/banner component (currently empty) in a way that does not interfere with clicking underlying buttons/links.",
-      "files": [
-        "frontend/src/components/AppShell.tsx",
-        "frontend/src/components/TreyCSecurityProtectionModal.tsx",
-        "frontend/src/pages/LandingPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
       ],
       "confidence": "high"
     }

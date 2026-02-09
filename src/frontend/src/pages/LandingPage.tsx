@@ -4,9 +4,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Shield, Zap, Lock, ArrowRight, Clock } from 'lucide-react';
 import { getAssetUrl } from '@/utils/assetBase';
 import { LANDING_DELIVERY_TIME } from '@/content/copy';
+import { useInternetIdentity } from '@/hooks/useInternetIdentity';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { identity } = useInternetIdentity();
+  
+  const isAuthenticated = !!identity;
+
+  const handleGetStarted = () => {
+    navigate({ to: isAuthenticated ? '/dashboard' : '/signin' });
+  };
+
+  const handleOrderNow = () => {
+    navigate({ to: isAuthenticated ? '/dashboard' : '/signin' });
+  };
 
   return (
     <div className="relative -mt-6 sm:-mt-8">
@@ -53,7 +65,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center relative z-20">
               <Button
                 size="lg"
-                onClick={() => navigate({ to: '/signin' })}
+                onClick={handleGetStarted}
                 className="text-lg px-10 py-7 h-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-xl font-semibold transition-all hover:scale-105"
               >
                 Get Started
@@ -150,7 +162,7 @@ export default function LandingPage() {
             </p>
             <Button
               size="lg"
-              onClick={() => navigate({ to: '/signin' })}
+              onClick={handleOrderNow}
               className="text-lg px-12 py-7 h-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-xl font-semibold transition-all hover:scale-105 relative z-20"
             >
               Order Now

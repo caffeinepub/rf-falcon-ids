@@ -1,68 +1,37 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T08:14:36.161Z",
-  "summary": "Diff implements a TREY-C Security frontend dashboard + global protection banner/modal, adds new security hooks/mutations, and adds backend TREY-C security state/logging scaffolding. Landing page CTA clickability appears addressed via z-index/pointer-events changes and explicit navigation handlers for some CTAs, but evidence for the specific \"Order Now\" CTA is not present in the provided diff excerpt. Backend admin-only APIs, rate-limiting enforcement, and deterministic stats/events behavior cannot be confirmed due to backend truncation.",
+  "generatedAt": "2026-02-09T08:23:35.417Z",
+  "summary": "LandingPage.tsx was updated to compute an auth flag from useInternetIdentity().identity and to route the \"Get Started\" CTA to /dashboard when authenticated and /signin when not. However, the diff excerpt does not show the \"Order Now\" button being wired to the new handler, so full REQ-1 coverage cannot be confirmed from the provided truncated evidence. Two additional non-requested meta/state files were modified.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Fix the Home (Landing) page CTA buttons (including the \"Order Now\" button) so they reliably navigate to intended routes and never appear unclickable due to layout/overlay issues.",
-      "reason": "The diff excerpt for LandingPage shows click handlers for \"Get Started\" and \"Learn More\" plus overlay pointer-events fixes, but does not show any \"Order Now\" button or its navigation handler, so the specific acceptance criteria for \"Order Now\" cannot be verified from the provided evidence.",
+      "requirement": "When the user is authenticated, clicking the Landing page \"Order Now\" button navigates to /dashboard; when not authenticated, it navigates to /signin.",
+      "reason": "LandingPage.tsx defines handleOrderNow() with the correct routing logic, but the provided diff excerpt does not show an \"Order Now\" button using this handler (only a \"Get Started\" button and a \"Learn More\" button are visible in the truncated content).",
       "evidence": [
-        "frontend/src/pages/LandingPage.tsx (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Backend exposes callable methods for reading/updating security config (admin-only), retrieving security stats/events (admin-only), enforces rate limits when enabled, emits allowed/denied/throttled events, and blocks non-admin access to admin endpoints.",
-      "reason": "backend/main.mo shows TREY-C security types, in-memory variables, and an event logging function, but the required public methods (get/set config, get stats, get events) and admin-only enforcement/rate-limiting evaluation on calls are not visible in the truncated backend diff summary.",
-      "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/pages/LandingPage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added new application routes (/pricing public and /cart authenticated).",
-      "reason": "Not requested by any requirement; REQ-1/2 concern fixing existing CTAs and clickability, not introducing new routes.",
+      "description": "Updated project tracking/state metadata (project_state.json) marking/recording the request and notes.",
+      "reason": "BuildRequest only asked for a LandingPage CTA routing change; it did not request modifications to project metadata files.",
       "evidence": [
-        "frontend-file-summaries.txt (\"frontend/src/App.tsx\": includes new /pricing and /cart routes)"
+        "project_state.json"
       ]
     },
     {
-      "description": "Added admin actions to clear security events and reset security stats from the UI (and corresponding frontend mutations).",
-      "reason": "REQ-3/REQ-4 require reading/updating/toggling config and retrieving stats/events; they do not request admin operations to clear events or reset stats.",
+      "description": "Updated frontend-file-summaries.txt contents describing many components/routes and unrelated UI/route changes.",
+      "reason": "BuildRequest constraints and requirements only cover Landing page CTA routing behavior; updating a summary file (and especially describing unrelated route/UI changes) was not requested.",
       "evidence": [
-        "frontend/src/hooks/security/useSecurityMutations.ts",
-        "frontend/src/components/admin/TreyCSecuritySection.tsx (truncated)"
-      ]
-    },
-    {
-      "description": "Multiple unrelated UI/feature changes (e.g., RoleplayDisclaimerBanner restyling, IdWatermark made a no-op, additional ID card export/print actions, photo uploader/crop modal accessibility updates, order page behavior changes).",
-      "reason": "Not clearly required to satisfy REQ-1/REQ-2/REQ-4/REQ-5 from the provided BuildRequest; while REQ-2 calls for auditing CTAs, these appear broader than button/CTA fixes and include feature/behavior changes outside primary navigation/marketing CTAs.",
-      "evidence": [
-        "frontend-file-summaries.txt (entries for RoleplayDisclaimerBanner.tsx, IdWatermark.tsx, IdCardActions.tsx, PhotoUploader.tsx, PhotoCropModal.tsx, DashboardPage.tsx, NewOrderPage.tsx, OrderDetailPage.tsx)"
-      ]
-    },
-    {
-      "description": "Footer copy/branding change including a caffeine.ai link and '© 2026. Built with love using caffeine.ai'.",
-      "reason": "BuildRequest non-goal/constraint says not to change branding/copy beyond what is required to fix broken buttons and restore the TREY-C security UI; this appears unrelated to those fixes.",
-      "evidence": [
-        "frontend/src/components/AppShell.tsx"
+        "frontend-file-summaries.txt"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/AppShell.tsx",
-    "frontend/src/components/TreyCSecurityProtectionModal.tsx",
-    "frontend/src/components/admin/TreyCSecuritySection.tsx",
-    "frontend/src/hooks/security/useSecurityConfig.ts",
-    "frontend/src/hooks/security/useSecurityEvents.ts",
-    "frontend/src/hooks/security/useSecurityMutations.ts",
-    "frontend/src/hooks/security/useSecurityStats.ts",
     "frontend/src/pages/LandingPage.tsx",
     "project_state.json"
   ]

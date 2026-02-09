@@ -1,103 +1,33 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T08:14:36.165Z",
+  "generatedAt": "2026-02-09T08:23:35.420Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the Home (Landing) page CTA buttons (including the \"Order Now\" button) so they reliably navigate to the intended routes and never appear unclickable due to layout/overlay issues.",
+        "summary": "Update the Landing page CTA buttons so that clicking \"Get Started\" or \"Order Now\" routes authenticated users to the Dashboard instead of the Sign In page; unauthenticated users should still be routed to Sign In.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/components/AppShell.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/LandingPage.tsx",
-          "frontend/src/components/AppShell.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Audit and fix any other non-working buttons/CTAs across the app by ensuring each interactive element has a valid handler (navigate, submit, mutation) and is not accidentally disabled or blocked by an overlay; prioritize primary conversion/navigation buttons in the header and marketing pages.",
-        "status": "missing",
-        "plannedFiles": [
-          "frontend/src/components/BrandHeader.tsx",
-          "frontend/src/pages/AboutPage.tsx",
-          "frontend/src/pages/FeaturesPage.tsx",
-          "frontend/src/pages/PricingPage.tsx",
-          "frontend/src/pages/ContactPage.tsx"
-        ],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Restore and implement \"TREY-C security\" as a working feature: add backend security state + APIs for enabling/disabling protection, rate limiting configuration, capturing security events, and exposing security stats/events to admins.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Replace the current placeholder/unavailable TREY-C security UI in the Admin panel with a functional dashboard that reads real security config/stats/events from the backend and allows admins to manage security settings.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/security/useSecurityConfig.ts",
-          "frontend/src/hooks/security/useSecurityStats.ts",
-          "frontend/src/hooks/security/useSecurityEvents.ts",
-          "frontend/src/hooks/security/useSecurityMutations.ts",
-          "frontend/src/components/admin/TreyCSecuritySection.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/hooks/orders/queryKeys.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/security/useSecurityConfig.ts",
-          "frontend/src/hooks/security/useSecurityStats.ts",
-          "frontend/src/hooks/security/useSecurityEvents.ts",
-          "frontend/src/hooks/security/useSecurityMutations.ts",
-          "frontend/src/components/admin/TreyCSecuritySection.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Implement and display a working TREY-C security protection modal/banner component (currently empty) in a way that does not interfere with clicking underlying buttons/links.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/TreyCSecurityProtectionModal.tsx",
-          "frontend/src/components/AppShell.tsx",
           "frontend/src/pages/LandingPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/TreyCSecurityProtectionModal.tsx",
-          "frontend/src/components/AppShell.tsx",
           "frontend/src/pages/LandingPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/AppShell.tsx",
-    "frontend/src/components/TreyCSecurityProtectionModal.tsx",
-    "frontend/src/components/admin/TreyCSecuritySection.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/security/useSecurityConfig.ts",
-    "frontend/src/hooks/security/useSecurityEvents.ts",
-    "frontend/src/hooks/security/useSecurityMutations.ts",
-    "frontend/src/hooks/security/useSecurityStats.ts",
     "frontend/src/pages/LandingPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
