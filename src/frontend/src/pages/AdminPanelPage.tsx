@@ -476,14 +476,14 @@ export default function AdminPanelPage() {
                   ) : (
                     <Archive className="w-3 h-3 mr-1" />
                   )}
-                  Complete
+                  Archive
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Archive Order?</AlertDialogTitle>
+                  <AlertDialogTitle>Archive Order</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will mark the order as completed and move it to the archived tab.
+                    This will mark the order as completed and move it to the archived orders list.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -510,14 +510,17 @@ export default function AdminPanelPage() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Order?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete Order</AlertDialogTitle>
                   <AlertDialogDescription>
                     This action cannot be undone. This will permanently delete the order.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDeleteOrder(order.id)}>
+                  <AlertDialogAction
+                    onClick={() => handleDeleteOrder(order.id)}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -531,12 +534,13 @@ export default function AdminPanelPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="container mx-auto px-4 py-8 space-y-6">
         <Skeleton className="h-12 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
         </div>
         <Skeleton className="h-96" />
       </div>
@@ -544,85 +548,80 @@ export default function AdminPanelPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
+          <h1 className="text-3xl font-bold flex items-center gap-2">
             <LayoutDashboard className="w-8 h-8" />
-            Admin Dashboard
+            Admin Panel
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage orders, users, and system settings
-          </p>
+          <p className="text-muted-foreground mt-1">Manage orders and system settings</p>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-primary" />
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold">{stats.total}</p>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Orders</p>
+                <p className="text-2xl font-bold mt-1">{stats.total}</p>
               </div>
+              <Package className="w-8 h-8 text-muted-foreground opacity-50" />
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 text-yellow-500" />
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold">{stats.pending}</p>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Pending</p>
+                <p className="text-2xl font-bold mt-1">{stats.pending}</p>
               </div>
+              <Clock className="w-8 h-8 text-yellow-500 opacity-50" />
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold">{stats.approved}</p>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Approved</p>
+                <p className="text-2xl font-bold mt-1">{stats.approved}</p>
               </div>
+              <CheckCircle2 className="w-8 h-8 text-green-500 opacity-50" />
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Truck className="w-8 h-8 text-blue-500" />
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold">{stats.shipped}</p>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Shipped</p>
+                <p className="text-2xl font-bold mt-1">{stats.shipped}</p>
               </div>
+              <Truck className="w-8 h-8 text-blue-500 opacity-50" />
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="w-8 h-8 text-purple-500" />
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold">{stats.completed}</p>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Completed</p>
+                <p className="text-2xl font-bold mt-1">{stats.completed}</p>
               </div>
+              <TrendingUp className="w-8 h-8 text-purple-500 opacity-50" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content Tabs */}
+      {/* Tabs */}
       <Tabs defaultValue="orders" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
           <TabsTrigger value="orders">
             <Package className="w-4 h-4 mr-2" />
             Orders
@@ -635,6 +634,10 @@ export default function AdminPanelPage() {
             <Users className="w-4 h-4 mr-2" />
             Accounts
           </TabsTrigger>
+          <TabsTrigger value="promo">
+            <Tag className="w-4 h-4 mr-2" />
+            Promo Codes
+          </TabsTrigger>
           <TabsTrigger value="security">
             <Shield className="w-4 h-4 mr-2" />
             Security
@@ -643,34 +646,35 @@ export default function AdminPanelPage() {
             <FileText className="w-4 h-4 mr-2" />
             Audit Log
           </TabsTrigger>
-          <TabsTrigger value="promo">
-            <Tag className="w-4 h-4 mr-2" />
-            Promo
-          </TabsTrigger>
         </TabsList>
 
         {/* Orders Tab */}
         <TabsContent value="orders" className="space-y-6">
-          {/* Filters and Actions */}
+          {/* Filters */}
           <Card>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <Label htmlFor="search" className="text-xs mb-2 block">Search Orders</Label>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Filter className="w-5 h-5" />
+                Filters & Search
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="search" className="text-xs">Search</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       id="search"
-                      placeholder="Search by name, ID number, or order ID..."
+                      placeholder="Name, ID number, Order ID..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className="pl-9"
                     />
                   </div>
                 </div>
-
-                <div>
-                  <Label htmlFor="status-filter" className="text-xs mb-2 block">Filter by Status</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="status-filter" className="text-xs">Status</Label>
                   <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as FilterStatus)}>
                     <SelectTrigger id="status-filter">
                       <SelectValue />
@@ -684,11 +688,10 @@ export default function AdminPanelPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div>
-                  <Label htmlFor="sort-by" className="text-xs mb-2 block">Sort By</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="sort" className="text-xs">Sort By</Label>
                   <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                    <SelectTrigger id="sort-by">
+                    <SelectTrigger id="sort">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -698,62 +701,42 @@ export default function AdminPanelPage() {
                   </Select>
                 </div>
               </div>
-
-              <div className="flex gap-2 mt-4 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleToggleSelectAll}
-                >
-                  {selectedOrderIds.size === filteredOrders.length ? 'Deselect All' : 'Select All'}
-                </Button>
+              <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleToggleSelectAll}
+                  >
+                    {selectedOrderIds.size === filteredOrders.length ? 'Deselect All' : 'Select All'}
+                  </Button>
+                  {selectedOrderIds.size > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {selectedOrderIds.size} selected
+                    </p>
+                  )}
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleExportCSV}
-                  disabled={filteredOrders.length === 0}
+                  disabled={!filteredOrders || filteredOrders.length === 0}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export CSV
                 </Button>
-                <div className="flex-1" />
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Database className="w-4 h-4 mr-2" />
-                      Reset All Data
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Reset All Data?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete all orders, user profiles, and settings. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleResetAllData}>
-                        Reset Everything
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
               </div>
             </CardContent>
           </Card>
 
-          {/* Orders Grid */}
+          {/* Orders List */}
           {filteredOrders.length === 0 ? (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Orders Found</h3>
-                <p className="text-muted-foreground">
-                  {searchQuery || statusFilter !== 'all'
-                    ? 'Try adjusting your filters'
-                    : 'Orders will appear here once users start placing them'}
-                </p>
+              <CardContent className="py-12">
+                <div className="text-center">
+                  <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No orders found</p>
+                </div>
               </CardContent>
             </Card>
           ) : (
@@ -767,18 +750,16 @@ export default function AdminPanelPage() {
         <TabsContent value="archived" className="space-y-6">
           {archivedLoading ? (
             <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-48" />
-              ))}
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
             </div>
           ) : !archivedOrders || archivedOrders.length === 0 ? (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Archive className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Archived Orders</h3>
-                <p className="text-muted-foreground">
-                  Completed orders will appear here after archiving
-                </p>
+              <CardContent className="py-12">
+                <div className="text-center">
+                  <Archive className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No archived orders</p>
+                </div>
               </CardContent>
             </Card>
           ) : (
@@ -795,6 +776,13 @@ export default function AdminPanelPage() {
           </Suspense>
         </TabsContent>
 
+        {/* Promo Codes Tab */}
+        <TabsContent value="promo">
+          <Suspense fallback={<TabLoadingFallback />}>
+            <PromoCodesSection />
+          </Suspense>
+        </TabsContent>
+
         {/* Security Tab */}
         <TabsContent value="security">
           <Suspense fallback={<TabLoadingFallback />}>
@@ -808,22 +796,13 @@ export default function AdminPanelPage() {
             <AuditLogSection />
           </Suspense>
         </TabsContent>
-
-        {/* Promo Codes Tab */}
-        <TabsContent value="promo">
-          <Suspense fallback={<TabLoadingFallback />}>
-            <PromoCodesSection />
-          </Suspense>
-        </TabsContent>
       </Tabs>
 
       {/* Bulk Actions Bar */}
-      {selectedOrderIds.size > 0 && (
-        <BulkOrderActionsBar
-          selectedOrderIds={Array.from(selectedOrderIds)}
-          onClearSelection={() => setSelectedOrderIds(new Set())}
-        />
-      )}
+      <BulkOrderActionsBar
+        selectedCount={selectedOrderIds.size}
+        onClearSelection={() => setSelectedOrderIds(new Set())}
+      />
 
       {/* Edit Order Dialog */}
       {editingOrder && (

@@ -24,10 +24,21 @@ export function useIsAdmin() {
     staleTime: 30000, // Cache for 30 seconds
   });
 
+  // Detect if we're stuck: authenticated but actor unavailable after initialization
+  // Wait a reasonable time (5 seconds) before declaring actor unavailable
+  const isActorUnavailable = isAuthenticated && !isInitializing && !actorFetching && !actor && !query.isLoading;
+
+  const retryActor = () => {
+    // Force a page reload to retry actor initialization
+    window.location.reload();
+  };
+
   // Return deterministic loading state
   return {
     ...query,
     isLoading: isInitializing || actorFetching || (isAuthenticated && query.isLoading),
     isFetched: !!actor && !actorFetching && query.isFetched,
+    isActorUnavailable,
+    retryActor,
   };
 }

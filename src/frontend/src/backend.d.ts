@@ -31,6 +31,10 @@ export interface PromoCode {
     discountPercentage: bigint;
     validUntil: Time;
 }
+export interface OwnerBootstrapStatus {
+    status: Variant_boostrap_succeeded_already_admin;
+    adminSaved: boolean;
+}
 export interface AuditLogEntry {
     action: string;
     admin: Principal;
@@ -102,10 +106,15 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_boostrap_succeeded_already_admin {
+    boostrap_succeeded = "boostrap_succeeded",
+    already_admin = "already_admin"
+}
 export interface backendInterface {
     archiveOrder(orderId: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     banUser(user: Principal): Promise<void>;
+    bootstrapOwner(): Promise<OwnerBootstrapStatus>;
     createOrder(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null, signature: ExternalBlob | null): Promise<void>;
     createPromoCode(code: string, discountPercentage: bigint, validUntil: Time, usageLimit: bigint): Promise<void>;
     deactivatePromoCode(code: string): Promise<void>;

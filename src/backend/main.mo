@@ -8,11 +8,14 @@ import Set "mo:core/Set";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Storage "blob-storage/Storage";
+import Migration "migration";
 
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
+// Apply migration explicitly
+(with migration = Migration.run)
 actor {
   public type Address = {
     first_name : Text;
@@ -116,6 +119,11 @@ actor {
     auditLog : [AuditLogEntry];
   };
 
+  public type OwnerBootstrapStatus = {
+    status : { #already_admin; #boostrap_succeeded };
+    adminSaved : Bool;
+  };
+
   include MixinStorage();
 
   var orders = Map.empty<Text, Order>();
@@ -159,6 +167,51 @@ actor {
       };
     };
     count;
+  };
+
+  // Owner bootstrap function
+  // called when trying to access admin panel first time
+  public shared ({ caller }) func bootstrapOwner() : async OwnerBootstrapStatus {
+    // Must be at least a user (not guest/anonymous) to bootstrap
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can bootstrap owner access");
+    };
+
+    // Check if already admin
+    if (AccessControl.isAdmin(accessControlState, caller)) {
+      return {
+        status = #already_admin;
+        adminSaved = true;
+      };
+    };
+
+    // Verify caller has a profile with the owner email
+    switch (userProfiles.get(caller)) {
+      case (?profile) {
+        switch (profile.email) {
+          case (?emailValue) {
+            if (emailValue == "traviscastonguay@gmail.com") {
+              // Grant admin role - assignRole includes admin-only guard internally
+              // but for bootstrap, we're the first admin, so we call it directly
+              AccessControl.assignRole(accessControlState, caller, caller, #admin);
+              logAudit(caller, "bootstrap_owner", "Owner bootstrapped with email: " # emailValue);
+              return {
+                status = #boostrap_succeeded;
+                adminSaved = true;
+              };
+            } else {
+              Runtime.trap("Owner bootstrap failed: Email does not match owner email");
+            };
+          };
+          case (null) {
+            Runtime.trap("Owner bootstrap failed: No email in profile");
+          };
+        };
+      };
+      case (null) {
+        Runtime.trap("Owner bootstrap failed: No user profile found");
+      };
+    };
   };
 
   // Promo Code Management (Admin Only)
@@ -642,4 +695,3 @@ actor {
     archivedOrders.toArray();
   };
 };
-

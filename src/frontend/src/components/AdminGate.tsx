@@ -1,20 +1,46 @@
 import { type ReactNode } from 'react';
 import { useIsAdmin } from '../hooks/auth/useIsAdmin';
-import { ShieldAlert, Terminal } from 'lucide-react';
+import { ShieldAlert, Terminal, RefreshCw } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface AdminGateProps {
   children: ReactNode;
 }
 
 export default function AdminGate({ children }: AdminGateProps) {
-  const { data: isAdmin, isLoading, isFetched } = useIsAdmin();
+  const { data: isAdmin, isLoading, isFetched, isActorUnavailable, retryActor } = useIsAdmin();
+
+  // Show error state when actor is unavailable
+  if (isActorUnavailable) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md space-y-6">
+          <div className="flex justify-center">
+            <ShieldAlert className="w-20 h-20 text-destructive" />
+          </div>
+          <h2 className="text-2xl font-bold">Connection Error</h2>
+          <p className="text-muted-foreground">
+            Unable to connect to the backend service. Please check your connection and try again.
+          </p>
+          <Button
+            onClick={retryActor}
+            variant="default"
+            className="gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry Connection
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !isFetched) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-4">
-          <Terminal className="w-12 h-12 mx-auto text-cyber-primary animate-pulse" />
-          <div className="text-cyber-primary font-mono text-sm tracking-wider">
+          <Terminal className="w-12 h-12 mx-auto text-primary animate-pulse" />
+          <div className="text-primary font-mono text-sm tracking-wider">
             [VERIFYING ADMIN CREDENTIALS...]
           </div>
         </div>

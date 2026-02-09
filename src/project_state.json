@@ -1,43 +1,26 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Project involves an admin panel; user reports admin panel access/loading issue for traviscastonguay@gmail.com and requests an 'Owner' admin indicator with the owner email locked/non-editable.",
   "architectural_notes": [],
   "known_issues": [
-    "Signature drawing is hard to see due to dark background"
+    "Admin panel does not load / user cannot access panel when logged in as traviscastonguay@gmail.com."
   ],
   "isFixRequest": true,
-  "imageRequirements": "## Required Images\n- Favicon icon illustration of a falcon with the letters “ID”, gothic/high-tech styling, transparent or clean solid background (falcon-ids-favicon-gothic.dim_32x32.webp)\n- Apple touch icon illustration of a falcon with the letters “ID”, gothic/high-tech styling, centered composition (falcon-ids-apple-touch-gothic.dim_180x180.webp)",
   "existing_features": [
     {
-      "id": "feature-improve-the-signature-pad-so-users-can-clearly-see-the-signature-while-drawing-even-when-the-site-is-in-dark-mode-dark-background-update-the-signature-canvas-styling-and-drawing-configuration-to-ensure-strong-contrast-between-the-canvas-background-and-the-ink-color-in-both-light-and-dark-themes",
-      "title": "Improve the signature pad so users can clearly see the signature while drawing even when the site is in dark mode (dark background). Update the signature canvas styling and drawing configuration to ensure strong contrast between the canvas background and the ink color in both light and dark themes.",
+      "id": "feature-fix-the-admin-route-infinite-loading-state-by-handling-the-case-where-the-authenticated-user-is-signed-in-but-the-backend-actor-is-not-available-or-admin-check-cannot-run-update-the-admin-gating-ui-to-show-a-clear-error-state-with-a-retry-action-instead-of-spinning-forever",
+      "title": "Fix the admin route infinite loading state by handling the case where the authenticated user is signed in but the backend actor is not available (or admin check cannot run). Update the admin-gating UI to show a clear error state with a retry action instead of spinning forever.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-signature-pad-canvas-rendering-issues-related-to-sizing-and-clearing-so-that-the-drawn-signature-is-not-distorted-blurry-and-the-clear-action-fully-resets-the-drawing-surface-ensure-canvas-sizing-accounts-for-devicepixelratio-correctly-and-that-clearing-resets-the-canvas-to-the-intended-background",
-      "title": "Fix signature pad canvas rendering issues related to sizing and clearing so that the drawn signature is not distorted/blurry and the clear action fully resets the drawing surface. Ensure canvas sizing accounts for devicePixelRatio correctly and that clearing resets the canvas to the intended background.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-generate-a-site-favicon-and-apple-touch-icon-featuring-a-falcon-with-the-letters-id-matching-the-existing-site-theme-and-ensure-the-app-uses-these-icons-via-the-existing-link-rel-icon-and-link-rel-apple-touch-icon-tags-in-frontend-index-html",
-      "title": "Generate a site favicon and apple touch icon featuring a falcon with the letters “ID”, matching the existing site theme, and ensure the app uses these icons via the existing <link rel=\"icon\"> and <link rel=\"apple-touch-icon\"> tags in frontend/index.html.",
+      "id": "feature-add-an-owner-indicator-in-the-admin-ui-that-displays-the-email-traviscastonguay-gmail-com-with-a-lock-icon-and-the-label-owner-and-ensure-it-cannot-be-edited-from-the-ui",
+      "title": "Add an Owner indicator in the admin UI that displays the email \"traviscastonguay@gmail.com\" with a lock icon and the label \"Owner\", and ensure it cannot be edited from the UI.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-audit-the-project-for-other-errors-issues-that-could-cause-build-or-deployment-failures-including-missing-assets-referenced-by-the-frontend-and-runtime-errors-and-fix-the-issues-found-so-the-app-builds-cleanly",
-      "title": "Audit the project for other errors/issues that could cause build or deployment failures (including missing assets referenced by the frontend and runtime errors), and fix the issues found so the app builds cleanly.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -45,24 +28,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Improve signature pad visibility on dark background so users can clearly see what they are drawing",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Generate and apply a site favicon (falcon with 'ID' to match website theme)",
+      "summary": "In admin settings, show traviscastonguay@gmail.com as Owner with a lock indicator and prevent editing that owner email.",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Audit and fix other errors/issues found during build/deployment",
-      "reqIds": [],
+      "summary": "Ensure the owner account associated with the email \"traviscastonguay@gmail.com\" can successfully gain admin access so the admin panel loads. Implement a backend owner bootstrap mechanism that can grant admin privileges to the principal that proves ownership by having a saved user profile email matching \"traviscastonguay@gmail.com\".",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Improve signature pad visibility and add falcon ID favicon; fix build/deployment issues",
+  "projectName": "Fix admin panel access/loading for owner account and show locked Owner email in admin UI",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

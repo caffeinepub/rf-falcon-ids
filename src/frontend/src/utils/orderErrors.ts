@@ -75,6 +75,11 @@ export function normalizeOrderError(error: any): string {
     return 'You do not have permission to perform this action.';
   }
 
+  // Cart/checkout specific errors
+  if (errorMessage.includes('cart') || errorMessage.includes('checkout')) {
+    return 'There was an issue processing your cart. Please try again.';
+  }
+
   // Default: return a cleaned version of the error or generic message
   if (errorMessage.length > 0 && errorMessage.length < 200) {
     return errorMessage;

@@ -1,142 +1,44 @@
-import { useState } from 'react';
-import { useBulkApproveOrders, useBulkShipOrders, useBulkDeleteOrders } from '../../hooks/admin/useBulkOrderActions';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { CheckCircle2, Truck, Trash2, Loader2, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { X } from 'lucide-react';
 
 interface BulkOrderActionsBarProps {
-  selectedOrderIds: string[];
+  selectedCount: number;
   onClearSelection: () => void;
 }
 
-export default function BulkOrderActionsBar({ selectedOrderIds, onClearSelection }: BulkOrderActionsBarProps) {
-  const bulkApprove = useBulkApproveOrders();
-  const bulkShip = useBulkShipOrders();
-  const bulkDelete = useBulkDeleteOrders();
-
-  const [isApproving, setIsApproving] = useState(false);
-  const [isShipping, setIsShipping] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleBulkApprove = async () => {
-    setIsApproving(true);
-    try {
-      await bulkApprove.mutateAsync(selectedOrderIds);
-      toast.success(`${selectedOrderIds.length} orders approved`);
-      onClearSelection();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to approve orders');
-    } finally {
-      setIsApproving(false);
-    }
-  };
-
-  const handleBulkShip = async () => {
-    setIsShipping(true);
-    try {
-      await bulkShip.mutateAsync(selectedOrderIds);
-      toast.success(`${selectedOrderIds.length} orders marked as shipped`);
-      onClearSelection();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to ship orders');
-    } finally {
-      setIsShipping(false);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await bulkDelete.mutateAsync(selectedOrderIds);
-      toast.success(`${selectedOrderIds.length} orders deleted`);
-      onClearSelection();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete orders');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  if (selectedOrderIds.length === 0) return null;
+export default function BulkOrderActionsBar({
+  selectedCount,
+  onClearSelection,
+}: BulkOrderActionsBarProps) {
+  if (selectedCount === 0) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="bg-admin-card border border-admin-border rounded-lg shadow-lg p-4 flex items-center gap-4">
-        <div className="text-admin-foreground text-sm">
-          <span className="font-bold">{selectedOrderIds.length}</span> order{selectedOrderIds.length !== 1 ? 's' : ''} selected
-        </div>
-        <div className="h-6 w-px bg-admin-border" />
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={handleBulkApprove}
-            disabled={isApproving || isShipping || isDeleting}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            {isApproving ? (
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            ) : (
-              <CheckCircle2 className="w-3 h-3 mr-1" />
-            )}
-            Approve All
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleBulkShip}
-            disabled={isApproving || isShipping || isDeleting}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            {isShipping ? (
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            ) : (
-              <Truck className="w-3 h-3 mr-1" />
-            )}
-            Ship All
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-admin-border bg-admin-card/95 backdrop-blur shadow-lg">
+      <div className="container mx-auto px-4 py-4">
+        <Card className="bg-admin-bg border-admin-border">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <p className="text-admin-foreground font-medium">
+                  {selectedCount} {selectedCount === 1 ? 'order' : 'orders'} selected
+                </p>
+                <p className="text-admin-muted text-sm">
+                  Bulk actions are not available
+                </p>
+              </div>
               <Button
+                variant="ghost"
                 size="sm"
-                disabled={isApproving || isShipping || isDeleting}
-                variant="destructive"
+                onClick={onClearSelection}
+                className="text-admin-muted hover:text-admin-foreground"
               >
-                <Trash2 className="w-3 h-3 mr-1" />
-                Delete All
+                <X className="w-4 h-4 mr-2" />
+                Clear Selection
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="bg-admin-card border-admin-border">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-admin-foreground">
-                  Delete {selectedOrderIds.length} Order{selectedOrderIds.length !== 1 ? 's' : ''}?
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-admin-muted">
-                  This action cannot be undone. All selected orders will be permanently deleted.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="border-admin-border text-admin-foreground hover:bg-admin-card">Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleBulkDelete}
-                  disabled={isDeleting}
-                  className="bg-destructive hover:bg-destructive/90"
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete All'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-        <div className="h-6 w-px bg-admin-border" />
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={onClearSelection}
-          className="text-admin-muted hover:text-admin-foreground"
-        >
-          <X className="w-3 h-3 mr-1" />
-          Clear
-        </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

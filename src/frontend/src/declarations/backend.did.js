@@ -24,6 +24,13 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const OwnerBootstrapStatus = IDL.Record({
+  'status' : IDL.Variant({
+    'boostrap_succeeded' : IDL.Null,
+    'already_admin' : IDL.Null,
+  }),
+  'adminSaved' : IDL.Bool,
+});
 export const Details = IDL.Record({
   'dob' : IDL.Text,
   'zip' : IDL.Text,
@@ -140,6 +147,7 @@ export const idlService = IDL.Service({
   'archiveOrder' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'banUser' : IDL.Func([IDL.Principal], [], []),
+  'bootstrapOwner' : IDL.Func([], [OwnerBootstrapStatus], []),
   'createOrder' : IDL.Func(
       [
         IDL.Text,
@@ -206,6 +214,13 @@ export const idlFactory = ({ IDL }) => {
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
+  });
+  const OwnerBootstrapStatus = IDL.Record({
+    'status' : IDL.Variant({
+      'boostrap_succeeded' : IDL.Null,
+      'already_admin' : IDL.Null,
+    }),
+    'adminSaved' : IDL.Bool,
   });
   const Details = IDL.Record({
     'dob' : IDL.Text,
@@ -323,6 +338,7 @@ export const idlFactory = ({ IDL }) => {
     'archiveOrder' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'banUser' : IDL.Func([IDL.Principal], [], []),
+    'bootstrapOwner' : IDL.Func([], [OwnerBootstrapStatus], []),
     'createOrder' : IDL.Func(
         [
           IDL.Text,

@@ -1,89 +1,54 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Signature pad dark-mode contrast + crisp rendering; add falcon ID favicon assets; fix build/deploy asset issues",
+  "title": "Fix AdminGate infinite loading and add locked Owner indicator in admin UI",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Improve signature pad contrast in both light and dark themes by setting an explicit canvas background and theme-aware ink color.",
+      "summary": "Prevent /admin from spinning forever by detecting actor/admin-check unavailability and showing an actionable error state with retry.",
       "acceptanceCriteria": [
-        "In dark mode, the signature strokes are clearly visible while drawing (high contrast) without requiring users to change their OS/browser theme.",
-        "In light mode, the signature strokes remain clearly visible and the signature pad remains visually consistent with the rest of the UI.",
-        "The signature pad still supports mouse + touch drawing, clearing, and emits a PNG data URL via onSignatureChange when drawing ends."
+        "When a user is authenticated and the backend actor is unavailable after initialization, the /admin route shows an error message in English (not an infinite loading spinner).",
+        "The error state provides a visible Retry action that re-attempts initializing the actor/admin check (or instructs the user to refresh) and does not require a full hard reload to re-attempt.",
+        "When the backend actor becomes available, the admin check proceeds and the gate transitions out of the error/loading state appropriately.",
+        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/SignaturePad.tsx",
+          "path": "frontend/src/hooks/useActor.ts",
           "operation": "modify",
-          "description": "Update the signature pad to be theme-aware (e.g., via next-themes) and configure both: (1) an explicit canvas background fill color and (2) a high-contrast stroke (ink) color for light vs dark themes, while keeping existing mouse/touch handlers and PNG data URL emission on stroke end."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Fix signature canvas sizing, DPR scaling, and clearing so strokes are crisp, coordinates align, and clear restores the intended background.",
-      "acceptanceCriteria": [
-        "Signature strokes are crisp (not scaled/blurry) on standard and high-DPI screens.",
-        "Clicking “Clear” fully clears the signature content and restores the pad background so new strokes are immediately visible.",
-        "If the canvas is re-measured (e.g., initial render/layout changes), drawing coordinates still align with the pointer location."
-      ],
-      "file_operations": [
+          "description": "Expose actor initialization status needed for admin gating: include a stable \"actorUnavailable\"/\"actorError\" signal when identity is present but actor creation/initialization fails or returns null, and provide a Retry function (e.g., refetch) to re-attempt actor creation without a hard reload. This supports the authorization component’s access-control initialization flow. Verify the component's usage instructions before implementing."
+        },
         {
-          "path": "frontend/src/components/SignaturePad.tsx",
+          "path": "frontend/src/hooks/auth/useIsAdmin.ts",
           "operation": "modify",
-          "description": "Implement robust canvas sizing that accounts for devicePixelRatio (set backing store size from CSS size, then set a non-compounding transform via setTransform), ensure coordinate mapping matches CSS pixels, add re-measure support (e.g., ResizeObserver or resize handler) to reinitialize the backing store safely, and update the Clear behavior to reset the surface including restoring the chosen background fill (not just clearRect)."
+          "description": "Adjust admin-check query state to avoid the 'never fetched' condition when the actor is missing: surface a deterministic error/blocked state when authenticated but actor is unavailable, and expose a Retry action that re-triggers the actor/admin check. Ensure admin-check errors are represented distinctly from a real 'not admin' result (so AdminGate can render a proper error UI). This aligns with the authorization component’s guidance for handling actor dependency and errors. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AdminGate.tsx",
+          "operation": "modify",
+          "description": "Update admin gating UI state machine: keep the existing loading state for true initialization, add an explicit error state when the user is authenticated but the actor/admin check cannot run (actor unavailable or initialization error), and render an English error message with a visible Retry button wired to the new retry/refetch behavior. Ensure it transitions back to loading and then to allowed/denied when the actor becomes available again."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add generated falcon “ID” favicon + apple touch icon assets and ensure they are served correctly from the existing HTML link tags.",
+      "summary": "Add a read-only Owner indicator in the admin UI showing the locked owner email and label.",
       "acceptanceCriteria": [
-        "The generated favicon file exists at frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp.",
-        "The generated apple touch icon file exists at frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp.",
-        "After building and deploying, browsers load the favicon and apple touch icon successfully (no 404s), and the icons visually depict a falcon with the letters “ID”."
+        "In the admin panel UI, there is a clearly visible row/card showing \"traviscastonguay@gmail.com\" with a lock icon and the text label \"Owner\".",
+        "The Owner email is rendered read-only: there are no edit inputs, no remove button, and no UI affordance that suggests it is editable.",
+        "All user-facing text is in English.",
+        "The Owner indicator renders consistently with existing admin styling (Tailwind/shadcn components), without modifying read-only UI component sources under frontend/src/components/ui."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp",
+          "path": "frontend/src/components/admin/AdminOwnerIndicator.tsx",
           "operation": "create",
-          "description": "Add the generated WebP favicon asset at the exact required path so the existing frontend/index.html <link rel=\"icon\"> reference resolves without 404s."
+          "description": "Create an admin-styled, read-only Owner indicator component that displays a lock icon, the label \"Owner\", and the fixed email \"traviscastonguay@gmail.com\" (no inputs/buttons that imply editability). Use existing Tailwind/shadcn-ui primitives already present in the app for consistent styling (do not modify frontend/src/components/ui). Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp",
-          "operation": "create",
-          "description": "Add the generated WebP apple touch icon asset at the exact required path so the existing frontend/index.html <link rel=\"apple-touch-icon\"> reference resolves without 404s."
-        },
-        {
-          "path": "frontend/index.html",
+          "path": "frontend/src/components/admin/AdminAccessSection.tsx",
           "operation": "modify",
-          "description": "Verify the existing favicon and apple-touch-icon <link> tags reference exactly /assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp and /assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp, and adjust only if necessary to ensure the deployed app loads the icons successfully."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Audit and fix frontend build/deployment issues (missing assets and runtime errors) so production builds cleanly and key flows work without console errors.",
-      "acceptanceCriteria": [
-        "A production frontend build completes without errors.",
-        "No missing static assets are referenced at runtime (no 404s for files referenced in HTML/CSS/TSX for critical UI paths).",
-        "Key user flows (sign-in, dashboard navigation, creating an order including signature capture) function without console errors in production mode."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/SignaturePad.tsx",
-          "operation": "modify",
-          "description": "Harden signature pad initialization and cleanup to prevent production-mode runtime issues: ensure canvas context setup runs when the canvas is measurable, avoid transform compounding across re-measures, and ensure drawing/clearing logic cannot throw when the context is temporarily unavailable."
-        },
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Audit and correct any missing/incorrect static asset references in the HTML head (especially icon paths/types) to prevent deployment-time 404s in production."
-        },
-        {
-          "path": "frontend/public/.ic-assets.json5",
-          "operation": "modify",
-          "description": "Confirm asset caching rules cover the favicon/apple-touch WebP assets and adjust match rules only if required to ensure they are shipped and cached appropriately during IC deployment (without changing unrelated security headers)."
+          "description": "Render the new AdminOwnerIndicator prominently within the admin access area so it appears in the admin panel UI. Keep the rest of the section behavior intact (it currently uses an unavailable placeholder), and ensure all text remains English."
         }
       ]
     }

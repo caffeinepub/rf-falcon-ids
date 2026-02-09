@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-improve-the-signature-pad-so-users-can-clearly-see-the-signature-while-drawing-even-when-the-site-is-in-dark-mode-dark-background-update-the-signature-canvas-styling-and-drawing-configuration-to-ensure-strong-contrast-between-the-canvas-background-and-the-ink-color-in-both-light-and-dark-themes",
-      "featureTitle": "Improve the signature pad so users can clearly see the signature while drawing even when the site is in dark mode (dark background). Update the signature canvas styling and drawing configuration to ensure strong contrast between the canvas background and the ink color in both light and dark themes.",
+      "featureId": "feature-fix-the-admin-route-infinite-loading-state-by-handling-the-case-where-the-authenticated-user-is-signed-in-but-the-backend-actor-is-not-available-or-admin-check-cannot-run-update-the-admin-gating-ui-to-show-a-clear-error-state-with-a-retry-action-instead-of-spinning-forever",
+      "featureTitle": "Fix the admin route infinite loading state by handling the case where the authenticated user is signed in but the backend actor is not available (or admin check cannot run). Update the admin-gating UI to show a clear error state with a retry action instead of spinning forever.",
       "files": [
-        "frontend/src/components/SignaturePad.tsx"
+        "frontend/src/components/AdminGate.tsx",
+        "frontend/src/hooks/auth/useIsAdmin.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,29 +23,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-signature-pad-canvas-rendering-issues-related-to-sizing-and-clearing-so-that-the-drawn-signature-is-not-distorted-blurry-and-the-clear-action-fully-resets-the-drawing-surface-ensure-canvas-sizing-accounts-for-devicepixelratio-correctly-and-that-clearing-resets-the-canvas-to-the-intended-background",
-      "featureTitle": "Fix signature pad canvas rendering issues related to sizing and clearing so that the drawn signature is not distorted/blurry and the clear action fully resets the drawing surface. Ensure canvas sizing accounts for devicePixelRatio correctly and that clearing resets the canvas to the intended background.",
+      "featureId": "feature-add-an-owner-indicator-in-the-admin-ui-that-displays-the-email-traviscastonguay-gmail-com-with-a-lock-icon-and-the-label-owner-and-ensure-it-cannot-be-edited-from-the-ui",
+      "featureTitle": "Add an Owner indicator in the admin UI that displays the email \"traviscastonguay@gmail.com\" with a lock icon and the label \"Owner\", and ensure it cannot be edited from the UI.",
       "files": [
-        "frontend/src/components/SignaturePad.tsx"
+        "frontend/src/components/admin/AdminAccessSection.tsx",
+        "frontend/src/components/admin/AdminOwnerIndicator.tsx"
       ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-generate-a-site-favicon-and-apple-touch-icon-featuring-a-falcon-with-the-letters-id-matching-the-existing-site-theme-and-ensure-the-app-uses-these-icons-via-the-existing-link-rel-icon-and-link-rel-apple-touch-icon-tags-in-frontend-index-html",
-      "featureTitle": "Generate a site favicon and apple touch icon featuring a falcon with the letters “ID”, matching the existing site theme, and ensure the app uses these icons via the existing <link rel=\"icon\"> and <link rel=\"apple-touch-icon\"> tags in frontend/index.html.",
-      "files": [],
       "components": [
         "authorization@4.0.0",
         "blob-storage@4.0.0",
@@ -56,26 +40,6 @@
       ],
       "testIds": [
         "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-audit-the-project-for-other-errors-issues-that-could-cause-build-or-deployment-failures-including-missing-assets-referenced-by-the-frontend-and-runtime-errors-and-fix-the-issues-found-so-the-app-builds-cleanly",
-      "featureTitle": "Audit the project for other errors/issues that could cause build or deployment failures (including missing assets referenced by the frontend and runtime errors), and fix the issues found so the app builds cleanly.",
-      "files": [
-        "frontend/src/components/SignaturePad.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

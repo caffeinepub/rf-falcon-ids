@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useIsAdmin } from '../hooks/auth/useIsAdmin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, Lock, Globe, Loader2 } from 'lucide-react';
@@ -8,12 +9,19 @@ import { useEffect } from 'react';
 export default function SignInPage() {
   const navigate = useNavigate();
   const { login, loginStatus, identity } = useInternetIdentity();
+  const { data: isAdmin, isLoading: adminCheckLoading, isFetched: adminCheckFetched } = useIsAdmin();
 
   useEffect(() => {
-    if (identity) {
-      navigate({ to: '/dashboard' });
+    // Wait for both identity and admin check to complete before redirecting
+    if (identity && adminCheckFetched && !adminCheckLoading) {
+      // Route admins to home, non-admins to dashboard
+      if (isAdmin) {
+        navigate({ to: '/' });
+      } else {
+        navigate({ to: '/dashboard' });
+      }
     }
-  }, [identity, navigate]);
+  }, [identity, isAdmin, adminCheckLoading, adminCheckFetched, navigate]);
 
   const handleLogin = async () => {
     try {

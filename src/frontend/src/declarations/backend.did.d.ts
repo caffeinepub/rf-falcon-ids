@@ -69,6 +69,11 @@ export type OrderStatus = { 'shipped' : null } |
   { 'pending' : null } |
   { 'completed' : null } |
   { 'approved' : null };
+export interface OwnerBootstrapStatus {
+  'status' : { 'boostrap_succeeded' : null } |
+    { 'already_admin' : null },
+  'adminSaved' : boolean,
+}
 export interface PromoCode {
   'active' : boolean,
   'code' : string,
@@ -126,6 +131,7 @@ export interface _SERVICE {
   'archiveOrder' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'banUser' : ActorMethod<[Principal], undefined>,
+  'bootstrapOwner' : ActorMethod<[], OwnerBootstrapStatus>,
   'createOrder' : ActorMethod<
     [
       string,

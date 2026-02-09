@@ -4,12 +4,13 @@ import { useCreateOrder } from '../hooks/orders/useCreateOrder';
 import { useIsCallerVIP } from '../hooks/auth/useIsCallerVIP';
 import { usePromoCodeValidation } from '../hooks/orders/usePromoCodeValidation';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { useCart } from '../hooks/cart/useCart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CreditCard, Tag, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CreditCard, Tag, CheckCircle2, XCircle, ShoppingCart, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import PhotoUploader from '../components/PhotoUploader';
 import PhotoCropModal from '../components/PhotoCropModal';
@@ -29,6 +30,7 @@ export default function NewOrderPage() {
   const navigate = useNavigate();
   const createOrder = useCreateOrder();
   const { data: isVIP, isLoading: vipLoading } = useIsCallerVIP();
+  const { addItem } = useCart();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileUrl, setSelectedFileUrl] = useState<string>('');
@@ -173,6 +175,50 @@ export default function NewOrderPage() {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleAddToCart = () => {
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+
+    const orderId = generateIdNumber();
+    const selectedState = US_STATES.find((s) => s.code === formData.state);
+    const trimmedPromo = promoCode.trim();
+    const normalizedPromoCode = trimmedPromo ? trimmedPromo.toUpperCase() : null;
+
+    addItem({
+      id: orderId,
+      details: {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        dob: formData.dob,
+        address: formData.address,
+        city: formData.city,
+        state_name: selectedState?.name || formData.state,
+        zip: formData.zip,
+        gender: formData.gender,
+        height: formData.height,
+        eye_color: formData.eyeColor,
+        id_number: orderId,
+      },
+      address: {
+        first_name: formData.shippingFirstName,
+        last_name: formData.shippingLastName,
+        address: formData.shippingAddress,
+        city: formData.shippingCity,
+        state: formData.shippingState,
+        zip: formData.shippingZip,
+      },
+      photoDataUrl: croppedPhotoUrl,
+      signatureDataUrl: signatureDataUrl,
+      promoCode: normalizedPromoCode,
+      addedAt: Date.now(),
+    });
+
+    toast.success('Added to cart!');
+    navigate({ to: '/cart' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -476,11 +522,7 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Signature (Optional)</Label>
-                <SignaturePad
-                  onSignatureChange={setSignatureDataUrl}
-                  required={false}
-                />
+                <SignaturePad onSignatureChange={setSignatureDataUrl} />
               </div>
             </CardContent>
           </Card>
@@ -577,110 +619,106 @@ export default function NewOrderPage() {
             </CardContent>
           </Card>
 
-          {/* Promo Code */}
+          {/* Promo Code & Pricing */}
           <Card className="border-border/50 shadow-lg backdrop-blur-sm bg-card/95">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Tag className="w-5 h-5 text-primary" />
-                Promo Code (Optional)
+                Promo Code & Pricing
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="promoCode">Enter Promo Code</Label>
+                <Label htmlFor="promoCode">Promo Code (Optional)</Label>
                 <div className="relative">
                   <Input
                     id="promoCode"
                     value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                    placeholder="SAVE5"
-                    className={`${promoInputClassName} ${errors.promoCode ? 'border-destructive' : ''}`}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    placeholder="Enter promo code"
+                    className={promoInputClassName}
                   />
                   {showPromoValidation && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       {promoValidation.isLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin text-yellow-500" />
+                        <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />
                       ) : promoValidation.isValid ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
                       ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
+                        <XCircle className="w-4 h-4 text-red-500" />
                       )}
                     </div>
                   )}
                 </div>
-                {showPromoValidation && !promoValidation.isLoading && (
-                  <p className={`text-sm ${promoValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-                    {promoValidation.isValid
-                      ? `Valid! ${promoValidation.discountPercentage}% discount will be applied`
-                      : 'Invalid promo code'}
-                  </p>
-                )}
                 {errors.promoCode && (
                   <p className="text-sm text-destructive">{errors.promoCode}</p>
                 )}
+                {showPromoValidation && promoValidation.isValid && (
+                  <p className="text-sm text-green-600">
+                    Valid promo code! {promoValidation.discountPercentage}% discount will be applied.
+                  </p>
+                )}
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Pricing Summary */}
-          <Card className="border-border/50 shadow-lg backdrop-blur-sm bg-card/95">
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between text-lg">
-                <span className="text-muted-foreground">{ORDER_PRICE_LABEL}</span>
-                <span className="font-semibold">{formatPrice(basePrice)}</span>
-              </div>
-              
-              {isVIP && (
-                <div className="flex justify-between text-lg text-green-600">
-                  <span>{VIP_DISCOUNT_LABEL}</span>
-                  <span className="font-semibold">-{formatPrice(discount)}</span>
+              <div className="space-y-2 pt-4 border-t border-border">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{ORDER_PRICE_LABEL}</span>
+                  <span className="font-medium">{formatPrice(basePrice)}</span>
                 </div>
-              )}
-
-              <div className="border-t border-border pt-3">
-                <div className="flex justify-between text-xl font-bold">
+                {isVIP && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-accent">{VIP_DISCOUNT_LABEL}</span>
+                    <span className="font-medium text-accent">-{formatPrice(discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                   <span>{TOTAL_LABEL}</span>
                   <span className="text-primary">{formatPrice(total)}</span>
                 </div>
               </div>
-
-              {isVIP && (
-                <p className="text-sm text-green-600 text-center">
-                  🎉 You're saving {formatPrice(discount)} with your VIP status!
-                </p>
-              )}
             </CardContent>
           </Card>
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            size="lg"
-            disabled={createOrder.isPending || vipLoading}
-            className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold text-lg py-6"
-          >
-            {createOrder.isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Creating Order...
-              </>
-            ) : (
-              `Place Order - ${formatPrice(total)}`
-            )}
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddToCart}
+              className="flex-1"
+              size="lg"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Add to Cart
+            </Button>
+            <Button
+              type="submit"
+              disabled={createOrder.isPending}
+              className="flex-1"
+              size="lg"
+            >
+              {createOrder.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating Order...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Submit Order Now
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       </div>
 
-      {/* Photo Crop Modal */}
       {showCropModal && selectedFileUrl && (
         <PhotoCropModal
-          imageUrl={selectedFileUrl}
-          onCropComplete={handlePhotoCropped}
           open={showCropModal}
           onClose={() => setShowCropModal(false)}
+          imageUrl={selectedFileUrl}
+          onCropComplete={handlePhotoCropped}
         />
       )}
     </div>

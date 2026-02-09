@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Make signature capture clearly visible and reliable in both light/dark themes, add the falcon “ID” favicon/apple touch icon, and resolve any build/deployment issues.
+**Goal:** Fix admin panel access/loading so the owner account can reliably enter /admin, and display a locked Owner email indicator in the admin UI.
 
 **Planned changes:**
-- Update the signature pad canvas styling and drawing configuration to ensure high-contrast ink vs background in both light and dark mode.
-- Fix signature canvas sizing/clearing behavior (devicePixelRatio-aware sizing, crisp rendering, correct pointer coordinate mapping, and clear restoring the intended background).
-- Add and wire up the falcon “ID” favicon and apple touch icon files so the existing HTML icon links load successfully after build/deploy.
-- Audit and fix concrete missing-asset references and runtime/build errors that could break production build or key flows.
+- Update the /admin route gating to handle “authenticated but backend actor/admin check unavailable” by showing an English error state with a visible Retry action (instead of infinite loading).
+- Add a backend owner bootstrap/claim method that grants admin privileges only when the caller’s saved UserProfile.email matches "traviscastonguay@gmail.com", persists owner/admin status across upgrades, and writes an audit log entry on success.
+- Update the admin UI to show a read-only Owner indicator displaying "traviscastonguay@gmail.com" with a lock icon and label "Owner", with no edit/remove affordances.
 
-**User-visible outcome:** Users can clearly see their signature while drawing (including in dark mode), signatures render crisply and clear correctly, the site shows the new falcon “ID” favicon/app icon, and the app builds/deploys without missing-asset or console errors in core flows.
+**User-visible outcome:** Visiting /admin no longer spins forever; users see a clear error with Retry when the admin check can’t run, the owner account can claim/admin access so the panel loads, and the admin panel shows a locked “Owner” email indicator for traviscastonguay@gmail.com.
