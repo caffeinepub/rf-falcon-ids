@@ -1,49 +1,79 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project includes an ordering flow; in production (v34) customers cannot successfully place orders (stuck on loading when clicking Place Order).",
-  "architectural_notes": [],
-  "known_issues": [
-    "Placing an order gets stuck on loading when clicking \"Place Order\"; order creation does not complete for customers (reported after v34 production deploy)."
+  "summary": "Admin panel for managing orders, with added promo code management for website checkout and promo usage tracking on orders.",
+  "architectural_notes": [
+    "Orders should persist promo metadata: promoApplied (boolean) and promoCodeUsed (string/code id) to display in admin orders list/detail."
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-identify-and-fix-the-root-cause-of-the-customer-order-placement-flow-getting-stuck-in-a-perpetual-loading-state-when-submitting-the-order-form-create-order-place-order-ensure-the-mutation-always-resolves-success-or-error-and-the-ui-never-remains-stuck-on-loading-indefinitely",
-      "title": "Identify and fix the root cause of the customer order placement flow getting stuck in a perpetual loading state when submitting the order form (\"Create Order\" / \"Place Order\"). Ensure the mutation always resolves (success or error) and the UI never remains stuck on loading indefinitely.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-frontend-make-the-create-order-mutation-robust-against-hanging-canister-calls-by-wrapping-the-backend-order-creation-call-in-a-timeout-promise-race-and-surfacing-the-timeout-as-a-user-facing-error-so-the-submit-button-cannot-remain-stuck-in-createorder-ispending",
-      "title": "Frontend: Make the create-order mutation robust against hanging canister calls by wrapping the backend order-creation call in a timeout (Promise.race) and surfacing the timeout as a user-facing error, so the submit button cannot remain stuck in `createOrder.isPending`.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-frontend-improve-error-reporting-for-failed-order-creation-so-users-aren-t-left-with-only-a-spinner-ensure-errors-from-backend-traps-rejects-are-converted-into-clear-english-messages-and-displayed-in-the-existing-error-alert-on-neworderpage",
-      "title": "Frontend: Improve error reporting for failed order creation so users aren’t left with only a spinner. Ensure errors from backend traps/rejects are converted into clear English messages and displayed in the existing error Alert on NewOrderPage.",
+      "id": "feature-add-a-new-promo-codes-section-in-the-admin-panel-ui-where-admins-can-add-and-remove-or-deactivate-promo-codes-and-view-the-current-list-of-configured-promo-codes",
+      "title": "Add a new Promo Codes section in the admin panel UI where admins can add and remove (or deactivate) promo codes, and view the current list of configured promo codes.",
       "reqIds": [
         "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-checkout-order-creation-ui-to-allow-users-to-enter-an-optional-promo-code-apply-a-5-discount-when-the-promo-code-is-valid-and-submit-the-promo-code-with-the-order-creation-request",
+      "title": "Update the checkout/order creation UI to allow users to enter an optional promo code, apply a 5% discount when the promo code is valid, and submit the promo code with the order creation request.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-promo-usage-on-order-views-in-the-admin-panel-so-admins-can-see-whether-a-promo-was-used-and-which-code-was-applied-for-each-order",
+      "title": "Display promo usage on order views in the admin panel so admins can see whether a promo was used and which code was applied for each order.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-and-query-keys-for-promo-code-admin-operations-list-add-remove-or-deactivate-and-ensure-relevant-queries-are-invalidated-refetched-after-mutations",
+      "title": "Add React Query hooks and query keys for promo code admin operations (list/add/remove or deactivate) and ensure relevant queries are invalidated/refetched after mutations.",
+      "reqIds": [
+        "REQ-7"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
+      "id": "AR-1",
+      "summary": "Add admin panel section to create/manage promo codes (5% off) usable at website checkout; store on each order whether a promo was used and which code.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
       "id": "AR-2",
-      "summary": "Backend: Add a caller-safe ban-status API that the frontend can use without causing unresolved calls. Implement a `public query ({ caller }) func isCallerBanned() : async Bool` that returns whether `caller` is in the banned set, and enforce that only authenticated users can call it (same permission gate style used elsewhere).",
+      "summary": "Extend the backend order model to record promo usage per order, including whether a promo code was applied and which promo code string was used.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add backend admin APIs to manage promo codes that provide a 5% discount, including: list promo codes, add a promo code, and remove (or deactivate) a promo code. Promo code management must be restricted to admins.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Update backend order creation to accept an optional promo code, validate it against the promo codes configured by admins, and store the promo code used on the order when valid. Invalid promo codes must not be accepted for discount application.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Fix order placement stuck on loading when clicking Place Order",
+  "projectName": "Add admin-managed promo codes (5% off) and promo usage tracking on orders",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

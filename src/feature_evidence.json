@@ -2,13 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-identify-and-fix-the-root-cause-of-the-customer-order-placement-flow-getting-stuck-in-a-perpetual-loading-state-when-submitting-the-order-form-create-order-place-order-ensure-the-mutation-always-resolves-success-or-error-and-the-ui-never-remains-stuck-on-loading-indefinitely",
-      "featureTitle": "Identify and fix the root cause of the customer order placement flow getting stuck in a perpetual loading state when submitting the order form (\"Create Order\" / \"Place Order\"). Ensure the mutation always resolves (success or error) and the UI never remains stuck on loading indefinitely.",
+      "featureId": "feature-add-a-new-promo-codes-section-in-the-admin-panel-ui-where-admins-can-add-and-remove-or-deactivate-promo-codes-and-view-the-current-list-of-configured-promo-codes",
+      "featureTitle": "Add a new Promo Codes section in the admin panel UI where admins can add and remove (or deactivate) promo codes, and view the current list of configured promo codes.",
       "files": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/pages/NewOrderPage.tsx",
-        "frontend/src/utils/orderErrors.ts",
-        "frontend/src/utils/withTimeout.ts"
+        "frontend/src/components/admin/PromoCodesSection.tsx",
+        "frontend/src/pages/AdminPanelPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -20,36 +18,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-4"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-frontend-make-the-create-order-mutation-robust-against-hanging-canister-calls-by-wrapping-the-backend-order-creation-call-in-a-timeout-promise-race-and-surfacing-the-timeout-as-a-user-facing-error-so-the-submit-button-cannot-remain-stuck-in-createorder-ispending",
-      "featureTitle": "Frontend: Make the create-order mutation robust against hanging canister calls by wrapping the backend order-creation call in a timeout (Promise.race) and surfacing the timeout as a user-facing error, so the submit button cannot remain stuck in `createOrder.isPending`.",
+      "featureId": "feature-update-the-checkout-order-creation-ui-to-allow-users-to-enter-an-optional-promo-code-apply-a-5-discount-when-the-promo-code-is-valid-and-submit-the-promo-code-with-the-order-creation-request",
+      "featureTitle": "Update the checkout/order creation UI to allow users to enter an optional promo code, apply a 5% discount when the promo code is valid, and submit the promo code with the order creation request.",
       "files": [
         "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/utils/withTimeout.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-frontend-improve-error-reporting-for-failed-order-creation-so-users-aren-t-left-with-only-a-spinner-ensure-errors-from-backend-traps-rejects-are-converted-into-clear-english-messages-and-displayed-in-the-existing-error-alert-on-neworderpage",
-      "featureTitle": "Frontend: Improve error reporting for failed order creation so users aren’t left with only a spinner. Ensure errors from backend traps/rejects are converted into clear English messages and displayed in the existing error Alert on NewOrderPage.",
-      "files": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/hooks/orders/usePromoCodeValidation.ts",
         "frontend/src/pages/NewOrderPage.tsx",
         "frontend/src/utils/orderErrors.ts"
       ],
@@ -63,7 +41,48 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-4"
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-display-promo-usage-on-order-views-in-the-admin-panel-so-admins-can-see-whether-a-promo-was-used-and-which-code-was-applied-for-each-order",
+      "featureTitle": "Display promo usage on order views in the admin panel so admins can see whether a promo was used and which code was applied for each order.",
+      "files": [
+        "frontend/src/pages/AdminPanelPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-react-query-hooks-and-query-keys-for-promo-code-admin-operations-list-add-remove-or-deactivate-and-ensure-relevant-queries-are-invalidated-refetched-after-mutations",
+      "featureTitle": "Add React Query hooks and query keys for promo code admin operations (list/add/remove or deactivate) and ensure relevant queries are invalidated/refetched after mutations.",
+      "files": [
+        "frontend/src/hooks/admin/useAdminPromoCodes.ts",
+        "frontend/src/hooks/orders/queryKeys.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
       ],
       "confidence": "high"
     }

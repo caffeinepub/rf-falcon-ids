@@ -10,6 +10,13 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AccountInfo {
+  'principal' : Principal,
+  'orderCount' : bigint,
+  'isBanned' : boolean,
+  'isVIP' : boolean,
+  'profile' : [] | [UserProfile],
+}
 export interface Address {
   'zip' : string,
   'city' : string,
@@ -21,7 +28,7 @@ export interface Address {
 export interface AdminDashboardData {
   'orders' : Array<Order>,
   'auditLog' : Array<AuditLogEntry>,
-  'userProfiles' : Array<[Principal, UserProfile]>,
+  'accounts' : Array<AccountInfo>,
   'securityStats' : SecurityStats,
 }
 export interface AuditLogEntry {
@@ -49,6 +56,8 @@ export interface Order {
   'status' : Status,
   'trackingNumber' : [] | [string],
   'owner' : [] | [Principal],
+  'promoCode' : [] | [string],
+  'promoUsed' : boolean,
   'creationTime' : Time,
   'address' : Address,
   'details' : Details,
@@ -111,6 +120,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addPromoCode' : ActorMethod<[string], undefined>,
   'addToAllowlist' : ActorMethod<[Principal], undefined>,
   'addToBlocklist' : ActorMethod<[Principal], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -120,17 +130,20 @@ export interface _SERVICE {
   'bulkShipOrders' : ActorMethod<[Array<string>], undefined>,
   'clearSecurityCounters' : ActorMethod<[], undefined>,
   'createOrder' : ActorMethod<
-    [string, Details, Address, ExternalBlob],
+    [string, Details, Address, ExternalBlob, [] | [string]],
     undefined
   >,
   'createOrderWithCallback' : ActorMethod<
-    [string, Details, Address, ExternalBlob],
+    [string, Details, Address, ExternalBlob, [] | [string]],
     Order
   >,
   'deleteOrder' : ActorMethod<[string], undefined>,
   'exportOrdersCSV' : ActorMethod<[], string>,
+  'getActiveAccounts' : ActorMethod<[], Array<Principal>>,
   'getAdminDashboard' : ActorMethod<[], AdminDashboardData>,
+  'getAllAccounts' : ActorMethod<[], Array<AccountInfo>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getAllPromoCodes' : ActorMethod<[], Array<string>>,
   'getAllVIPAccounts' : ActorMethod<[], Array<[Principal, boolean]>>,
   'getAuditLog' : ActorMethod<[bigint], Array<AuditLogEntry>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
@@ -161,6 +174,7 @@ export interface _SERVICE {
   'listAdminEmails' : ActorMethod<[], Array<string>>,
   'removeFromAllowlist' : ActorMethod<[Principal], undefined>,
   'removeFromBlocklist' : ActorMethod<[Principal], undefined>,
+  'removePromoCode' : ActorMethod<[string], undefined>,
   'resetAllData' : ActorMethod<[], undefined>,
   'revokeAdminAccess' : ActorMethod<[string], undefined>,
   'revokeVIPStatus' : ActorMethod<[Principal], undefined>,

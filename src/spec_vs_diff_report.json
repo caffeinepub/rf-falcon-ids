@@ -1,50 +1,58 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T00:14:12.696Z",
-  "summary": "Frontend adds timeout and error-normalization utilities and updates order creation flow to pre-check ban status with a timeout and to display normalized English errors. Backend diff is truncated and does not show the required `isCallerBanned` API, and the diff snippet does not clearly show that the actual order-creation canister call is wrapped in a timeout, so some requirements cannot be confirmed as implemented.",
+  "generatedAt": "2026-02-09T02:34:55.635Z",
+  "summary": "Diff adds promo fields to the backend Order type and includes a migration to backfill existing orders with default promo fields. Frontend adds promo-code admin section, React Query hooks/query keys for promo codes, and checkout-side promo code input/validation plus sending promo code with order creation. However, the backend admin promo-code APIs and backend-side promo validation/error behavior are not evidenced in the provided backend diff, and admin order views showing promo usage are not clearly evidenced.",
   "missing_requirements": [
     {
       "id": "REQ-2",
-      "requirement": "Backend: Add `public query ({ caller }) func isCallerBanned() : async Bool` with auth gate; returns true only for authenticated banned callers; unauthenticated callers trap Unauthorized; frontend can call without agent/candid errors.",
-      "reason": "The backend diff shown is truncated and contains no visible `isCallerBanned` function implementation or its auth gate behavior.",
+      "requirement": "Add backend admin APIs to manage promo codes (list/add/remove or deactivate) restricted to admins, with normalized/consistent promo code treatment.",
+      "reason": "Frontend calls `actor.getAllPromoCodes()`, `actor.addPromoCode()`, and `actor.removePromoCode()`, but the diff summary for `backend/main.mo` only shows the `promoCodes` map variable and does not show any public/shared methods implementing these admin APIs or enforcing admin-only access.",
       "evidence": [
-        "backend/main.mo (truncated; no `isCallerBanned` present in shown content)"
+        "frontend/src/hooks/admin/useAdminPromoCodes.ts",
+        "backend/main.mo (truncated; shows `var promoCodes = ...` but no API methods visible)"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Frontend: Wrap the backend order-creation call itself in a timeout (Promise.race) so the mutation cannot remain stuck pending if the canister call hangs, and show a timeout error message.",
-      "reason": "The diff shows a timeout wrapper used for a ban-status check, but the snippet is truncated before showing the actual order-creation canister call and whether that call is wrapped with `withTimeout`.",
+      "requirement": "Update backend order creation to accept optional promo code, validate against admin-configured promo codes, store promo code on the order when valid, and reject invalid promo codes with a clear English error message.",
+      "reason": "Frontend `useCreateOrder` now passes a `normalizedPromoCode` into `actor.createOrder(...)`, but the backend diff excerpt does not show an updated `createOrder` signature/implementation, promo validation, discount logic, or the required clear invalid-code error message.",
       "evidence": [
-        "frontend/src/hooks/orders/useCreateOrder.ts (truncated before the order submission call; only shows `withTimeout(actor.isCallerBanned(), ...)`)"
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "backend/main.mo (truncated; `createOrder` implementation not shown)"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "Display promo usage on order views in the admin panel (e.g., orders list/detail) showing either \"No promo\" or the promo code used.",
+      "reason": "The diff shows `AdminPanelPage.tsx` was modified and `PromoCodesSection` was added, but the provided truncated excerpt does not show any rendering of `order.promoUsed` / `order.promoCode` in the admin orders list/detail UI.",
+      "evidence": [
+        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Error message instructing banned users to contact support via Snapchat.",
-      "reason": "BuildRequest requires clear English error messages but does not request adding any specific support channel or Snapchat contact details.",
+      "description": "Pre-populating the backend promo code store with default codes (\"PROMO1\", \"PROMO2\", \"PROMO3\").",
+      "reason": "The BuildRequest does not request any default/seed promo codes; it specifies admin-managed promo codes.",
       "evidence": [
-        "frontend/src/utils/orderErrors.ts (returns: \"Please contact support via Snapchat: travis_c1\")"
-      ]
-    },
-    {
-      "description": "Client-side preflight ban check prior to creating an order (in addition to backend enforcement).",
-      "reason": "BuildRequest REQ-2 asks to add a ban-status API that the frontend can use safely, but it does not explicitly require adding a preflight ban check in the create-order mutation (it’s an extra behavior beyond the stated requirements).",
-      "evidence": [
-        "frontend/src/hooks/orders/useCreateOrder.ts (calls `actor.isCallerBanned()` before proceeding)"
+        "backend/main.mo (`var promoCodes = Map.fromIter([\"PROMO1\", \"PROMO2\", \"PROMO3\"]...)`)"
       ]
     }
   ],
-  "confidence": 0.64,
+  "confidence": 0.66,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/src/components/admin/PromoCodesSection.tsx",
+    "frontend/src/hooks/admin/useAdminPromoCodes.ts",
+    "frontend/src/hooks/orders/queryKeys.ts",
     "frontend/src/hooks/orders/useCreateOrder.ts",
+    "frontend/src/hooks/orders/usePromoCodeValidation.ts",
+    "frontend/src/pages/AdminPanelPage.tsx",
     "frontend/src/pages/NewOrderPage.tsx",
     "frontend/src/utils/orderErrors.ts",
-    "frontend/src/utils/withTimeout.ts",
     "project_state.json"
   ]
 }

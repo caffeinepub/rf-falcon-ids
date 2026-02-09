@@ -29,3 +29,8 @@ export const accountKeys = {
   allAccounts: () => [...accountKeys.all, 'admin', 'all'] as const,
   vipAccounts: () => [...accountKeys.all, 'vip'] as const,
 };
+
+export const promoKeys = {
+  all: ['promoCodes'] as const,
+  list: () => [...promoKeys.all, 'list'] as const,
+};

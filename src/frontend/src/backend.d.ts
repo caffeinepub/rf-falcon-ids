@@ -41,15 +41,24 @@ export interface Order {
     status: Status;
     trackingNumber?: string;
     owner?: Principal;
+    promoCode?: string;
+    promoUsed: boolean;
     creationTime: Time;
     address: Address;
     details: Details;
     photo: ExternalBlob;
 }
+export interface AccountInfo {
+    principal: Principal;
+    orderCount: bigint;
+    isBanned: boolean;
+    isVIP: boolean;
+    profile?: UserProfile;
+}
 export interface AdminDashboardData {
     orders: Array<Order>;
     auditLog: Array<AuditLogEntry>;
-    userProfiles: Array<[Principal, UserProfile]>;
+    accounts: Array<AccountInfo>;
     securityStats: SecurityStats;
 }
 export interface Details {
@@ -91,6 +100,7 @@ export enum Variant_allowed_denied_throttled {
     throttled = "throttled"
 }
 export interface backendInterface {
+    addPromoCode(promoCode: string): Promise<void>;
     addToAllowlist(principal: Principal): Promise<void>;
     addToBlocklist(principal: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -99,12 +109,15 @@ export interface backendInterface {
     bulkDeleteOrders(orderIds: Array<string>): Promise<void>;
     bulkShipOrders(orderIds: Array<string>): Promise<void>;
     clearSecurityCounters(): Promise<void>;
-    createOrder(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<void>;
-    createOrderWithCallback(id: string, details: Details, address: Address, photo: ExternalBlob): Promise<Order>;
+    createOrder(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null): Promise<void>;
+    createOrderWithCallback(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null): Promise<Order>;
     deleteOrder(orderId: string): Promise<void>;
     exportOrdersCSV(): Promise<string>;
+    getActiveAccounts(): Promise<Array<Principal>>;
     getAdminDashboard(): Promise<AdminDashboardData>;
+    getAllAccounts(): Promise<Array<AccountInfo>>;
     getAllOrders(): Promise<Array<Order>>;
+    getAllPromoCodes(): Promise<Array<string>>;
     getAllVIPAccounts(): Promise<Array<[Principal, boolean]>>;
     getAuditLog(limit: bigint): Promise<Array<AuditLogEntry>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -132,6 +145,7 @@ export interface backendInterface {
     listAdminEmails(): Promise<Array<string>>;
     removeFromAllowlist(principal: Principal): Promise<void>;
     removeFromBlocklist(principal: Principal): Promise<void>;
+    removePromoCode(promoCode: string): Promise<void>;
     resetAllData(): Promise<void>;
     revokeAdminAccess(admin_email: string): Promise<void>;
     revokeVIPStatus(user: Principal): Promise<void>;

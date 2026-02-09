@@ -1,68 +1,84 @@
 /**
- * Normalizes backend errors into user-friendly English messages.
- * Handles common error scenarios: unauthorized, banned, security blocks, rate limiting, duplicate IDs, network errors, and timeouts.
+ * Normalizes backend errors into user-friendly English messages
  */
 export function normalizeOrderError(error: any): string {
   if (!error) {
-    return 'An unknown error occurred. Please try again.';
+    return 'An unexpected error occurred. Please try again.';
   }
 
   const errorMessage = error.message || String(error);
 
-  // Timeout errors
-  if (errorMessage.includes('timed out') || errorMessage.includes('timeout')) {
-    return 'Request timed out. Please check your connection and try again.';
-  }
-
-  // Unauthorized / authentication errors
-  if (errorMessage.includes('Unauthorized') || errorMessage.includes('not authenticated')) {
-    return 'You must be signed in to place an order. Please sign in and try again.';
-  }
-
   // Banned user errors
-  if (errorMessage.includes('banned')) {
-    return 'Your account has been banned from placing orders. Please contact support via Snapchat: travis_c1';
+  if (
+    errorMessage.includes('banned') ||
+    errorMessage.includes('Your account has been banned')
+  ) {
+    return 'Your account has been banned from placing orders. Please contact support.';
   }
 
-  // Security block / rate limiting (including "TREY C SECURITY" style traps)
+  // Unauthorized/authentication errors
+  if (
+    errorMessage.includes('Unauthorized') ||
+    errorMessage.includes('not authenticated') ||
+    errorMessage.includes('must be logged in')
+  ) {
+    return 'You must be logged in to perform this action.';
+  }
+
+  // Security/rate limiting errors
   if (
     errorMessage.includes('TREY C SECURITY') ||
-    errorMessage.includes('Rate limit exceeded') ||
-    errorMessage.includes('access denied') ||
-    errorMessage.includes('security')
+    errorMessage.includes('Rate limit') ||
+    errorMessage.includes('access denied')
   ) {
-    return 'Your request was blocked for security reasons. Please wait a few minutes and try again.';
+    return 'Too many requests. Please wait a moment and try again.';
   }
 
-  // Duplicate order ID
-  if (errorMessage.includes('Order ID already exists') || errorMessage.includes('duplicate')) {
-    return 'Order ID conflict detected. Please try submitting your order again.';
-  }
-
-  // Network errors
+  // Duplicate ID errors
   if (
-    errorMessage.includes('network') ||
-    errorMessage.includes('fetch') ||
-    errorMessage.includes('connection')
+    errorMessage.includes('already exists') ||
+    errorMessage.includes('duplicate')
   ) {
-    return 'Network error. Please check your internet connection and try again.';
+    return 'Order ID conflict detected. Retrying with a new ID...';
+  }
+
+  // Invalid promo code errors
+  if (
+    errorMessage.includes('invalid promo') ||
+    errorMessage.includes('promo code')
+  ) {
+    return 'The promo code you entered is invalid or has expired.';
+  }
+
+  // Network/timeout errors
+  if (
+    errorMessage.includes('timeout') ||
+    errorMessage.includes('timed out') ||
+    errorMessage.includes('network') ||
+    errorMessage.includes('fetch')
+  ) {
+    return 'Network error. Please check your connection and try again.';
   }
 
   // Actor not available
   if (errorMessage.includes('Actor not available')) {
-    return 'Service temporarily unavailable. Please refresh the page and try again.';
+    return 'Service is initializing. Please wait a moment and try again.';
   }
 
-  // Validation errors (pass through as-is since they're already user-friendly)
-  if (
-    errorMessage.includes('required') ||
-    errorMessage.includes('invalid') ||
-    errorMessage.includes('must be') ||
-    errorMessage.includes('cannot be')
-  ) {
+  // Order not found
+  if (errorMessage.includes('not found')) {
+    return 'The requested order could not be found.';
+  }
+
+  // Permission errors
+  if (errorMessage.includes('permission') || errorMessage.includes('access')) {
+    return 'You do not have permission to perform this action.';
+  }
+
+  // Default: return a cleaned version of the error or generic message
+  if (errorMessage.length > 0 && errorMessage.length < 200) {
     return errorMessage;
   }
 
-  // Default fallback
-  return errorMessage || 'Failed to create order. Please try again.';
+  return 'An error occurred while processing your request. Please try again.';
 }

@@ -1,88 +1,146 @@
 {
   "kind": "build_request",
-  "title": "Fix order placement stuck on loading when clicking Place Order",
-  "priority": "high",
+  "title": "Add admin-managed promo codes (5% off) and promo usage tracking on orders",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Identify and fix the root cause of the customer order placement flow getting stuck in a perpetual loading state when submitting the order form (\"Create Order\" / \"Place Order\"). Ensure the mutation always resolves (success or error) and the UI never remains stuck on loading indefinitely.",
-      "target": "both",
+      "text": "Extend the backend order model to record promo usage per order, including whether a promo code was applied and which promo code string was used.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-user-1"
+          "msg-3"
         ],
         "quotes": [
-          "When clicking place order it is stuck on loading fix order placing code"
+          "Add a spot in the admin panel where admins can add promo codes for checkout from the website %5 off for codes added and on orders put if they used a promo and what one they used"
         ]
       },
       "acceptanceCriteria": [
-        "From NewOrderPage, submitting a valid order reliably completes within a reasonable time and no longer stays stuck in the loading state.",
-        "If the backend rejects/traps (e.g., unauthorized, banned, rate-limited, duplicate ID), the frontend exits loading state and displays an English error message.",
-        "If the network/agent call hangs, the frontend times out, exits loading state, and shows an actionable English error message (e.g., \"Request timed out. Please try again.\")."
+        "Creating an order can optionally include a promo code value.",
+        "When an order is retrieved via existing order endpoints, the promo usage information is returned with the order data.",
+        "Existing orders created before this change continue to load (promo fields default to empty / null)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Backend: Add a caller-safe ban-status API that the frontend can use without causing unresolved calls. Implement a `public query ({ caller }) func isCallerBanned() : async Bool` that returns whether `caller` is in the banned set, and enforce that only authenticated users can call it (same permission gate style used elsewhere).",
+      "text": "Add backend admin APIs to manage promo codes that provide a 5% discount, including: list promo codes, add a promo code, and remove (or deactivate) a promo code. Promo code management must be restricted to admins.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-user-1"
+          "msg-3"
         ],
         "quotes": [
-          "When clicking place order it is stuck on loading fix order placing code"
+          "Add a spot in the admin panel where admins can add promo codes for checkout from the website %5 off for codes added"
         ]
       },
       "acceptanceCriteria": [
-        "`isCallerBanned` exists in `backend/main.mo` and returns `true` only when the authenticated caller is banned, otherwise `false`.",
-        "Unauthenticated callers receive an Unauthorized trap consistent with other protected query methods.",
-        "Frontend can call `actor.isCallerBanned()` without agent/candid errors."
+        "Non-admin callers are rejected when attempting to add/remove/list promo codes.",
+        "Admins can add a new promo code and see it appear in the promo code list.",
+        "Admins can remove/deactivate an existing promo code and it no longer validates for checkout.",
+        "Promo codes are treated consistently (trimmed; matching is case-insensitive or stored in a normalized form)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Frontend: Make the create-order mutation robust against hanging canister calls by wrapping the backend order-creation call in a timeout (Promise.race) and surfacing the timeout as a user-facing error, so the submit button cannot remain stuck in `createOrder.isPending`.",
-      "target": "frontend",
+      "text": "Update backend order creation to accept an optional promo code, validate it against the promo codes configured by admins, and store the promo code used on the order when valid. Invalid promo codes must not be accepted for discount application.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-user-1"
+          "msg-3"
         ],
         "quotes": [
-          "When clicking place order it is stuck on loading fix order placing code"
+          "promo codes for checkout from the website %5 off for codes added"
         ]
       },
       "acceptanceCriteria": [
-        "If the backend call does not settle within the defined timeout window, the mutation rejects, `createOrder.isPending` becomes false, and the user sees a timeout error message in English.",
-        "After any failure (validation error, banned, unauthorized, rate-limited, timeout), the user can immediately click the submit button again (no stuck pending state)."
+        "Submitting an order with a valid promo code succeeds and the created order records the promo code used.",
+        "Submitting an order with an invalid promo code returns a clear error message (in English) indicating the code is invalid.",
+        "Submitting an order with no promo code continues to work exactly as before."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Frontend: Improve error reporting for failed order creation so users aren’t left with only a spinner. Ensure errors from backend traps/rejects are converted into clear English messages and displayed in the existing error Alert on NewOrderPage.",
+      "text": "Add a new Promo Codes section in the admin panel UI where admins can add and remove (or deactivate) promo codes, and view the current list of configured promo codes.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-user-1"
+          "msg-3"
         ],
         "quotes": [
-          "When clicking place order it is stuck on loading fix order placing code"
+          "Add a spot in the admin panel where admins can add promo codes"
         ]
       },
       "acceptanceCriteria": [
-        "When the backend returns an Unauthorized error, the page shows an English message prompting the user to sign in.",
-        "When the backend indicates a security block (e.g., rate limiting / \"TREY C SECURITY\"), the page shows an English message explaining the request was blocked and to retry later.",
-        "When the backend indicates a duplicate order ID, the page shows an English message and the app auto-retries with a new generated order ID or instructs the user to retry (implementation choice is acceptable as long as it is not stuck)."
+        "Admin Dashboard includes a new tab/section labeled \"Promo Codes\" (English).",
+        "Admins can enter a promo code and save it; the list updates without a full page reload.",
+        "Admins can remove/deactivate a promo code from the list; the list updates after the action.",
+        "UI shows loading and error states for promo code operations."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Update the checkout/order creation UI to allow users to enter an optional promo code, apply a 5% discount when the promo code is valid, and submit the promo code with the order creation request.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "promo codes for checkout from the website %5 off for codes added"
+        ]
+      },
+      "acceptanceCriteria": [
+        "New Order page includes a \"Promo code\" input (optional).",
+        "When a valid promo code is entered, the pricing summary reflects a 5% discount and updates the displayed total accordingly.",
+        "When an invalid promo code is entered, the UI clearly indicates the code is invalid and does not apply the discount.",
+        "On successful order creation with a promo code, the promo code value is included in the order creation call and is visible later on the order data returned from the backend."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Display promo usage on order views in the admin panel so admins can see whether a promo was used and which code was applied for each order.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "on orders put if they used a promo and what one they used"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In the admin orders list and/or order detail surfaces already present in the admin panel, each order shows promo usage: either \"No promo\" or the promo code string used.",
+        "The display remains readable and consistent with the existing admin styling."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Add React Query hooks and query keys for promo code admin operations (list/add/remove or deactivate) and ensure relevant queries are invalidated/refetched after mutations.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Add a spot in the admin panel where admins can add promo codes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Promo code list is fetched via a dedicated React Query query with a stable query key.",
+        "After add/remove/deactivate promo code mutations succeed, the promo code list query is invalidated and refetched.",
+        "No edits are made to frontend immutable paths (per project constraints)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo changes if state schema changes require it.",
-    "Do not edit files under frontend/src/components/ui or any frontend immutablePaths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single-actor Motoko architecture with logic in backend/main.mo.",
+    "Only generate backend/migration.mo if required to preserve existing persisted state during upgrade (conditional migration policy).",
+    "Do not edit files under frontend/src/components/ui or other frontend immutable paths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Adding new payment providers or external checkout systems.",
-    "Adding real-time updates (WebSockets/push).",
-    "Changing the overall order form fields or introducing new product features unrelated to fixing the stuck loading/order placement reliability."
+    "Implementing percentage values other than a fixed 5% off for promo codes.",
+    "Integrating external payment processors or third-party coupon systems.",
+    "Adding user-specific promo restrictions (usage limits, expiration dates, minimum order amounts) unless explicitly requested."
   ],
   "imageRequirements": {
     "required": [],

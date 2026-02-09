@@ -13,9 +13,12 @@ import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   let bannedUsers = Set.empty<Principal>();
+  let activeAccounts = Set.empty<Principal>();
 
   type Address = {
     first_name : Text;
@@ -51,6 +54,8 @@ actor {
       status : Status;
       owner : ?Principal;
       trackingNumber : ?Text;
+      promoUsed : Bool;
+      promoCode : ?Text;
     };
 
     public func compare(o1 : Order, o2 : Order) : Order.Order {
@@ -93,9 +98,17 @@ actor {
     details : Text;
   };
 
+  public type AccountInfo = {
+    principal : Principal;
+    profile : ?UserProfile;
+    isBanned : Bool;
+    isVIP : Bool;
+    orderCount : Nat;
+  };
+
   public type AdminDashboardData = {
     orders : [Order];
-    userProfiles : [(Principal, UserProfile)];
+    accounts : [AccountInfo];
     securityStats : SecurityStats;
     auditLog : [AuditLogEntry];
   };
@@ -128,6 +141,10 @@ actor {
   var emailToPrincipal = Map.empty<Text, Principal>();
   let OWNER_EMAIL = "traviscastonguay@gmail.com";
   var ownerPrincipal : ?Principal = null;
+
+  var promoCodes = Map.fromIter(
+    ["PROMO1", "PROMO2", "PROMO3"].values().map(func(code) { (code, true) })
+  );
 
   func checkRateLimit(caller : Principal, action : Text) : Bool {
     if (not securityConfig.enabled) {
@@ -245,6 +262,21 @@ actor {
     };
   };
 
+  func countOrdersForPrincipal(principal : Principal) : Nat {
+    var count = 0;
+    for ((_, order) in orders.entries()) {
+      switch (order.owner) {
+        case (?owner) {
+          if (owner == principal) {
+            count += 1;
+          };
+        };
+        case (null) { };
+      };
+    };
+    count;
+  };
+
   public query ({ caller }) func isOrderOwner(orderId : Text) : async Bool {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can check order ownership");
@@ -288,13 +320,17 @@ actor {
       Runtime.trap("Unauthorized: Only admins can grant VIP status");
     };
 
+    if (not activeAccounts.contains(user)) {
+      Runtime.trap("User account not found");
+    };
+
     switch (userProfiles.get(user)) {
       case (?profile) {
         let updatedProfile = { profile with isVIP = true };
         userProfiles.add(user, updatedProfile);
         logAuditEntry(caller, "grantVIPStatus", "VIP status granted to " # user.toText());
       };
-      case (null) { Runtime.trap("User not found") };
+      case (null) { Runtime.trap("User profile not found") };
     };
   };
 
@@ -303,13 +339,17 @@ actor {
       Runtime.trap("Unauthorized: Only admins can revoke VIP status");
     };
 
+    if (not activeAccounts.contains(user)) {
+      Runtime.trap("User account not found");
+    };
+
     switch (userProfiles.get(user)) {
       case (?profile) {
         let updatedProfile = { profile with isVIP = false };
         userProfiles.add(user, updatedProfile);
         logAuditEntry(caller, "revokeVIPStatus", "VIP status revoked for " # user.toText());
       };
-      case (null) { Runtime.trap("User not found") };
+      case (null) { Runtime.trap("User profile not found") };
     };
   };
 
@@ -346,7 +386,14 @@ actor {
       case (null) { };
     };
 
-    userProfiles.add(caller, { profile with isVIP = false });
+    let existingProfile = userProfiles.get(caller);
+    let isVIP = switch (existingProfile) {
+      case (?p) { p.isVIP };
+      case (null) { false };
+    };
+
+    userProfiles.add(caller, { profile with isVIP });
+    activeAccounts.add(caller);
   };
 
   public shared ({ caller }) func createOrder(
@@ -354,6 +401,7 @@ actor {
     details : Details,
     address : Address,
     photo : Storage.ExternalBlob,
+    promoCode : ?Text,
   ) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create orders");
@@ -371,6 +419,17 @@ actor {
       Runtime.trap("Order ID already exists");
     };
 
+    let (promoUsed, validPromoCode) = switch (promoCode) {
+      case (null) { (false, null) };
+      case (?code) {
+        if (promoCodes.containsKey(code)) {
+          (true, ?code);
+        } else {
+          (false, null);
+        };
+      };
+    };
+
     let newOrder : Order = {
       id;
       details;
@@ -380,9 +439,21 @@ actor {
       status = #pending;
       owner = ?caller;
       trackingNumber = null;
+      promoUsed;
+      promoCode = validPromoCode;
     };
 
     orders.add(id, newOrder);
+    activeAccounts.add(caller);
+
+    if (not userProfiles.containsKey(caller)) {
+      let defaultProfile : UserProfile = {
+        name = details.first_name # " " # details.last_name;
+        email = null;
+        isVIP = false;
+      };
+      userProfiles.add(caller, defaultProfile);
+    };
   };
 
   public shared ({ caller }) func updateOrderStatus(orderId : Text, status : OrderStatus) : async () {
@@ -493,7 +564,13 @@ actor {
     logAuditEntry(caller, "resetAllData", "All order data reset");
   };
 
-  public shared ({ caller }) func createOrderWithCallback(id : Text, details : Details, address : Address, photo : Storage.ExternalBlob) : async Order {
+  public shared ({ caller }) func createOrderWithCallback(
+    id : Text,
+    details : Details,
+    address : Address,
+    photo : Storage.ExternalBlob,
+    promoCode : ?Text,
+  ) : async Order {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create orders");
     };
@@ -510,6 +587,17 @@ actor {
       Runtime.trap("Order ID already exists");
     };
 
+    let (promoUsed, validPromoCode) = switch (promoCode) {
+      case (null) { (false, null) };
+      case (?code) {
+        if (promoCodes.containsKey(code)) {
+          (true, ?code);
+        } else {
+          (false, null);
+        };
+      };
+    };
+
     let newOrder : Order = {
       id;
       details;
@@ -519,9 +607,22 @@ actor {
       status = #pending;
       owner = ?caller;
       trackingNumber = null;
+      promoUsed;
+      promoCode = validPromoCode;
     };
 
     orders.add(id, newOrder);
+    activeAccounts.add(caller);
+
+    if (not userProfiles.containsKey(caller)) {
+      let defaultProfile : UserProfile = {
+        name = details.first_name # " " # details.last_name;
+        email = null;
+        isVIP = false;
+      };
+      userProfiles.add(caller, defaultProfile);
+    };
+
     newOrder;
   };
 
@@ -724,8 +825,7 @@ actor {
       Runtime.trap("Unauthorized: Only admins can export data");
     };
 
-    var csv = "Order ID,First Name,Last Name,Status,Creation Time,Tracking Number,Owner\n";
-
+    var csv = "Order ID,First Name,Last Name,Status,Creation Time,Tracking Number,Owner,Promo Used,Promo Code\n";
     for ((_, order) in orders.entries()) {
       let statusText = switch (order.status) {
         case (#pending) { "pending" };
@@ -740,8 +840,10 @@ actor {
         case (null) { "" };
         case (?p) { p.toText() };
       };
+      let promoText = if (order.promoUsed) { "Yes" } else { "" };
+      let promoCodeText = switch (order.promoCode) { case (null) { "" }; case (?p) { p } };
 
-      csv #= order.id # "," # order.details.first_name # "," # order.details.last_name # "," # statusText # "," # order.creationTime.toText() # "," # trackingText # "," # ownerText # "\n";
+      csv #= order.id # "," # order.details.first_name # "," # order.details.last_name # "," # statusText # "," # order.creationTime.toText() # "," # trackingText # "," # ownerText # "," # promoText # "," # promoCodeText # "\n";
     };
 
     csv;
@@ -830,6 +932,10 @@ actor {
       Runtime.trap("Unauthorized: Only admins can perform account actions");
     };
 
+    if (not activeAccounts.contains(user)) {
+      Runtime.trap("User account not found");
+    };
+
     if (user == caller) {
       Runtime.trap("Cannot ban yourself");
     };
@@ -851,6 +957,10 @@ actor {
       Runtime.trap("Unauthorized: Only admins can perform account actions");
     };
 
+    if (not bannedUsers.contains(user)) {
+      Runtime.trap("User is not banned");
+    };
+
     bannedUsers.remove(user);
     logAuditEntry(caller, "unbanUser", "User " # user.toText() # " unbanned");
   };
@@ -859,6 +969,11 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can check banned status");
     };
+
+    if (not activeAccounts.contains(user)) {
+      Runtime.trap("User account not found");
+    };
+
     bannedUsers.contains(user);
   };
 
@@ -876,34 +991,93 @@ actor {
 
     let ordersArray = orders.values().toArray();
 
-    let userProfilesArray = (func() : [(Principal, UserProfile)] {
-      let filteredList = List.empty<(Principal, UserProfile)>();
-      for ((principal, profile) in userProfiles.entries()) {
-        var hasOrders = false;
-        for ((_, order) in orders.entries()) {
-          switch (order.owner) {
-            case (?o) {
-              if (o == principal) {
-                hasOrders := true;
-              };
-            };
-            case (null) { };
-          };
-        };
-        if (hasOrders) {
-          filteredList.add((principal, profile));
-        };
+    let accountsList = List.empty<AccountInfo>();
+    for (principal in activeAccounts.values()) {
+      let profile = userProfiles.get(principal);
+      let isBanned = bannedUsers.contains(principal);
+      let isVIP = switch (profile) {
+        case (?p) { p.isVIP };
+        case (null) { false };
       };
-      filteredList.toArray();
-    })();
+      let orderCount = countOrdersForPrincipal(principal);
+
+      let accountInfo : AccountInfo = {
+        principal;
+        profile;
+        isBanned;
+        isVIP;
+        orderCount;
+      };
+      accountsList.add(accountInfo);
+    };
 
     let auditLogArray = auditLog.toArray();
 
     {
       orders = ordersArray;
-      userProfiles = userProfilesArray;
+      accounts = accountsList.toArray();
       securityStats;
       auditLog = auditLogArray;
     };
+  };
+
+  public query ({ caller }) func getActiveAccounts() : async [Principal] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can access active accounts");
+    };
+    activeAccounts.toArray();
+  };
+
+  public query ({ caller }) func getAllAccounts() : async [AccountInfo] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can access account information");
+    };
+
+    let accountsList = List.empty<AccountInfo>();
+    for (principal in activeAccounts.values()) {
+      let profile = userProfiles.get(principal);
+      let isBanned = bannedUsers.contains(principal);
+      let isVIP = switch (profile) {
+        case (?p) { p.isVIP };
+        case (null) { false };
+      };
+      let orderCount = countOrdersForPrincipal(principal);
+
+      let accountInfo : AccountInfo = {
+        principal;
+        profile;
+        isBanned;
+        isVIP;
+        orderCount;
+      };
+      accountsList.add(accountInfo);
+    };
+
+    accountsList.toArray();
+  };
+
+  // -- Promo code management
+
+  public query ({ caller }) func getAllPromoCodes() : async [Text] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can get all promo codes");
+    };
+    promoCodes.keys().toArray();
+  };
+
+  public shared ({ caller }) func addPromoCode(promoCode : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can add promo codes");
+    };
+
+    promoCodes.add(promoCode, true);
+  };
+
+  public shared ({ caller }) func removePromoCode(promoCode : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can remove promo codes");
+    };
+
+    promoCodes.remove(promoCode);
   };
 };

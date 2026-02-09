@@ -1,20 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
-import { accountKeys, auditKeys, orderKeys } from '../orders/queryKeys';
+import { accountKeys, auditKeys } from '../orders/queryKeys';
 import { Principal } from '@dfinity/principal';
-import type { UserProfile } from '../../backend';
+import type { AccountInfo } from '../../backend';
 import { toast } from 'sonner';
 
 export function useAllAccounts() {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<Array<[Principal, UserProfile]>>({
+  return useQuery<AccountInfo[]>({
     queryKey: accountKeys.allAccounts(),
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      const dashboard = await actor.getAdminDashboard();
-      // Backend already filters to only include accounts with orders
-      return dashboard.userProfiles;
+      const accounts = await actor.getAllAccounts();
+      return accounts;
     },
     enabled: !!actor && !actorFetching,
     retry: false,
@@ -105,17 +104,6 @@ export function useUnbanUser() {
       console.error('Unban user error:', error);
       const message = error.message || 'Failed to unban user';
       toast.error(message);
-    },
-  });
-}
-
-export function useCheckBanStatus() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useMutation({
-    mutationFn: async (principal: Principal) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.isUserBanned(principal);
     },
   });
 }

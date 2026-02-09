@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useCreateOrder } from '../hooks/orders/useCreateOrder';
 import { useIsCallerVIP } from '../hooks/auth/useIsCallerVIP';
+import { usePromoCodeValidation } from '../hooks/orders/usePromoCodeValidation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CreditCard, Crown, AlertCircle } from 'lucide-react';
+import { Loader2, CreditCard, Crown, AlertCircle, Tag, CheckCircle2, XCircle } from 'lucide-react';
 import { US_STATES } from '../constants/usStates';
 import PhotoUploader from '../components/PhotoUploader';
 import { COPY } from '../content/copy';
@@ -26,6 +27,9 @@ export default function NewOrderPage() {
   const [photoBlob, setPhotoBlob] = useState<ExternalBlob | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [retryCount, setRetryCount] = useState<number>(0);
+  const [promoCode, setPromoCode] = useState<string>('');
+
+  const promoValidation = usePromoCodeValidation(promoCode);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -83,6 +87,9 @@ export default function NewOrderPage() {
     const orderId = `order-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     const idNumber = generateIdNumber();
 
+    // Prepare promo code: only send if valid
+    const validPromoCode = promoValidation.isValid ? promoCode.trim().toUpperCase() : null;
+
     try {
       await createOrder.mutateAsync({
         id: orderId,
@@ -108,6 +115,7 @@ export default function NewOrderPage() {
           zip: formData.shippingZip,
         },
         photo: photoBlob,
+        promoCode: validPromoCode,
       });
 
       // Success - navigate to dashboard with success indicator
@@ -152,8 +160,11 @@ export default function NewOrderPage() {
     formData.shippingZip &&
     photoBlob;
 
-  const discount = isVIP ? calculateVIPDiscount(BASE_ORDER_PRICE) : 0;
-  const total = isVIP ? calculateVIPTotal(BASE_ORDER_PRICE) : BASE_ORDER_PRICE;
+  // Calculate pricing with promo discount
+  const vipDiscount = isVIP ? calculateVIPDiscount(BASE_ORDER_PRICE) : 0;
+  const priceAfterVIP = isVIP ? calculateVIPTotal(BASE_ORDER_PRICE) : BASE_ORDER_PRICE;
+  const promoDiscount = promoValidation.isValid ? Math.round(priceAfterVIP * 0.05) : 0;
+  const finalTotal = priceAfterVIP - promoDiscount;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -190,17 +201,91 @@ export default function NewOrderPage() {
                   <Crown className="w-4 h-4" />
                   {COPY.VIP_DISCOUNT_LABEL}:
                 </span>
-                <span className="font-semibold">-{formatPrice(discount)}</span>
+                <span className="font-semibold">-{formatPrice(vipDiscount)}</span>
+              </div>
+            )}
+            {promoValidation.isValid && (
+              <div className="flex justify-between items-center text-lg text-green-400">
+                <span className="flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  Promo Discount (5%):
+                </span>
+                <span className="font-semibold">-{formatPrice(promoDiscount)}</span>
               </div>
             )}
             <div className="border-t pt-3 flex justify-between items-center text-xl font-bold">
               <span>{COPY.TOTAL_LABEL}:</span>
-              <span className={isVIP ? 'text-yellow-400' : 'text-primary'}>{formatPrice(total)}</span>
+              <span className={isVIP || promoValidation.isValid ? 'text-green-400' : 'text-primary'}>
+                {formatPrice(finalTotal)}
+              </span>
             </div>
-            {isVIP && (
-              <p className="text-sm text-yellow-400/80 text-center pt-2">
-                🎉 You&apos;re saving {formatPrice(discount)} with your VIP status!
+            {(isVIP || promoValidation.isValid) && (
+              <p className="text-sm text-green-400/80 text-center pt-2">
+                🎉 You&apos;re saving {formatPrice(vipDiscount + promoDiscount)} on this order!
               </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Promo Code Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Tag className="w-5 h-5" />
+              Promo Code (Optional)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="promoCode">Enter Promo Code</Label>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Input
+                    id="promoCode"
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    disabled={createOrder.isPending}
+                    className={
+                      promoCode.trim() && !promoValidation.isLoading
+                        ? promoValidation.isValid
+                          ? 'border-green-500 focus:ring-green-500'
+                          : 'border-red-500 focus:ring-red-500'
+                        : ''
+                    }
+                  />
+                  {promoCode.trim() && !promoValidation.isLoading && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {promoValidation.isValid ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            {promoValidation.isLoading && (
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Validating promo code...
+              </p>
+            )}
+            {promoCode.trim() && !promoValidation.isLoading && promoValidation.isValid && (
+              <p className="text-sm text-green-500 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                Valid promo code! 5% discount will be applied.
+              </p>
+            )}
+            {promoCode.trim() && !promoValidation.isLoading && !promoValidation.isValid && (
+              <p className="text-sm text-red-500 flex items-center gap-2">
+                <XCircle className="w-4 h-4" />
+                Invalid promo code. Please check and try again.
+              </p>
+            )}
+            {promoValidation.error && (
+              <p className="text-sm text-red-500">{promoValidation.error}</p>
             )}
           </CardContent>
         </Card>

@@ -57,6 +57,8 @@ export const Order = IDL.Record({
   'status' : Status,
   'trackingNumber' : IDL.Opt(IDL.Text),
   'owner' : IDL.Opt(IDL.Principal),
+  'promoCode' : IDL.Opt(IDL.Text),
+  'promoUsed' : IDL.Bool,
   'creationTime' : Time,
   'address' : Address,
   'details' : Details,
@@ -73,6 +75,13 @@ export const UserProfile = IDL.Record({
   'email' : IDL.Opt(IDL.Text),
   'isVIP' : IDL.Bool,
 });
+export const AccountInfo = IDL.Record({
+  'principal' : IDL.Principal,
+  'orderCount' : IDL.Nat,
+  'isBanned' : IDL.Bool,
+  'isVIP' : IDL.Bool,
+  'profile' : IDL.Opt(UserProfile),
+});
 export const SecurityStats = IDL.Record({
   'deniedCalls' : IDL.Nat,
   'allowedCalls' : IDL.Nat,
@@ -81,7 +90,7 @@ export const SecurityStats = IDL.Record({
 export const AdminDashboardData = IDL.Record({
   'orders' : IDL.Vec(Order),
   'auditLog' : IDL.Vec(AuditLogEntry),
-  'userProfiles' : IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile)),
+  'accounts' : IDL.Vec(AccountInfo),
   'securityStats' : SecurityStats,
 });
 export const OrderStatus = IDL.Variant({
@@ -129,6 +138,7 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addPromoCode' : IDL.Func([IDL.Text], [], []),
   'addToAllowlist' : IDL.Func([IDL.Principal], [], []),
   'addToBlocklist' : IDL.Func([IDL.Principal], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -137,16 +147,23 @@ export const idlService = IDL.Service({
   'bulkDeleteOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
   'bulkShipOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
   'clearSecurityCounters' : IDL.Func([], [], []),
-  'createOrder' : IDL.Func([IDL.Text, Details, Address, ExternalBlob], [], []),
+  'createOrder' : IDL.Func(
+      [IDL.Text, Details, Address, ExternalBlob, IDL.Opt(IDL.Text)],
+      [],
+      [],
+    ),
   'createOrderWithCallback' : IDL.Func(
-      [IDL.Text, Details, Address, ExternalBlob],
+      [IDL.Text, Details, Address, ExternalBlob, IDL.Opt(IDL.Text)],
       [Order],
       [],
     ),
   'deleteOrder' : IDL.Func([IDL.Text], [], []),
   'exportOrdersCSV' : IDL.Func([], [IDL.Text], ['query']),
+  'getActiveAccounts' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
   'getAdminDashboard' : IDL.Func([], [AdminDashboardData], ['query']),
+  'getAllAccounts' : IDL.Func([], [IDL.Vec(AccountInfo)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+  'getAllPromoCodes' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'getAllVIPAccounts' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Bool))],
@@ -192,6 +209,7 @@ export const idlService = IDL.Service({
   'listAdminEmails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'removeFromAllowlist' : IDL.Func([IDL.Principal], [], []),
   'removeFromBlocklist' : IDL.Func([IDL.Principal], [], []),
+  'removePromoCode' : IDL.Func([IDL.Text], [], []),
   'resetAllData' : IDL.Func([], [], []),
   'revokeAdminAccess' : IDL.Func([IDL.Text], [], []),
   'revokeVIPStatus' : IDL.Func([IDL.Principal], [], []),
@@ -255,6 +273,8 @@ export const idlFactory = ({ IDL }) => {
     'status' : Status,
     'trackingNumber' : IDL.Opt(IDL.Text),
     'owner' : IDL.Opt(IDL.Principal),
+    'promoCode' : IDL.Opt(IDL.Text),
+    'promoUsed' : IDL.Bool,
     'creationTime' : Time,
     'address' : Address,
     'details' : Details,
@@ -271,6 +291,13 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Opt(IDL.Text),
     'isVIP' : IDL.Bool,
   });
+  const AccountInfo = IDL.Record({
+    'principal' : IDL.Principal,
+    'orderCount' : IDL.Nat,
+    'isBanned' : IDL.Bool,
+    'isVIP' : IDL.Bool,
+    'profile' : IDL.Opt(UserProfile),
+  });
   const SecurityStats = IDL.Record({
     'deniedCalls' : IDL.Nat,
     'allowedCalls' : IDL.Nat,
@@ -279,7 +306,7 @@ export const idlFactory = ({ IDL }) => {
   const AdminDashboardData = IDL.Record({
     'orders' : IDL.Vec(Order),
     'auditLog' : IDL.Vec(AuditLogEntry),
-    'userProfiles' : IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile)),
+    'accounts' : IDL.Vec(AccountInfo),
     'securityStats' : SecurityStats,
   });
   const OrderStatus = IDL.Variant({
@@ -327,6 +354,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addPromoCode' : IDL.Func([IDL.Text], [], []),
     'addToAllowlist' : IDL.Func([IDL.Principal], [], []),
     'addToBlocklist' : IDL.Func([IDL.Principal], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -336,19 +364,22 @@ export const idlFactory = ({ IDL }) => {
     'bulkShipOrders' : IDL.Func([IDL.Vec(IDL.Text)], [], []),
     'clearSecurityCounters' : IDL.Func([], [], []),
     'createOrder' : IDL.Func(
-        [IDL.Text, Details, Address, ExternalBlob],
+        [IDL.Text, Details, Address, ExternalBlob, IDL.Opt(IDL.Text)],
         [],
         [],
       ),
     'createOrderWithCallback' : IDL.Func(
-        [IDL.Text, Details, Address, ExternalBlob],
+        [IDL.Text, Details, Address, ExternalBlob, IDL.Opt(IDL.Text)],
         [Order],
         [],
       ),
     'deleteOrder' : IDL.Func([IDL.Text], [], []),
     'exportOrdersCSV' : IDL.Func([], [IDL.Text], ['query']),
+    'getActiveAccounts' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'getAdminDashboard' : IDL.Func([], [AdminDashboardData], ['query']),
+    'getAllAccounts' : IDL.Func([], [IDL.Vec(AccountInfo)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+    'getAllPromoCodes' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getAllVIPAccounts' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Bool))],
@@ -394,6 +425,7 @@ export const idlFactory = ({ IDL }) => {
     'listAdminEmails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'removeFromAllowlist' : IDL.Func([IDL.Principal], [], []),
     'removeFromBlocklist' : IDL.Func([IDL.Principal], [], []),
+    'removePromoCode' : IDL.Func([IDL.Text], [], []),
     'resetAllData' : IDL.Func([], [], []),
     'revokeAdminAccess' : IDL.Func([IDL.Text], [], []),
     'revokeVIPStatus' : IDL.Func([IDL.Principal], [], []),

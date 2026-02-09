@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useAllAccounts, useGrantVIPStatus, useRevokeVIPStatus, useBanUser, useUnbanUser, useCheckBanStatus } from '../../hooks/admin/useAdminAccounts';
+import { useAllAccounts, useGrantVIPStatus, useRevokeVIPStatus, useBanUser, useUnbanUser } from '../../hooks/admin/useAdminAccounts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,8 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Search, Users, Crown, Loader2, AlertTriangle, Ban, ShieldCheck } from 'lucide-react';
 import { Principal } from '@dfinity/principal';
-import { useQuery } from '@tanstack/react-query';
-import { useActor } from '../../hooks/useActor';
 
 export default function AdminAccountsSection() {
   const { data: accounts, isLoading, error, refetch } = useAllAccounts();
@@ -18,34 +16,10 @@ export default function AdminAccountsSection() {
   const revokeVIP = useRevokeVIPStatus();
   const banUser = useBanUser();
   const unbanUser = useUnbanUser();
-  const { actor } = useActor();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [processingPrincipal, setProcessingPrincipal] = useState<string | null>(null);
   const [processingAction, setProcessingAction] = useState<'vip' | 'ban' | null>(null);
-
-  // Fetch ban status for all accounts
-  const { data: banStatusMap } = useQuery({
-    queryKey: ['banStatus', accounts?.map(([p]) => p.toText()).join(',')],
-    queryFn: async () => {
-      if (!actor || !accounts) return new Map<string, boolean>();
-      const statusMap = new Map<string, boolean>();
-      
-      for (const [principal] of accounts) {
-        try {
-          const isBanned = await actor.isUserBanned(principal);
-          statusMap.set(principal.toText(), isBanned);
-        } catch (error) {
-          console.error('Error checking ban status:', error);
-          statusMap.set(principal.toText(), false);
-        }
-      }
-      
-      return statusMap;
-    },
-    enabled: !!actor && !!accounts && accounts.length > 0,
-    staleTime: 30000,
-  });
 
   const filteredAccounts = useMemo(() => {
     if (!accounts) return [];
@@ -53,10 +27,10 @@ export default function AdminAccountsSection() {
     if (!searchQuery.trim()) return accounts;
 
     const query = searchQuery.toLowerCase();
-    return accounts.filter(([principal, profile]) => {
-      const principalText = principal.toText().toLowerCase();
-      const email = profile.email?.toLowerCase() || '';
-      const name = profile.name.toLowerCase();
+    return accounts.filter((account) => {
+      const principalText = account.principal.toText().toLowerCase();
+      const email = account.profile?.email?.toLowerCase() || '';
+      const name = account.profile?.name.toLowerCase() || '';
       return principalText.includes(query) || email.includes(query) || name.includes(query);
     });
   }, [accounts, searchQuery]);
@@ -125,8 +99,8 @@ export default function AdminAccountsSection() {
     );
   }
 
-  const vipCount = accounts?.filter(([_, profile]) => profile.isVIP).length || 0;
-  const bannedCount = banStatusMap ? Array.from(banStatusMap.values()).filter(Boolean).length : 0;
+  const vipCount = accounts?.filter((account) => account.isVIP).length || 0;
+  const bannedCount = accounts?.filter((account) => account.isBanned).length || 0;
 
   return (
     <div className="space-y-6">
@@ -202,39 +176,42 @@ export default function AdminAccountsSection() {
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredAccounts.map(([principal, profile]) => {
-                const principalText = principal.toText();
+              {filteredAccounts.map((account) => {
+                const principalText = account.principal.toText();
                 const isProcessingVIP = processingPrincipal === principalText && processingAction === 'vip';
                 const isProcessingBan = processingPrincipal === principalText && processingAction === 'ban';
-                const isBanned = banStatusMap?.get(principalText) || false;
+                const displayName = account.profile?.name || 'Unknown User';
                 
                 return (
                   <div
                     key={principalText}
                     className={`flex items-center justify-between p-4 bg-admin-bg border rounded-lg transition-colors ${
-                      isBanned 
+                      account.isBanned 
                         ? 'border-red-500/50 bg-red-500/5' 
                         : 'border-admin-border hover:border-admin-primary/50'
                     }`}
                   >
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-admin-foreground font-semibold">{profile.name}</p>
-                        {profile.isVIP && (
+                        <p className="text-admin-foreground font-semibold">{displayName}</p>
+                        {account.isVIP && (
                           <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
                             <Crown className="w-3 h-3 mr-1" />
                             VIP
                           </Badge>
                         )}
-                        {isBanned && (
+                        {account.isBanned && (
                           <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
                             <Ban className="w-3 h-3 mr-1" />
                             Banned
                           </Badge>
                         )}
+                        <Badge variant="outline" className="text-admin-muted border-admin-border">
+                          {Number(account.orderCount)} {Number(account.orderCount) === 1 ? 'order' : 'orders'}
+                        </Badge>
                       </div>
-                      {profile.email && (
-                        <p className="text-admin-muted text-sm">{profile.email}</p>
+                      {account.profile?.email && (
+                        <p className="text-admin-muted text-sm">{account.profile.email}</p>
                       )}
                       <p className="text-admin-muted text-xs truncate" title={principalText}>
                         {principalText}
@@ -242,12 +219,12 @@ export default function AdminAccountsSection() {
                     </div>
                     <div className="ml-4 flex gap-2">
                       <Button
-                        onClick={() => handleToggleVIP(principal, profile.isVIP)}
-                        disabled={isProcessingVIP || isProcessingBan || isBanned}
-                        variant={profile.isVIP ? 'outline' : 'default'}
+                        onClick={() => handleToggleVIP(account.principal, account.isVIP)}
+                        disabled={isProcessingVIP || isProcessingBan || account.isBanned}
+                        variant={account.isVIP ? 'outline' : 'default'}
                         size="sm"
                         className={
-                          profile.isVIP
+                          account.isVIP
                             ? 'border-admin-border text-admin-foreground hover:bg-admin-primary/10'
                             : 'bg-admin-primary hover:bg-admin-primary/90 text-white'
                         }
@@ -257,7 +234,7 @@ export default function AdminAccountsSection() {
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             Processing...
                           </>
-                        ) : profile.isVIP ? (
+                        ) : account.isVIP ? (
                           'Revoke VIP'
                         ) : (
                           <>
@@ -271,7 +248,7 @@ export default function AdminAccountsSection() {
                         <AlertDialogTrigger asChild>
                           <Button
                             disabled={isProcessingVIP || isProcessingBan}
-                            variant={isBanned ? 'default' : 'destructive'}
+                            variant={account.isBanned ? 'default' : 'destructive'}
                             size="sm"
                           >
                             {isProcessingBan ? (
@@ -279,7 +256,7 @@ export default function AdminAccountsSection() {
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                 Processing...
                               </>
-                            ) : isBanned ? (
+                            ) : account.isBanned ? (
                               <>
                                 <ShieldCheck className="w-4 h-4 mr-2" />
                                 Unban
@@ -295,22 +272,22 @@ export default function AdminAccountsSection() {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>
-                              {isBanned ? 'Unban User' : 'Ban User'}
+                              {account.isBanned ? 'Unban User' : 'Ban User'}
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                              {isBanned 
-                                ? `Are you sure you want to unban ${profile.name}? They will be able to place orders again.`
-                                : `Are you sure you want to ban ${profile.name}? They will not be able to place new orders.`
+                              {account.isBanned 
+                                ? `Are you sure you want to unban ${displayName}? They will be able to place orders again.`
+                                : `Are you sure you want to ban ${displayName}? They will not be able to place new orders.`
                               }
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleToggleBan(principal, isBanned)}
-                              className={isBanned ? 'bg-admin-primary hover:bg-admin-primary/90' : 'bg-destructive hover:bg-destructive/90'}
+                              onClick={() => handleToggleBan(account.principal, account.isBanned)}
+                              className={account.isBanned ? 'bg-admin-primary hover:bg-admin-primary/90' : 'bg-destructive hover:bg-destructive/90'}
                             >
-                              {isBanned ? 'Unban User' : 'Ban User'}
+                              {account.isBanned ? 'Unban User' : 'Ban User'}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
