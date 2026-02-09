@@ -2,11 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-customer-order-flow-so-authenticated-non-banned-users-can-create-orders-without-failing-due-to-a-ban-status-pre-check-current-error-cannot-check-if-they-are-banned",
-      "featureTitle": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
+      "featureId": "feature-identify-and-fix-the-root-cause-of-the-customer-order-placement-flow-getting-stuck-in-a-perpetual-loading-state-when-submitting-the-order-form-create-order-place-order-ensure-the-mutation-always-resolves-success-or-error-and-the-ui-never-remains-stuck-on-loading-indefinitely",
+      "featureTitle": "Identify and fix the root cause of the customer order placement flow getting stuck in a perpetual loading state when submitting the order form (\"Create Order\" / \"Place Order\"). Ensure the mutation always resolves (success or error) and the UI never remains stuck on loading indefinitely.",
       "files": [
         "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/pages/NewOrderPage.tsx"
+        "frontend/src/pages/NewOrderPage.tsx",
+        "frontend/src/utils/orderErrors.ts",
+        "frontend/src/utils/withTimeout.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -19,6 +21,49 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-frontend-make-the-create-order-mutation-robust-against-hanging-canister-calls-by-wrapping-the-backend-order-creation-call-in-a-timeout-promise-race-and-surfacing-the-timeout-as-a-user-facing-error-so-the-submit-button-cannot-remain-stuck-in-createorder-ispending",
+      "featureTitle": "Frontend: Make the create-order mutation robust against hanging canister calls by wrapping the backend order-creation call in a timeout (Promise.race) and surfacing the timeout as a user-facing error, so the submit button cannot remain stuck in `createOrder.isPending`.",
+      "files": [
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/utils/withTimeout.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-frontend-improve-error-reporting-for-failed-order-creation-so-users-aren-t-left-with-only-a-spinner-ensure-errors-from-backend-traps-rejects-are-converted-into-clear-english-messages-and-displayed-in-the-existing-error-alert-on-neworderpage",
+      "featureTitle": "Frontend: Improve error reporting for failed order creation so users aren’t left with only a spinner. Ensure errors from backend traps/rejects are converted into clear English messages and displayed in the existing error Alert on NewOrderPage.",
+      "files": [
+        "frontend/src/hooks/orders/useCreateOrder.ts",
+        "frontend/src/pages/NewOrderPage.tsx",
+        "frontend/src/utils/orderErrors.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

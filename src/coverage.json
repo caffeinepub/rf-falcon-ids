@@ -1,65 +1,79 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T23:34:49.987Z",
+  "generatedAt": "2026-02-09T00:14:12.700Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 4,
-    "implemented": 1,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
+        "summary": "Identify and fix the root cause of the customer order placement flow getting stuck in a perpetual loading state when submitting the order form (\"Create Order\" / \"Place Order\"). Ensure the mutation always resolves (success or error) and the UI never remains stuck on loading indefinitely.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/utils/withTimeout.ts",
+          "frontend/src/utils/orderErrors.ts"
         ],
         "matchedFiles": [
           "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/src/pages/NewOrderPage.tsx",
+          "frontend/src/utils/withTimeout.ts",
+          "frontend/src/utils/orderErrors.ts"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add/adjust backend ban-check APIs so the frontend can reliably determine ban status for the currently authenticated caller without requiring admin permissions (e.g., a query like isCallerBanned()), and ensure order creation still enforces the ban server-side.",
+        "summary": "Backend: Add a caller-safe ban-status API that the frontend can use without causing unresolved calls. Implement a `public query ({ caller }) func isCallerBanned() : async Bool` that returns whether `caller` is in the banned set, and enforce that only authenticated users can call it (same permission gate style used elsewhere).",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-3",
-        "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can grant admin access to another user by email via the existing admin-access API used by the UI.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Frontend: Make the create-order mutation robust against hanging canister calls by wrapping the backend order-creation call in a timeout (Promise.race) and surfacing the timeout as a user-facing error, so the submit button cannot remain stuck in `createOrder.isPending`.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/withTimeout.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/withTimeout.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts"
+        ]
       },
       {
         "id": "REQ-4",
-        "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can revoke admin access by email via the existing admin-access API used by the UI, while preventing removal of the owner’s admin access.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Frontend: Improve error reporting for failed order creation so users aren’t left with only a spinner. Ensure errors from backend traps/rejects are converted into clear English messages and displayed in the existing error Alert on NewOrderPage.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/orderErrors.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/pages/NewOrderPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/orderErrors.ts",
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/pages/NewOrderPage.tsx"
+        ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/admin/AdminAccessSection.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/orders/useCreateOrder.ts",
     "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/src/utils/orderErrors.ts",
+    "frontend/src/utils/withTimeout.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,26 +1,82 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix order ban pre-check to use caller-safe ban status and unblock non-banned ordering",
+  "title": "Fix NewOrderPage order placement perpetual loading and improve error handling",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Update the New Order creation flow to use a caller-safe ban check (and graceful fallback) so non-banned authenticated users can place orders, while banned users see a clear error.",
+      "summary": "Fix root cause of order placement getting stuck on loading by ensuring the create-order mutation always settles (success/error) and never hangs indefinitely.",
       "acceptanceCriteria": [
-        "From a signed-in (Internet Identity) account that is not banned, submitting the New Order form successfully creates an order and shows the success confirmation UI.",
-        "If the UI performs a ban check before order creation, that ban check does not fail due to missing backend method or authorization errors.",
-        "If the caller is banned, order creation is blocked and the user sees a clear English error message indicating they are banned."
+        "From NewOrderPage, submitting a valid order reliably completes within a reasonable time and no longer stays stuck in the loading state.",
+        "If the backend rejects/traps (e.g., unauthorized, banned, rate-limited, duplicate ID), the frontend exits loading state and displays an English error message.",
+        "If the network/agent call hangs, the frontend times out, exits loading state, and shows an actionable English error message (e.g., \"Request timed out. Please try again.\")."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/orders/useCreateOrder.ts",
           "operation": "modify",
-          "description": "Replace the current pre-check that calls isUserBanned(principal) (which can fail for non-admins) with the backend-provided caller-safe ban check (isCallerBanned()). Ensure the mutation blocks immediately with a clear English message when banned, and if the ban pre-check unexpectedly errors (network/actor issues), it logs and proceeds to attempt order creation (server-side enforcement still applies). Verify the component's usage instructions before implementing."
+          "description": "Ensure the create-order mutation cannot remain pending indefinitely by wrapping canister calls (ban check + order creation) in a deterministic timeout and propagating a consistent error when the timeout triggers."
         },
         {
           "path": "frontend/src/pages/NewOrderPage.tsx",
           "operation": "modify",
-          "description": "Harden UI error handling for order submission so ban-related failures surface as a clear, user-friendly banned message (including cases where the backend rejects order creation). Keep existing success redirect behavior to /dashboard?orderCreated=true for successful creates. Verify the component's usage instructions before implementing."
+          "description": "Make the submit flow resilient to failures and hangs: clear prior errors on submit, surface mapped English error messages in the existing destructive Alert, and ensure the UI returns to an interactive state after any failure."
+        },
+        {
+          "path": "frontend/src/utils/withTimeout.ts",
+          "operation": "create",
+          "description": "Add a small Promise.race-based timeout utility used by order placement to guarantee requests settle (resolve or reject) within a defined window."
+        },
+        {
+          "path": "frontend/src/utils/orderErrors.ts",
+          "operation": "create",
+          "description": "Centralize conversion of actor/network errors into clear English messages (e.g., Unauthorized/sign-in prompt, security block/rate limiting, banned, duplicate ID) so UI never shows only a spinner."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add a timeout to the create-order canister call so the mutation rejects on hangs and `createOrder.isPending` cannot remain true indefinitely.",
+      "acceptanceCriteria": [
+        "If the backend call does not settle within the defined timeout window, the mutation rejects, `createOrder.isPending` becomes false, and the user sees a timeout error message in English.",
+        "After any failure (validation error, banned, unauthorized, rate-limited, timeout), the user can immediately click the submit button again (no stuck pending state)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/withTimeout.ts",
+          "operation": "create",
+          "description": "Implement a reusable timeout wrapper (Promise.race) that rejects with a timeout error after a configured duration; use it for canister calls involved in order placement."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
+          "operation": "modify",
+          "description": "Wrap the backend order-creation call in the timeout utility so the mutation always settles; ensure timeout rejection flows through react-query so pending state clears and retries are possible."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Improve NewOrderPage error reporting so backend traps/rejects are converted to clear English messages and shown in the existing Alert, including unauthorized/security-block/duplicate-ID scenarios.",
+      "acceptanceCriteria": [
+        "When the backend returns an Unauthorized error, the page shows an English message prompting the user to sign in.",
+        "When the backend indicates a security block (e.g., rate limiting / \"TREY C SECURITY\"), the page shows an English message explaining the request was blocked and to retry later.",
+        "When the backend indicates a duplicate order ID, the page shows an English message and the app auto-retries with a new generated order ID or instructs the user to retry (implementation choice is acceptable as long as it is not stuck)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/orderErrors.ts",
+          "operation": "create",
+          "description": "Add an error-normalization helper that inspects thrown errors and returns user-facing English messages for Unauthorized, banned, security block/rate limit (including \"TREY C SECURITY\"-style traps), duplicate ID, network errors, and timeouts."
+        },
+        {
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
+          "operation": "modify",
+          "description": "Use the shared error-normalization helper when rethrowing/creating errors from ban checks, timeouts, and actor failures so calling pages can display consistent English messages."
+        },
+        {
+          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "operation": "modify",
+          "description": "Update submit error handling to display normalized English messages in the existing destructive Alert; add a safe duplicate-ID handling strategy (auto-retry once with a newly generated orderId, or show a clear retry instruction) while ensuring the submit button is never stuck disabled."
         }
       ]
     }

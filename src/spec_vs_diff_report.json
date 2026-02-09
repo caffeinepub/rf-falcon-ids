@@ -1,72 +1,50 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T23:34:49.984Z",
-  "summary": "Frontend was updated to call a new caller-safe ban check (actor.isCallerBanned()) before creating orders and to improve error handling/UI around admin access, but the diff summary does not provide evidence that the required backend APIs/authorization/audit-log changes were implemented. Several additional unrelated frontend changes appear to have been made beyond the BuildRequest.",
+  "generatedAt": "2026-02-09T00:14:12.696Z",
+  "summary": "Frontend adds timeout and error-normalization utilities and updates order creation flow to pre-check ban status with a timeout and to display normalized English errors. Backend diff is truncated and does not show the required `isCallerBanned` API, and the diff snippet does not clearly show that the actual order-creation canister call is wrapped in a timeout, so some requirements cannot be confirmed as implemented.",
   "missing_requirements": [
     {
       "id": "REQ-2",
-      "requirement": "Backend exposes a query method that lets an authenticated user check their own ban status without trapping for authorization reasons (e.g., isCallerBanned()), and frontend ban-check aligns with backend signature.",
-      "reason": "Frontend now calls actor.isCallerBanned(), but the truncated backend/main.mo excerpt does not show any isCallerBanned (or equivalent) method being added/exposed, so backend support and signature alignment cannot be confirmed from the diff summary.",
+      "requirement": "Backend: Add `public query ({ caller }) func isCallerBanned() : async Bool` with auth gate; returns true only for authenticated banned callers; unauthenticated callers trap Unauthorized; frontend can call without agent/candid errors.",
+      "reason": "The backend diff shown is truncated and contains no visible `isCallerBanned` function implementation or its auth gate behavior.",
       "evidence": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "Order flow works for authenticated, non-banned users; pre-check does not fail; banned users are blocked with a clear English error message.",
-      "reason": "Frontend implements a ban pre-check and shows a clear banned message, but the diff summary provides no evidence that backend order creation enforces bans server-side and returns appropriate English errors (backend/main.mo is truncated before any order-create/ban-enforcement logic is shown).",
-      "evidence": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "frontend/src/pages/NewOrderPage.tsx",
-        "backend/main.mo (truncated)"
+        "backend/main.mo (truncated; no `isCallerBanned` present in shown content)"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Any authenticated admin (not just owner) can grant admin access via grantAdminAccess(email); non-admin is rejected with an English unauthorized error; action is recorded in audit log with granting admin principal and target details.",
-      "reason": "The diff summary shows UI messaging indicating any admin can grant/revoke, but does not show backend authorization changes for grantAdminAccess nor audit log recording details (backend/main.mo is truncated and contains no visible grantAdminAccess/relevant authorization/audit log code in the excerpt).",
+      "requirement": "Frontend: Wrap the backend order-creation call itself in a timeout (Promise.race) so the mutation cannot remain stuck pending if the canister call hangs, and show a timeout error message.",
+      "reason": "The diff shows a timeout wrapper used for a ban-status check, but the snippet is truncated before showing the actual order-creation canister call and whether that call is wrapped with `withTimeout`.",
       "evidence": [
-        "frontend/src/components/admin/AdminAccessSection.tsx",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Any authenticated admin can revoke admin access via revokeAdminAccess(email) while preventing revoking OWNER_EMAIL; non-admin is rejected with an English unauthorized error; action is recorded in audit log with revoking admin principal and target details.",
-      "reason": "The diff summary includes UI copy about owner not being revocable and shows OWNER_EMAIL defined, but does not provide evidence that revokeAdminAccess authorization was changed to allow any admin, that owner revocation is blocked in the backend method, or that audit logging is performed (backend/main.mo is truncated).",
-      "evidence": [
-        "frontend/src/components/admin/AdminAccessSection.tsx",
-        "backend/main.mo (truncated)"
+        "frontend/src/hooks/orders/useCreateOrder.ts (truncated before the order submission call; only shows `withTimeout(actor.isCallerBanned(), ...)`)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a backend migration module (backend/migration.mo) even though no state schema change is evidenced in the provided diff summary.",
-      "reason": "BuildRequest allows adding migration.mo only if state schema changes require it; the diff summary does not show a schema change necessitating migration (migration.run is a no-op returning old state).",
+      "description": "Error message instructing banned users to contact support via Snapchat.",
+      "reason": "BuildRequest requires clear English error messages but does not request adding any specific support channel or Snapchat contact details.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (truncated)"
+        "frontend/src/utils/orderErrors.ts (returns: \"Please contact support via Snapchat: travis_c1\")"
       ]
     },
     {
-      "description": "Multiple unrelated frontend UI/UX and content changes (marketing pages/routes, styling/accessibility tweaks, watermark removal, export/print/toasts, etc.) beyond the requested ban-check and admin delegation fixes.",
-      "reason": "BuildRequest scope is limited to fixing ban-check/order flow and admin delegation authorization; the frontend-file-summaries indicate broad changes to many components/pages not mentioned in requirements.",
+      "description": "Client-side preflight ban check prior to creating an order (in addition to backend enforcement).",
+      "reason": "BuildRequest REQ-2 asks to add a ban-status API that the frontend can use safely, but it does not explicitly require adding a preflight ban check in the create-order mutation (it’s an extra behavior beyond the stated requirements).",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend/src/hooks/orders/useCreateOrder.ts (calls `actor.isCallerBanned()` before proceeding)"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.64,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/admin/AdminAccessSection.tsx",
     "frontend/src/hooks/orders/useCreateOrder.ts",
     "frontend/src/pages/NewOrderPage.tsx",
+    "frontend/src/utils/orderErrors.ts",
+    "frontend/src/utils/withTimeout.ts",
     "project_state.json"
   ]
 }

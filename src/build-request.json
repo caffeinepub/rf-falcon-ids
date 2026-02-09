@@ -1,90 +1,88 @@
 {
   "kind": "build_request",
-  "title": "Fix customer ordering ban-check failure and allow any admin to delegate admin access",
+  "title": "Fix order placement stuck on loading when clicking Place Order",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
+      "text": "Identify and fix the root cause of the customer order placement flow getting stuck in a perpetual loading state when submitting the order form (\"Create Order\" / \"Place Order\"). Ensure the mutation always resolves (success or error) and the UI never remains stuck on loading indefinitely.",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "recent-messages-user-1"
         ],
         "quotes": [
-          "It’s not working for customers to order it says it can’t check if there banned fix it make sure everything works for everyone"
+          "When clicking place order it is stuck on loading fix order placing code"
         ]
       },
       "acceptanceCriteria": [
-        "From a signed-in (Internet Identity) account that is not banned, submitting the New Order form successfully creates an order and shows the success confirmation UI.",
-        "If the UI performs a ban check before order creation, that ban check does not fail due to missing backend method or authorization errors.",
-        "If the caller is banned, order creation is blocked and the user sees a clear English error message indicating they are banned."
+        "From NewOrderPage, submitting a valid order reliably completes within a reasonable time and no longer stays stuck in the loading state.",
+        "If the backend rejects/traps (e.g., unauthorized, banned, rate-limited, duplicate ID), the frontend exits loading state and displays an English error message.",
+        "If the network/agent call hangs, the frontend times out, exits loading state, and shows an actionable English error message (e.g., \"Request timed out. Please try again.\")."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add/adjust backend ban-check APIs so the frontend can reliably determine ban status for the currently authenticated caller without requiring admin permissions (e.g., a query like isCallerBanned()), and ensure order creation still enforces the ban server-side.",
+      "text": "Backend: Add a caller-safe ban-status API that the frontend can use without causing unresolved calls. Implement a `public query ({ caller }) func isCallerBanned() : async Bool` that returns whether `caller` is in the banned set, and enforce that only authenticated users can call it (same permission gate style used elsewhere).",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "recent-messages-user-1"
         ],
         "quotes": [
-          "it says it can’t check if there banned"
+          "When clicking place order it is stuck on loading fix order placing code"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a query method that lets an authenticated user check their own ban status without trapping for authorization reasons.",
-        "Order creation endpoints continue to enforce ban status on the backend (banned users cannot create orders even if the frontend skips the pre-check).",
-        "The frontend ban-check call used during order creation aligns with the backend method signature and does not produce runtime errors."
+        "`isCallerBanned` exists in `backend/main.mo` and returns `true` only when the authenticated caller is banned, otherwise `false`.",
+        "Unauthenticated callers receive an Unauthorized trap consistent with other protected query methods.",
+        "Frontend can call `actor.isCallerBanned()` without agent/candid errors."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can grant admin access to another user by email via the existing admin-access API used by the UI.",
-      "target": "backend",
+      "text": "Frontend: Make the create-order mutation robust against hanging canister calls by wrapping the backend order-creation call in a timeout (Promise.race) and surfacing the timeout as a user-facing error, so the submit button cannot remain stuck in `createOrder.isPending`.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "recent-messages-user-1"
         ],
         "quotes": [
-          "make sure ... any admin can give admin access not just owner"
+          "When clicking place order it is stuck on loading fix order placing code"
         ]
       },
       "acceptanceCriteria": [
-        "A caller who is an admin can successfully grant admin access using the backend method invoked by the frontend (grantAdminAccess(email)).",
-        "A non-admin caller cannot grant admin access and receives an English unauthorized error.",
-        "Granting admin access is recorded in the audit log with the granting admin principal and the target email/principal details."
+        "If the backend call does not settle within the defined timeout window, the mutation rejects, `createOrder.isPending` becomes false, and the user sees a timeout error message in English.",
+        "After any failure (validation error, banned, unauthorized, rate-limited, timeout), the user can immediately click the submit button again (no stuck pending state)."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can revoke admin access by email via the existing admin-access API used by the UI, while preventing removal of the owner’s admin access.",
-      "target": "backend",
+      "text": "Frontend: Improve error reporting for failed order creation so users aren’t left with only a spinner. Ensure errors from backend traps/rejects are converted into clear English messages and displayed in the existing error Alert on NewOrderPage.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "recent-messages-user-1"
         ],
         "quotes": [
-          "any admin can give admin access not just owner"
+          "When clicking place order it is stuck on loading fix order placing code"
         ]
       },
       "acceptanceCriteria": [
-        "A caller who is an admin can successfully revoke admin access using the backend method invoked by the frontend (revokeAdminAccess(email)).",
-        "The backend prevents revoking admin access for the configured owner email (OWNER_EMAIL) even if attempted directly, returning an English error.",
-        "A non-admin caller cannot revoke admin access and receives an English unauthorized error.",
-        "Revoking admin access is recorded in the audit log with the revoking admin principal and the target email/principal details."
+        "When the backend returns an Unauthorized error, the page shows an English message prompting the user to sign in.",
+        "When the backend indicates a security block (e.g., rate limiting / \"TREY C SECURITY\"), the page shows an English message explaining the request was blocked and to retry later.",
+        "When the backend indicates a duplicate order ID, the page shows an English message and the app auto-retries with a new generated order ID or instructs the user to retry (implementation choice is acceptable as long as it is not stuck)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if state schema changes require it.",
-    "Do not edit any files under frontend/src/components/ui or other frontend immutablePaths; compose existing UI components instead."
+    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo changes if state schema changes require it.",
+    "Do not edit files under frontend/src/components/ui or any frontend immutablePaths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding external databases or off-chain storage.",
-    "Adding real-time/WebSocket order updates."
+    "Adding new payment providers or external checkout systems.",
+    "Adding real-time updates (WebSockets/push).",
+    "Changing the overall order form fields or introducing new product features unrelated to fixing the stuck loading/order placement reliability."
   ],
   "imageRequirements": {
     "required": [],

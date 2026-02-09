@@ -15,6 +15,7 @@ import { ExternalBlob } from '../backend';
 import { generateIdNumber } from '../utils/generateIdNumber';
 import { calculateVIPDiscount, calculateVIPTotal, formatPrice, BASE_ORDER_PRICE } from '../utils/vipPricing';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { normalizeOrderError } from '../utils/orderErrors';
 
 export default function NewOrderPage() {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function NewOrderPage() {
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [photoBlob, setPhotoBlob] = useState<ExternalBlob | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [retryCount, setRetryCount] = useState<number>(0);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -68,6 +70,8 @@ export default function NewOrderPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Clear any previous error message when starting a new submission
     setErrorMessage('');
 
     if (!photoBlob) {
@@ -75,6 +79,7 @@ export default function NewOrderPage() {
       return;
     }
 
+    // Generate a new order ID for each submission attempt
     const orderId = `order-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     const idNumber = generateIdNumber();
 
@@ -105,25 +110,26 @@ export default function NewOrderPage() {
         photo: photoBlob,
       });
 
+      // Success - navigate to dashboard with success indicator
       navigate({ to: '/dashboard', search: { orderCreated: 'true' } });
     } catch (error: any) {
       console.error('Order creation error:', error);
       
-      // Extract user-friendly error message
-      let message = 'Failed to create order. Please try again.';
-      
-      if (error.message) {
-        // Check for ban-related errors
-        if (error.message.includes('banned')) {
-          message = 'Your account has been banned from placing orders. Please contact support.';
-        } else if (error.message.includes('Unauthorized')) {
-          message = 'You must be logged in to create an order.';
-        } else {
-          message = error.message;
-        }
-      }
-      
+      // Use the error normalization utility to get a user-friendly message
+      const message = normalizeOrderError(error);
       setErrorMessage(message);
+
+      // Handle duplicate ID scenario by auto-retrying once with a new ID
+      if (message.includes('Order ID conflict') && retryCount === 0) {
+        setRetryCount(1);
+        // Auto-retry after a brief delay
+        setTimeout(() => {
+          handleSubmit(e);
+        }, 500);
+      } else {
+        // Reset retry count for next manual attempt
+        setRetryCount(0);
+      }
     }
   };
 
@@ -227,6 +233,7 @@ export default function NewOrderPage() {
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
               <div className="space-y-2">
@@ -236,6 +243,7 @@ export default function NewOrderPage() {
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
             </div>
@@ -248,6 +256,7 @@ export default function NewOrderPage() {
                 value={formData.dob}
                 onChange={(e) => handleInputChange('dob', e.target.value)}
                 required
+                disabled={createOrder.isPending}
               />
             </div>
 
@@ -258,6 +267,7 @@ export default function NewOrderPage() {
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 required
+                disabled={createOrder.isPending}
               />
             </div>
 
@@ -269,11 +279,16 @@ export default function NewOrderPage() {
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="state">State</Label>
-                <Select value={formData.state} onValueChange={(value) => handleInputChange('state', value)}>
+                <Select 
+                  value={formData.state} 
+                  onValueChange={(value) => handleInputChange('state', value)}
+                  disabled={createOrder.isPending}
+                >
                   <SelectTrigger id="state">
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
@@ -293,6 +308,7 @@ export default function NewOrderPage() {
                   value={formData.zip}
                   onChange={(e) => handleInputChange('zip', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
             </div>
@@ -300,7 +316,11 @@ export default function NewOrderPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="gender">Gender</Label>
-                <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                <Select 
+                  value={formData.gender} 
+                  onValueChange={(value) => handleInputChange('gender', value)}
+                  disabled={createOrder.isPending}
+                >
                   <SelectTrigger id="gender">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
@@ -319,11 +339,16 @@ export default function NewOrderPage() {
                   value={formData.height}
                   onChange={(e) => handleInputChange('height', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="eyeColor">Eye Color</Label>
-                <Select value={formData.eyeColor} onValueChange={(value) => handleInputChange('eyeColor', value)}>
+                <Select 
+                  value={formData.eyeColor} 
+                  onValueChange={(value) => handleInputChange('eyeColor', value)}
+                  disabled={createOrder.isPending}
+                >
                   <SelectTrigger id="eyeColor">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
@@ -333,7 +358,6 @@ export default function NewOrderPage() {
                     <SelectItem value="GRN">Green</SelectItem>
                     <SelectItem value="HZL">Hazel</SelectItem>
                     <SelectItem value="GRY">Gray</SelectItem>
-                    <SelectItem value="BLK">Black</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -355,6 +379,7 @@ export default function NewOrderPage() {
                   value={formData.shippingFirstName}
                   onChange={(e) => handleInputChange('shippingFirstName', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
               <div className="space-y-2">
@@ -364,6 +389,7 @@ export default function NewOrderPage() {
                   value={formData.shippingLastName}
                   onChange={(e) => handleInputChange('shippingLastName', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
             </div>
@@ -375,6 +401,7 @@ export default function NewOrderPage() {
                 value={formData.shippingAddress}
                 onChange={(e) => handleInputChange('shippingAddress', e.target.value)}
                 required
+                disabled={createOrder.isPending}
               />
             </div>
 
@@ -386,20 +413,22 @@ export default function NewOrderPage() {
                   value={formData.shippingCity}
                   onChange={(e) => handleInputChange('shippingCity', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="shippingState">State</Label>
-                <Select
-                  value={formData.shippingState}
+                <Select 
+                  value={formData.shippingState} 
                   onValueChange={(value) => handleInputChange('shippingState', value)}
+                  disabled={createOrder.isPending}
                 >
                   <SelectTrigger id="shippingState">
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
                     {US_STATES.map((state) => (
-                      <SelectItem key={state.code} value={state.code}>
+                      <SelectItem key={state.code} value={state.name}>
                         {state.name}
                       </SelectItem>
                     ))}
@@ -413,6 +442,7 @@ export default function NewOrderPage() {
                   value={formData.shippingZip}
                   onChange={(e) => handleInputChange('shippingZip', e.target.value)}
                   required
+                  disabled={createOrder.isPending}
                 />
               </div>
             </div>
@@ -420,21 +450,26 @@ export default function NewOrderPage() {
         </Card>
 
         {/* Submit Button */}
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full"
-          disabled={!isFormValid || createOrder.isPending}
-        >
-          {createOrder.isPending ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Creating Order...
-            </>
-          ) : (
-            'Create Order'
-          )}
-        </Button>
+        <div className="flex justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate({ to: '/dashboard' })}
+            disabled={createOrder.isPending}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!isFormValid || createOrder.isPending} className="min-w-[140px]">
+            {createOrder.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              'Place Order'
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   );

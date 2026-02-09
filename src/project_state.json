@@ -1,57 +1,49 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Customer ordering and admin permissions system (including ban checks and admin role delegation).",
-  "architectural_notes": [
-    "Review/define role-based access control rules: owner vs admin permissions (including who can assign admin role)."
-  ],
+  "summary": "Project includes an ordering flow; in production (v34) customers cannot successfully place orders (stuck on loading when clicking Place Order).",
+  "architectural_notes": [],
   "known_issues": [
-    "Customers cannot place orders due to ban-status check failing (error: can't check if they're banned)."
+    "Placing an order gets stuck on loading when clicking \"Place Order\"; order creation does not complete for customers (reported after v34 production deploy)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-fix-the-customer-order-flow-so-authenticated-non-banned-users-can-create-orders-without-failing-due-to-a-ban-status-pre-check-current-error-cannot-check-if-they-are-banned",
-      "title": "Fix the customer order flow so authenticated, non-banned users can create orders without failing due to a ban-status pre-check (current error: cannot check if they are banned).",
+      "id": "feature-identify-and-fix-the-root-cause-of-the-customer-order-placement-flow-getting-stuck-in-a-perpetual-loading-state-when-submitting-the-order-form-create-order-place-order-ensure-the-mutation-always-resolves-success-or-error-and-the-ui-never-remains-stuck-on-loading-indefinitely",
+      "title": "Identify and fix the root cause of the customer order placement flow getting stuck in a perpetual loading state when submitting the order form (\"Create Order\" / \"Place Order\"). Ensure the mutation always resolves (success or error) and the UI never remains stuck on loading indefinitely.",
       "reqIds": [
         "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-frontend-make-the-create-order-mutation-robust-against-hanging-canister-calls-by-wrapping-the-backend-order-creation-call-in-a-timeout-promise-race-and-surfacing-the-timeout-as-a-user-facing-error-so-the-submit-button-cannot-remain-stuck-in-createorder-ispending",
+      "title": "Frontend: Make the create-order mutation robust against hanging canister calls by wrapping the backend order-creation call in a timeout (Promise.race) and surfacing the timeout as a user-facing error, so the submit button cannot remain stuck in `createOrder.isPending`.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-frontend-improve-error-reporting-for-failed-order-creation-so-users-aren-t-left-with-only-a-spinner-ensure-errors-from-backend-traps-rejects-are-converted-into-clear-english-messages-and-displayed-in-the-existing-error-alert-on-neworderpage",
+      "title": "Frontend: Improve error reporting for failed order creation so users aren’t left with only a spinner. Ensure errors from backend traps/rejects are converted into clear English messages and displayed in the existing error Alert on NewOrderPage.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-1",
-      "summary": "Allow any admin (not just owner) to grant admin access to other users.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Add/adjust backend ban-check APIs so the frontend can reliably determine ban status for the currently authenticated caller without requiring admin permissions (e.g., a query like isCallerBanned()), and ensure order creation still enforces the ban server-side.",
+      "id": "AR-2",
+      "summary": "Backend: Add a caller-safe ban-status API that the frontend can use without causing unresolved calls. Implement a `public query ({ caller }) func isCallerBanned() : async Bool` that returns whether `caller` is in the banned set, and enforce that only authenticated users can call it (same permission gate style used elsewhere).",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can grant admin access to another user by email via the existing admin-access API used by the UI.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Update backend authorization for admin delegation so any authenticated admin (not just the owner) can revoke admin access by email via the existing admin-access API used by the UI, while preventing removal of the owner’s admin access.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
     }
   ],
-  "projectName": "Fix customer ordering ban-check failure and allow any admin to delegate admin access",
+  "projectName": "Fix order placement stuck on loading when clicking Place Order",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

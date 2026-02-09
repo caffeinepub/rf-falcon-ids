@@ -15,6 +15,8 @@ import {
   validateEyeColor,
   validateIdNumber,
 } from '../../utils/validation';
+import { withTimeout } from '../../utils/withTimeout';
+import { normalizeOrderError } from '../../utils/orderErrors';
 
 interface CreateOrderParams {
   id: string;
@@ -33,18 +35,30 @@ export function useCreateOrder() {
       if (!actor) throw new Error('Actor not available');
       if (!identity) throw new Error('You must be logged in to create an order');
 
-      // Check if caller is banned before proceeding using caller-safe method
+      // Check if caller is banned before proceeding using caller-safe method with timeout
       try {
-        const isBanned = await actor.isCallerBanned();
+        const isBanned = await withTimeout(
+          actor.isCallerBanned(),
+          10000,
+          'Ban check timed out. Please try again.'
+        );
         if (isBanned) {
-          throw new Error('Your account has been banned from placing orders. Please contact support.');
+          throw new Error('Your account has been banned from placing orders');
         }
       } catch (error: any) {
-        // If the error is about being banned, re-throw it
+        // If the error is about being banned, re-throw it with normalized message
         if (error.message && error.message.includes('banned')) {
-          throw error;
+          throw new Error(normalizeOrderError(error));
         }
-        // If it's a network/actor error, log and proceed (backend will enforce)
+        // If it's a timeout or network error, throw normalized error
+        if (error.message && (error.message.includes('timed out') || error.message.includes('timeout'))) {
+          throw new Error(normalizeOrderError(error));
+        }
+        // If it's an unauthorized error, throw normalized error
+        if (error.message && error.message.includes('Unauthorized')) {
+          throw new Error(normalizeOrderError(error));
+        }
+        // For other errors during ban check, log and proceed (backend will enforce)
         console.warn('Could not check ban status, proceeding with order creation:', error);
       }
 
@@ -122,7 +136,17 @@ export function useCreateOrder() {
         zip: shipZipValidation.normalized,
       };
 
-      await actor.createOrder(id, normalizedDetails, normalizedAddress, photo);
+      // Wrap the order creation call with timeout to prevent indefinite hanging
+      try {
+        await withTimeout(
+          actor.createOrder(id, normalizedDetails, normalizedAddress, photo),
+          45000,
+          'Order creation timed out. Please try again.'
+        );
+      } catch (error: any) {
+        // Normalize and re-throw the error with user-friendly message
+        throw new Error(normalizeOrderError(error));
+      }
       
       // Store order ID in localStorage keyed by principal
       if (identity) {
