@@ -14,6 +14,18 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface UserProfile {
+    name: string;
+    email?: string;
+    isVIP: boolean;
+}
+export interface TreyCSecurityEvent {
+    result: Variant_allowed_denied_throttled;
+    principal: Principal;
+    action: string;
+    timestamp: Time;
+    reason: string;
+}
 export interface Address {
     zip: string;
     city: string;
@@ -30,6 +42,11 @@ export interface PromoCode {
     timesUsed: bigint;
     discountPercentage: bigint;
     validUntil: Time;
+}
+export interface TreyCSecurityStats {
+    deniedCalls: bigint;
+    allowedCalls: bigint;
+    throttledCalls: bigint;
 }
 export interface OwnerBootstrapStatus {
     status: Variant_boostrap_succeeded_already_admin;
@@ -90,10 +107,10 @@ export interface SecurityStats {
     allowedCalls: bigint;
     throttledCalls: bigint;
 }
-export interface UserProfile {
-    name: string;
-    email?: string;
-    isVIP: boolean;
+export interface TreyCSecurityConfig {
+    rateLimitWindow: bigint;
+    maxCallsPerWindow: bigint;
+    enabled: boolean;
 }
 export enum OrderStatus {
     shipped = "shipped",
@@ -106,6 +123,11 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_allowed_denied_throttled {
+    allowed = "allowed",
+    denied = "denied",
+    throttled = "throttled"
+}
 export enum Variant_boostrap_succeeded_already_admin {
     boostrap_succeeded = "boostrap_succeeded",
     already_admin = "already_admin"
@@ -115,6 +137,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     banUser(user: Principal): Promise<void>;
     bootstrapOwner(): Promise<OwnerBootstrapStatus>;
+    clearTreyCSecurityEvents(): Promise<void>;
     createOrder(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null, signature: ExternalBlob | null): Promise<void>;
     createPromoCode(code: string, discountPercentage: bigint, validUntil: Time, usageLimit: bigint): Promise<void>;
     deactivatePromoCode(code: string): Promise<void>;
@@ -130,13 +153,19 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
     getPromoCode(code: string): Promise<PromoCode | null>;
+    getTreyCSecurityConfig(): Promise<TreyCSecurityConfig>;
+    getTreyCSecurityEvents(): Promise<Array<TreyCSecurityEvent>>;
+    getTreyCSecurityStats(): Promise<TreyCSecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isCallerVIP(): Promise<boolean>;
+    isTreyCSecurityEnabled(): Promise<boolean>;
     isUserBanned(user: Principal): Promise<boolean>;
     isUserVIP(user: Principal): Promise<boolean>;
+    resetTreyCSecurityStats(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
+    setTreyCSecurityConfig(config: TreyCSecurityConfig): Promise<void>;
     setVIPStatus(user: Principal, isVIP: boolean): Promise<void>;
     unbanUser(user: Principal): Promise<void>;
     updateOrderDetails(orderId: string, newDetails: Details, newAddress: Address): Promise<void>;

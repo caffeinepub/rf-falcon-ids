@@ -1,11 +1,12 @@
 import { Outlet } from '@tanstack/react-router';
 import BrandHeader from './BrandHeader';
 import VipCongratsDialog from './VipCongratsDialog';
+import TreyCSecurityProtectionModal from './TreyCSecurityProtectionModal';
 
 export default function AppShell() {
   return (
     <div className="min-h-screen flex flex-col relative">
-      {/* Subtle futuristic grid background */}
+      {/* Subtle futuristic grid background - non-interactive */}
       <div 
         className="fixed inset-0 opacity-20 pointer-events-none"
         style={{
@@ -28,13 +29,16 @@ export default function AppShell() {
 
         <footer className="border-t bg-card/50 backdrop-blur-sm py-6 mt-12">
           <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-            <p>© 2026. Built with love using caffeine.ai.</p>
+            <p>© 2026. Built with love using <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">caffeine.ai</a>.</p>
           </div>
         </footer>
       </div>
 
       {/* VIP Congrats Dialog */}
       <VipCongratsDialog />
+      
+      {/* TREY-C Security Protection Modal */}
+      <TreyCSecurityProtectionModal />
     </div>
   );
 }

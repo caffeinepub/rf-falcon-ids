@@ -1,34 +1,35 @@
 import { useQuery } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { securityKeys } from '../orders/queryKeys';
-
-// Note: SecurityEvent type is not exported from backend
-// Define a local stub type that matches expected usage
-export interface SecurityEvent {
-  timestamp: bigint;
-  principal: string;
-  action: string;
-  result: 'allowed' | 'denied' | 'throttled';
-  reason: string;
-}
-
-// Note: Security events are not implemented in the backend
-// This hook returns stub data to prevent TypeScript errors
+import type { TreyCSecurityEvent } from '../../backend';
 
 export function useSecurityEvents(limit: number = 100) {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<SecurityEvent[]>({
+  return useQuery<TreyCSecurityEvent[]>({
     queryKey: securityKeys.events(limit),
     queryFn: async () => {
-      // Backend doesn't support security events
-      // Return empty array as stub
-      return [];
+      if (!actor) {
+        throw new Error('Actor not available');
+      }
+      
+      try {
+        const events = await actor.getTreyCSecurityEvents();
+        // Return most recent events up to limit
+        return events.slice(-limit).reverse();
+      } catch (error: any) {
+        // Handle unauthorized or unsupported backend gracefully
+        if (error.message?.includes('Unauthorized') || error.message?.includes('not found')) {
+          console.warn('TREY-C Security events not available or unauthorized:', error.message);
+          // Return empty array
+          return [];
+        }
+        throw error;
+      }
     },
-    enabled: false, // Disabled since backend doesn't support this
+    enabled: !!actor && !actorFetching,
     staleTime: 4000,
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
-    refetchIntervalInBackground: false,
+    refetchInterval: 8000,
+    refetchOnWindowFocus: true,
   });
 }

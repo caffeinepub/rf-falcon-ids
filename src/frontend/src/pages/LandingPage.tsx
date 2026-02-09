@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, Zap, Lock, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
+import { Shield, Zap, Lock, ArrowRight, Clock } from 'lucide-react';
 import { getAssetUrl } from '@/utils/assetBase';
 import { LANDING_DELIVERY_TIME } from '@/content/copy';
 
@@ -15,8 +15,8 @@ export default function LandingPage() {
         className="relative min-h-[90vh] flex items-center justify-center overflow-hidden"
         aria-labelledby="hero-heading"
       >
-        {/* Modern Gradient Background Layers */}
-        <div className="absolute inset-0 z-0">
+        {/* Modern Gradient Background Layers - non-interactive */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
           {/* Base gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/20" />
           {/* Animated gradient orbs */}
@@ -50,7 +50,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center relative z-20">
               <Button
                 size="lg"
                 onClick={() => navigate({ to: '/signin' })}
@@ -70,8 +70,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Hero Illustration */}
-          <div className="relative animate-fade-in-delay hidden lg:block">
+          {/* Hero Illustration - non-interactive */}
+          <div className="relative animate-fade-in-delay hidden lg:block pointer-events-none">
             <div className="relative">
               {/* Decorative gradient orbs */}
               <img
@@ -139,7 +139,7 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <section className="py-20 relative overflow-hidden" aria-labelledby="cta-heading">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pointer-events-none" aria-hidden="true" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold">
@@ -151,7 +151,7 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={() => navigate({ to: '/signin' })}
-              className="text-lg px-12 py-7 h-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-xl font-semibold transition-all hover:scale-105"
+              className="text-lg px-12 py-7 h-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-xl font-semibold transition-all hover:scale-105 relative z-20"
             >
               Order Now
               <ArrowRight className="ml-2 h-6 w-6" aria-hidden="true" />

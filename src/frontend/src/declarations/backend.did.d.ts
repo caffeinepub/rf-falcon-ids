@@ -92,6 +92,25 @@ export interface SecurityStats {
   'throttledCalls' : bigint,
 }
 export type Time = bigint;
+export interface TreyCSecurityConfig {
+  'rateLimitWindow' : bigint,
+  'maxCallsPerWindow' : bigint,
+  'enabled' : boolean,
+}
+export interface TreyCSecurityEvent {
+  'result' : { 'allowed' : null } |
+    { 'denied' : null } |
+    { 'throttled' : null },
+  'principal' : Principal,
+  'action' : string,
+  'timestamp' : Time,
+  'reason' : string,
+}
+export interface TreyCSecurityStats {
+  'deniedCalls' : bigint,
+  'allowedCalls' : bigint,
+  'throttledCalls' : bigint,
+}
 export interface UserProfile {
   'name' : string,
   'email' : [] | [string],
@@ -132,6 +151,7 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'banUser' : ActorMethod<[Principal], undefined>,
   'bootstrapOwner' : ActorMethod<[], OwnerBootstrapStatus>,
+  'clearTreyCSecurityEvents' : ActorMethod<[], undefined>,
   'createOrder' : ActorMethod<
     [
       string,
@@ -157,13 +177,19 @@ export interface _SERVICE {
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getOrder' : ActorMethod<[string], [] | [Order]>,
   'getPromoCode' : ActorMethod<[string], [] | [PromoCode]>,
+  'getTreyCSecurityConfig' : ActorMethod<[], TreyCSecurityConfig>,
+  'getTreyCSecurityEvents' : ActorMethod<[], Array<TreyCSecurityEvent>>,
+  'getTreyCSecurityStats' : ActorMethod<[], TreyCSecurityStats>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isCallerVIP' : ActorMethod<[], boolean>,
+  'isTreyCSecurityEnabled' : ActorMethod<[], boolean>,
   'isUserBanned' : ActorMethod<[Principal], boolean>,
   'isUserVIP' : ActorMethod<[Principal], boolean>,
+  'resetTreyCSecurityStats' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setTrackingNumber' : ActorMethod<[string, string], undefined>,
+  'setTreyCSecurityConfig' : ActorMethod<[TreyCSecurityConfig], undefined>,
   'setVIPStatus' : ActorMethod<[Principal, boolean], undefined>,
   'unbanUser' : ActorMethod<[Principal], undefined>,
   'updateOrderDetails' : ActorMethod<[string, Details, Address], undefined>,

@@ -89,6 +89,18 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface UserProfile {
+    name: string;
+    email?: string;
+    isVIP: boolean;
+}
+export interface TreyCSecurityEvent {
+    result: Variant_allowed_denied_throttled;
+    principal: Principal;
+    action: string;
+    timestamp: Time;
+    reason: string;
+}
 export interface Address {
     zip: string;
     city: string;
@@ -109,19 +121,24 @@ export interface PromoCode {
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
 }
+export interface TreyCSecurityStats {
+    deniedCalls: bigint;
+    allowedCalls: bigint;
+    throttledCalls: bigint;
+}
 export interface OwnerBootstrapStatus {
     status: Variant_boostrap_succeeded_already_admin;
     adminSaved: boolean;
+}
+export interface _CaffeineStorageCreateCertificateResult {
+    method: string;
+    blob_hash: string;
 }
 export interface AuditLogEntry {
     action: string;
     admin: Principal;
     timestamp: Time;
     details: string;
-}
-export interface _CaffeineStorageCreateCertificateResult {
-    method: string;
-    blob_hash: string;
 }
 export interface Order {
     id: string;
@@ -172,14 +189,14 @@ export interface SecurityStats {
     allowedCalls: bigint;
     throttledCalls: bigint;
 }
-export interface UserProfile {
-    name: string;
-    email?: string;
-    isVIP: boolean;
-}
 export interface _CaffeineStorageRefillResult {
     success?: boolean;
     topped_up_amount?: bigint;
+}
+export interface TreyCSecurityConfig {
+    rateLimitWindow: bigint;
+    maxCallsPerWindow: bigint;
+    enabled: boolean;
 }
 export enum OrderStatus {
     shipped = "shipped",
@@ -191,6 +208,11 @@ export enum UserRole {
     admin = "admin",
     user = "user",
     guest = "guest"
+}
+export enum Variant_allowed_denied_throttled {
+    allowed = "allowed",
+    denied = "denied",
+    throttled = "throttled"
 }
 export enum Variant_boostrap_succeeded_already_admin {
     boostrap_succeeded = "boostrap_succeeded",
@@ -208,6 +230,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     banUser(user: Principal): Promise<void>;
     bootstrapOwner(): Promise<OwnerBootstrapStatus>;
+    clearTreyCSecurityEvents(): Promise<void>;
     createOrder(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null, signature: ExternalBlob | null): Promise<void>;
     createPromoCode(code: string, discountPercentage: bigint, validUntil: Time, usageLimit: bigint): Promise<void>;
     deactivatePromoCode(code: string): Promise<void>;
@@ -223,20 +246,26 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
     getPromoCode(code: string): Promise<PromoCode | null>;
+    getTreyCSecurityConfig(): Promise<TreyCSecurityConfig>;
+    getTreyCSecurityEvents(): Promise<Array<TreyCSecurityEvent>>;
+    getTreyCSecurityStats(): Promise<TreyCSecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isCallerVIP(): Promise<boolean>;
+    isTreyCSecurityEnabled(): Promise<boolean>;
     isUserBanned(user: Principal): Promise<boolean>;
     isUserVIP(user: Principal): Promise<boolean>;
+    resetTreyCSecurityStats(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
+    setTreyCSecurityConfig(config: TreyCSecurityConfig): Promise<void>;
     setVIPStatus(user: Principal, isVIP: boolean): Promise<void>;
     unbanUser(user: Principal): Promise<void>;
     updateOrderDetails(orderId: string, newDetails: Details, newAddress: Address): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
     validatePromoCode(code: string): Promise<PromoCodeValidation>;
 }
-import type { AccountInfo as _AccountInfo, Address as _Address, AdminDashboardData as _AdminDashboardData, AuditLogEntry as _AuditLogEntry, Details as _Details, ExternalBlob as _ExternalBlob, Order as _Order, OrderStatus as _OrderStatus, OwnerBootstrapStatus as _OwnerBootstrapStatus, PromoCode as _PromoCode, SecurityStats as _SecurityStats, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { AccountInfo as _AccountInfo, Address as _Address, AdminDashboardData as _AdminDashboardData, AuditLogEntry as _AuditLogEntry, Details as _Details, ExternalBlob as _ExternalBlob, Order as _Order, OrderStatus as _OrderStatus, OwnerBootstrapStatus as _OwnerBootstrapStatus, PromoCode as _PromoCode, SecurityStats as _SecurityStats, Time as _Time, TreyCSecurityEvent as _TreyCSecurityEvent, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -391,6 +420,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.bootstrapOwner();
             return from_candid_OwnerBootstrapStatus_n10(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async clearTreyCSecurityEvents(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearTreyCSecurityEvents();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearTreyCSecurityEvents();
+            return result;
         }
     }
     async createOrder(arg0: string, arg1: Details, arg2: Address, arg3: ExternalBlob, arg4: string | null, arg5: ExternalBlob | null): Promise<void> {
@@ -603,6 +646,48 @@ export class Backend implements backendInterface {
             return from_candid_opt_n37(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getTreyCSecurityConfig(): Promise<TreyCSecurityConfig> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTreyCSecurityConfig();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTreyCSecurityConfig();
+            return result;
+        }
+    }
+    async getTreyCSecurityEvents(): Promise<Array<TreyCSecurityEvent>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTreyCSecurityEvents();
+                return from_candid_vec_n38(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTreyCSecurityEvents();
+            return from_candid_vec_n38(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getTreyCSecurityStats(): Promise<TreyCSecurityStats> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTreyCSecurityStats();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTreyCSecurityStats();
+            return result;
+        }
+    }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
@@ -645,6 +730,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async isTreyCSecurityEnabled(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.isTreyCSecurityEnabled();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.isTreyCSecurityEnabled();
+            return result;
+        }
+    }
     async isUserBanned(arg0: Principal): Promise<boolean> {
         if (this.processError) {
             try {
@@ -673,17 +772,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
+    async resetTreyCSecurityStats(): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n38(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.resetTreyCSecurityStats();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n38(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.resetTreyCSecurityStats();
+            return result;
+        }
+    }
+    async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n42(this._uploadFile, this._downloadFile, arg0));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n42(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -698,6 +811,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.setTrackingNumber(arg0, arg1);
+            return result;
+        }
+    }
+    async setTreyCSecurityConfig(arg0: TreyCSecurityConfig): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setTreyCSecurityConfig(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setTreyCSecurityConfig(arg0);
             return result;
         }
     }
@@ -746,14 +873,14 @@ export class Backend implements backendInterface {
     async updateOrderStatus(arg0: string, arg1: OrderStatus): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateOrderStatus(arg0, to_candid_OrderStatus_n40(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.updateOrderStatus(arg0, to_candid_OrderStatus_n44(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateOrderStatus(arg0, to_candid_OrderStatus_n40(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.updateOrderStatus(arg0, to_candid_OrderStatus_n44(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -789,6 +916,9 @@ async function from_candid_Order_n26(_uploadFile: (file: ExternalBlob) => Promis
 }
 function from_candid_OwnerBootstrapStatus_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _OwnerBootstrapStatus): OwnerBootstrapStatus {
     return from_candid_record_n11(_uploadFile, _downloadFile, value);
+}
+function from_candid_TreyCSecurityEvent_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TreyCSecurityEvent): TreyCSecurityEvent {
+    return from_candid_record_n40(_uploadFile, _downloadFile, value);
 }
 function from_candid_UserProfile_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
     return from_candid_record_n21(_uploadFile, _downloadFile, value);
@@ -938,6 +1068,33 @@ async function from_candid_record_n27(_uploadFile: (file: ExternalBlob) => Promi
         archived: value.archived
     };
 }
+function from_candid_record_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    result: {
+        allowed: null;
+    } | {
+        denied: null;
+    } | {
+        throttled: null;
+    };
+    principal: Principal;
+    action: string;
+    timestamp: _Time;
+    reason: string;
+}): {
+    result: Variant_allowed_denied_throttled;
+    principal: Principal;
+    action: string;
+    timestamp: Time;
+    reason: string;
+} {
+    return {
+        result: from_candid_variant_n41(_uploadFile, _downloadFile, value.result),
+        principal: value.principal,
+        action: value.action,
+        timestamp: value.timestamp,
+        reason: value.reason
+    };
+}
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     success: [] | [boolean];
     topped_up_amount: [] | [bigint];
@@ -977,20 +1134,32 @@ function from_candid_variant_n35(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
+function from_candid_variant_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    allowed: null;
+} | {
+    denied: null;
+} | {
+    throttled: null;
+}): Variant_allowed_denied_throttled {
+    return "allowed" in value ? Variant_allowed_denied_throttled.allowed : "denied" in value ? Variant_allowed_denied_throttled.denied : "throttled" in value ? Variant_allowed_denied_throttled.throttled : value;
+}
 async function from_candid_vec_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Order>): Promise<Array<Order>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Order_n26(_uploadFile, _downloadFile, x)));
 }
 function from_candid_vec_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AccountInfo>): Array<AccountInfo> {
     return value.map((x)=>from_candid_AccountInfo_n17(_uploadFile, _downloadFile, x));
 }
+function from_candid_vec_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_TreyCSecurityEvent>): Array<TreyCSecurityEvent> {
+    return value.map((x)=>from_candid_TreyCSecurityEvent_n39(_uploadFile, _downloadFile, x));
+}
 async function to_candid_ExternalBlob_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
     return await _uploadFile(value);
 }
-function to_candid_OrderStatus_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: OrderStatus): _OrderStatus {
-    return to_candid_variant_n41(_uploadFile, _downloadFile, value);
+function to_candid_OrderStatus_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: OrderStatus): _OrderStatus {
+    return to_candid_variant_n45(_uploadFile, _downloadFile, value);
 }
-function to_candid_UserProfile_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
-    return to_candid_record_n39(_uploadFile, _downloadFile, value);
+function to_candid_UserProfile_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+    return to_candid_record_n43(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n9(_uploadFile, _downloadFile, value);
@@ -1016,7 +1185,7 @@ function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
         proposed_top_up_amount: value.proposed_top_up_amount ? candid_some(value.proposed_top_up_amount) : candid_none()
     };
 }
-function to_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     name: string;
     email?: string;
     isVIP: boolean;
@@ -1031,7 +1200,7 @@ function to_candid_record_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         isVIP: value.isVIP
     };
 }
-function to_candid_variant_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: OrderStatus): {
+function to_candid_variant_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: OrderStatus): {
     shipped: null;
 } | {
     pending: null;

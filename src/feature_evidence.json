@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-admin-route-infinite-loading-state-by-handling-the-case-where-the-authenticated-user-is-signed-in-but-the-backend-actor-is-not-available-or-admin-check-cannot-run-update-the-admin-gating-ui-to-show-a-clear-error-state-with-a-retry-action-instead-of-spinning-forever",
-      "featureTitle": "Fix the admin route infinite loading state by handling the case where the authenticated user is signed in but the backend actor is not available (or admin check cannot run). Update the admin-gating UI to show a clear error state with a retry action instead of spinning forever.",
+      "featureId": "feature-fix-the-home-landing-page-cta-buttons-including-the-order-now-button-so-they-reliably-navigate-to-the-intended-routes-and-never-appear-unclickable-due-to-layout-overlay-issues",
+      "featureTitle": "Fix the Home (Landing) page CTA buttons (including the \"Order Now\" button) so they reliably navigate to the intended routes and never appear unclickable due to layout/overlay issues.",
       "files": [
-        "frontend/src/components/AdminGate.tsx",
-        "frontend/src/hooks/auth/useIsAdmin.ts"
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/pages/LandingPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -23,11 +23,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-an-owner-indicator-in-the-admin-ui-that-displays-the-email-traviscastonguay-gmail-com-with-a-lock-icon-and-the-label-owner-and-ensure-it-cannot-be-edited-from-the-ui",
-      "featureTitle": "Add an Owner indicator in the admin UI that displays the email \"traviscastonguay@gmail.com\" with a lock icon and the label \"Owner\", and ensure it cannot be edited from the UI.",
+      "featureId": "feature-replace-the-current-placeholder-unavailable-trey-c-security-ui-in-the-admin-panel-with-a-functional-dashboard-that-reads-real-security-config-stats-events-from-the-backend-and-allows-admins-to-manage-security-settings",
+      "featureTitle": "Replace the current placeholder/unavailable TREY-C security UI in the Admin panel with a functional dashboard that reads real security config/stats/events from the backend and allows admins to manage security settings.",
       "files": [
-        "frontend/src/components/admin/AdminAccessSection.tsx",
-        "frontend/src/components/admin/AdminOwnerIndicator.tsx"
+        "frontend/src/components/admin/TreyCSecuritySection.tsx",
+        "frontend/src/hooks/security/useSecurityConfig.ts",
+        "frontend/src/hooks/security/useSecurityEvents.ts",
+        "frontend/src/hooks/security/useSecurityMutations.ts",
+        "frontend/src/hooks/security/useSecurityStats.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -39,7 +42,29 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-and-display-a-working-trey-c-security-protection-modal-banner-component-currently-empty-in-a-way-that-does-not-interfere-with-clicking-underlying-buttons-links",
+      "featureTitle": "Implement and display a working TREY-C security protection modal/banner component (currently empty) in a way that does not interfere with clicking underlying buttons/links.",
+      "files": [
+        "frontend/src/components/AppShell.tsx",
+        "frontend/src/components/TreyCSecurityProtectionModal.tsx",
+        "frontend/src/pages/LandingPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

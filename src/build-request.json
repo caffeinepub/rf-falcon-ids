@@ -1,77 +1,115 @@
 {
   "kind": "build_request",
-  "title": "Fix admin panel access/loading for owner account and show locked Owner email in admin UI",
+  "title": "Fix non-working Home 'Order Now' and restore TREY-C security functionality",
   "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the admin route infinite loading state by handling the case where the authenticated user is signed in but the backend actor is not available (or admin check cannot run). Update the admin-gating UI to show a clear error state with a retry action instead of spinning forever.",
+      "text": "Fix the Home (Landing) page CTA buttons (including the \"Order Now\" button) so they reliably navigate to the intended routes and never appear unclickable due to layout/overlay issues.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "Im logged in to traviscastonguay@gmail.com and it wont let me in the panel and it wont load fix it"
+          "Fix the home screen order now buttons and any others buttons not working some are not working"
         ]
       },
       "acceptanceCriteria": [
-        "When a user is authenticated and the backend actor is unavailable after initialization, the /admin route shows an error message in English (not an infinite loading spinner).",
-        "The error state provides a visible Retry action that re-attempts initializing the actor/admin check (or instructs the user to refresh) and does not require a full hard reload to re-attempt.",
-        "When the backend actor becomes available, the admin check proceeds and the gate transitions out of the error/loading state appropriately.",
-        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
+        "On the Home (/) page, clicking \"Order Now\" triggers a route change (no dead click).",
+        "On the Home (/) page, clicking \"Get Started\" triggers a route change (no dead click).",
+        "On the Home (/) page, clicking \"Learn More\" triggers a route change (no dead click).",
+        "Buttons are not blocked by any full-screen/absolute-positioned layers (no element overlays capturing pointer events).",
+        "No console errors are emitted when clicking the buttons (in a production build)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure the owner account associated with the email \"traviscastonguay@gmail.com\" can successfully gain admin access so the admin panel loads. Implement a backend owner bootstrap mechanism that can grant admin privileges to the principal that proves ownership by having a saved user profile email matching \"traviscastonguay@gmail.com\".",
-      "target": "backend",
+      "text": "Audit and fix any other non-working buttons/CTAs across the app by ensuring each interactive element has a valid handler (navigate, submit, mutation) and is not accidentally disabled or blocked by an overlay; prioritize primary conversion/navigation buttons in the header and marketing pages.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "Im logged in to traviscastonguay@gmail.com and it wont let me in the panel and it wont load fix it"
+          "and any others buttons not working some are not working"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a safe, explicit method that allows the caller to attempt to claim owner/admin status when their stored UserProfile.email equals \"traviscastonguay@gmail.com\".",
-        "Once claimed, subsequent calls to the existing admin check used by the frontend (actor.isCallerAdmin()) return true for the owner principal and do not trap.",
-        "Owner/admin status persists across canister upgrades (use stable storage and add backend/migration.mo only if required by existing state upgrade policy).",
-        "If a non-matching email attempts to claim owner/admin, the call fails with a clear error (trap message) and does not change admin state.",
-        "Add an audit log entry when owner/admin is successfully claimed."
+        "All primary navigation actions in the header (BrandHeader) are clickable and navigate correctly on both desktop and mobile (including the mobile menu buttons).",
+        "No button that appears enabled is a no-op (every visible CTA performs its expected action).",
+        "If a button must be disabled due to auth/state, the UI clearly indicates disabled state and provides an English explanation (e.g., tooltip, inline text, or toast)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add an Owner indicator in the admin UI that displays the email \"traviscastonguay@gmail.com\" with a lock icon and the label \"Owner\", and ensure it cannot be edited from the UI.",
-      "target": "frontend",
+      "text": "Restore and implement \"TREY-C security\" as a working feature: add backend security state + APIs for enabling/disabling protection, rate limiting configuration, capturing security events, and exposing security stats/events to admins.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-2"
         ],
         "quotes": [
-          "also make sure in admin put traviscastonguay@gmail.com but put a lock over it and say owner  so it cant be edited"
+          "make sure TREY-C security is running again"
         ]
       },
       "acceptanceCriteria": [
-        "In the admin panel UI, there is a clearly visible row/card showing \"traviscastonguay@gmail.com\" with a lock icon and the text label \"Owner\".",
-        "The Owner email is rendered read-only: there are no edit inputs, no remove button, and no UI affordance that suggests it is editable.",
-        "All user-facing text is in English.",
-        "The Owner indicator renders consistently with existing admin styling (Tailwind/shadcn components), without modifying read-only UI component sources under frontend/src/components/ui."
+        "Backend exposes callable methods for: (1) reading security config, (2) updating/toggling security config (admin-only), (3) retrieving security stats (admin-only), and (4) retrieving recent security events (admin-only).",
+        "When security is enabled, calls are evaluated against the configured rate limit window / max calls per window and produce security events with result = allowed/denied/throttled.",
+        "Security events and counters update deterministically based on calls (allowed/denied/throttled counts are consistent with emitted events).",
+        "Non-admin callers cannot access admin-only security endpoints (backend traps or returns an appropriate error)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Replace the current placeholder/unavailable TREY-C security UI in the Admin panel with a functional dashboard that reads real security config/stats/events from the backend and allows admins to manage security settings.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "make sure TREY-C security is running again"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The admin \"Security Dashboard\" section renders real data (not hardcoded stub values) when the backend is available.",
+        "Admins can toggle security enabled/disabled from the UI and see the updated state reflected after the mutation completes.",
+        "Admins can view security stats (allowed/denied/throttled counts) and a list of recent security events.",
+        "If the backend does not support security (e.g., older deployment), the UI shows a clear English error state and does not crash or spin forever."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement and display a working TREY-C security protection modal/banner component (currently empty) in a way that does not interfere with clicking underlying buttons/links.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "make sure TREY-C security is running again"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A TREY-C security modal/banner renders with English text indicating protection status.",
+        "The modal/banner can be dismissed via an explicit control and does not trap the user on the page.",
+        "While visible, the modal does not block critical CTAs unless it is intentionally modal; if it is modal, it must provide an obvious close/dismiss action and restore clickability after dismissal.",
+        "After dismissal, the Home page buttons remain clickable and functional."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single-actor Motoko canister with logic in backend/main.mo.",
-    "Only generate backend/migration.mo if needed for upgrading existing stable state (conditional migration policy).",
-    "Do not edit immutable frontend paths listed in SYSTEM_CONTEXT (compose around them instead).",
-    "Use English for any user-facing text."
+    "Do not edit any files under the frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Backend must remain a single Motoko actor with all logic in backend/main.mo.",
+    "Only create/update backend/migration.mo if new stable/persisted state is introduced or existing stable state shape changes (conditional migration policy).",
+    "Use English for all user-facing UI text."
   ],
   "nonGoals": [
-    "Implementing general email-based admin management for arbitrary emails (the current hooks are stubbed and backend does not support it).",
-    "Adding third-party authentication providers or exposing real user email from Internet Identity (not available on IC).",
-    "Adding real-time features (WebSockets/push notifications)."
+    "Do not add third-party auth providers (only Internet Identity is allowed).",
+    "Do not add external databases or off-chain storage systems.",
+    "Do not implement real-time features (no WebSockets/push notifications).",
+    "Do not change branding/copy beyond what is required to fix broken buttons and restore the TREY-C security UI."
   ],
   "imageRequirements": {
     "required": [],

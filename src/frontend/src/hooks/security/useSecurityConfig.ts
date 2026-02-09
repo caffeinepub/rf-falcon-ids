@@ -1,34 +1,36 @@
 import { useQuery } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { securityKeys } from '../orders/queryKeys';
-
-export interface SecurityConfig {
-  enabled: boolean;
-  rateLimitWindow: bigint;
-  maxCallsPerWindow: bigint;
-  blocklistSize: bigint;
-  allowlistSize: bigint;
-}
-
-// Note: Security config is not implemented in the backend
-// This hook returns stub data to prevent TypeScript errors
+import type { TreyCSecurityConfig } from '../../backend';
 
 export function useSecurityConfig() {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<SecurityConfig>({
+  return useQuery<TreyCSecurityConfig>({
     queryKey: securityKeys.config(),
     queryFn: async () => {
-      // Backend doesn't support security config
-      // Return stub data
-      return {
-        enabled: false,
-        rateLimitWindow: BigInt(60),
-        maxCallsPerWindow: BigInt(100),
-        blocklistSize: BigInt(0),
-        allowlistSize: BigInt(0),
-      };
+      if (!actor) {
+        throw new Error('Actor not available');
+      }
+      
+      try {
+        return await actor.getTreyCSecurityConfig();
+      } catch (error: any) {
+        // Handle unauthorized or unsupported backend gracefully
+        if (error.message?.includes('Unauthorized') || error.message?.includes('not found')) {
+          console.warn('TREY-C Security not available or unauthorized:', error.message);
+          // Return default disabled config
+          return {
+            enabled: false,
+            rateLimitWindow: BigInt(60_000_000_000),
+            maxCallsPerWindow: BigInt(10),
+          };
+        }
+        throw error;
+      }
     },
-    enabled: false, // Disabled since backend doesn't support this
+    enabled: !!actor && !actorFetching,
+    staleTime: 30000,
+    retry: 1,
   });
 }

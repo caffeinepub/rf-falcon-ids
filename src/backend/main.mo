@@ -8,14 +8,12 @@ import Set "mo:core/Set";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Storage "blob-storage/Storage";
-import Migration "migration";
+
 
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
-// Apply migration explicitly
-(with migration = Migration.run)
 actor {
   public type Address = {
     first_name : Text;
@@ -124,7 +122,182 @@ actor {
     adminSaved : Bool;
   };
 
+  public type TreyCSecurityEvent = {
+    timestamp : Time.Time;
+    principal : Principal;
+    action : Text;
+    result : { #allowed; #denied; #throttled };
+    reason : Text;
+  };
+
+  public type TreyCSecurityConfig = {
+    enabled : Bool;
+    rateLimitWindow : Nat;
+    maxCallsPerWindow : Nat;
+  };
+
+  public type TreyCSecurityStats = {
+    allowedCalls : Nat;
+    deniedCalls : Nat;
+    throttledCalls : Nat;
+  };
+
+  public type RateLimitEntry = {
+    callCount : Nat;
+    windowStart : Time.Time;
+  };
+
   include MixinStorage();
+
+  var treyCSecurityConfig : TreyCSecurityConfig = {
+    enabled = false;
+    rateLimitWindow = 60_000_000_000; // 60 seconds in nanoseconds
+    maxCallsPerWindow = 10;
+  };
+
+  var treyCSecurityStats : TreyCSecurityStats = {
+    allowedCalls = 0;
+    deniedCalls = 0;
+    throttledCalls = 0;
+  };
+
+  var treyCSecurityEvents = List.empty<TreyCSecurityEvent>();
+  let rateLimitMap = Map.empty<Principal, RateLimitEntry>();
+
+  func logTreyCSecurityEvent(principal : Principal, action : Text, result : { #allowed; #denied; #throttled }, reason : Text) {
+    let event : TreyCSecurityEvent = {
+      timestamp = Time.now();
+      principal;
+      action;
+      result;
+      reason;
+    };
+    treyCSecurityEvents.add(event);
+
+    // Update stats
+    switch (result) {
+      case (#allowed) {
+        treyCSecurityStats := {
+          treyCSecurityStats with
+          allowedCalls = treyCSecurityStats.allowedCalls + 1;
+        };
+      };
+      case (#denied) {
+        treyCSecurityStats := {
+          treyCSecurityStats with
+          deniedCalls = treyCSecurityStats.deniedCalls + 1;
+        };
+      };
+      case (#throttled) {
+        treyCSecurityStats := {
+          treyCSecurityStats with
+          throttledCalls = treyCSecurityStats.throttledCalls + 1;
+        };
+      };
+    };
+  };
+
+  func checkRateLimit(caller : Principal, action : Text) : Bool {
+    if (not treyCSecurityConfig.enabled) {
+      return true;
+    };
+
+    let currentTime = Time.now();
+    
+    switch (rateLimitMap.get(caller)) {
+      case (?entry) {
+        let timeSinceWindowStart = currentTime - entry.windowStart;
+        
+        if (timeSinceWindowStart > treyCSecurityConfig.rateLimitWindow) {
+          // New window
+          rateLimitMap.add(caller, {
+            callCount = 1;
+            windowStart = currentTime;
+          });
+          logTreyCSecurityEvent(caller, action, #allowed, "New rate limit window");
+          return true;
+        } else {
+          // Within window
+          if (entry.callCount >= treyCSecurityConfig.maxCallsPerWindow) {
+            logTreyCSecurityEvent(caller, action, #throttled, "Rate limit exceeded");
+            return false;
+          } else {
+            rateLimitMap.add(caller, {
+              callCount = entry.callCount + 1;
+              windowStart = entry.windowStart;
+            });
+            logTreyCSecurityEvent(caller, action, #allowed, "Within rate limit");
+            return true;
+          };
+        };
+      };
+      case (null) {
+        // First call
+        rateLimitMap.add(caller, {
+          callCount = 1;
+          windowStart = currentTime;
+        });
+        logTreyCSecurityEvent(caller, action, #allowed, "First call in window");
+        return true;
+      };
+    };
+  };
+
+  public query ({ caller }) func getTreyCSecurityConfig() : async TreyCSecurityConfig {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view security configuration");
+    };
+    treyCSecurityConfig;
+  };
+
+  public shared ({ caller }) func setTreyCSecurityConfig(config : TreyCSecurityConfig) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update security configuration");
+    };
+    treyCSecurityConfig := config;
+    logAudit(caller, "update_treyc_security_config", "Config updated: enabled=" # debug_show(config.enabled));
+  };
+
+  public query ({ caller }) func isTreyCSecurityEnabled() : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can check security configuration");
+    };
+    treyCSecurityConfig.enabled;
+  };
+
+  public query ({ caller }) func getTreyCSecurityStats() : async TreyCSecurityStats {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view security statistics");
+    };
+    treyCSecurityStats;
+  };
+
+  public query ({ caller }) func getTreyCSecurityEvents() : async [TreyCSecurityEvent] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view security events");
+    };
+    treyCSecurityEvents.toArray();
+  };
+
+  public shared ({ caller }) func clearTreyCSecurityEvents() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can clear security events");
+    };
+    treyCSecurityEvents := List.empty<TreyCSecurityEvent>();
+    logAudit(caller, "clear_treyc_security_events", "Security events cleared");
+  };
+
+  public shared ({ caller }) func resetTreyCSecurityStats() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can reset security statistics");
+    };
+    treyCSecurityStats := {
+      allowedCalls = 0;
+      deniedCalls = 0;
+      throttledCalls = 0;
+    };
+    logAudit(caller, "reset_treyc_security_stats", "Security statistics reset");
+  };
 
   var orders = Map.empty<Text, Order>();
   var userProfiles = Map.empty<Principal, UserProfile>();
@@ -333,7 +506,12 @@ actor {
     };
 
     if (bannedUsers.contains(caller)) {
+      logTreyCSecurityEvent(caller, "create_order", #denied, "User is banned");
       Runtime.trap("Unauthorized: Banned users cannot create orders");
+    };
+
+    if (not checkRateLimit(caller, "create_order")) {
+      Runtime.trap("Rate limit exceeded: Too many requests");
     };
 
     let isVIP = vipUsers.contains(caller);
@@ -695,3 +873,4 @@ actor {
     archivedOrders.toArray();
   };
 };
+

@@ -1,47 +1,61 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project involves an admin panel; user reports admin panel access/loading issue for traviscastonguay@gmail.com and requests an 'Owner' admin indicator with the owner email locked/non-editable.",
-  "architectural_notes": [],
+  "summary": "New project",
+  "architectural_notes": [
+    "Ensure TREY-C security service/process is running as part of deployment/runtime health checks."
+  ],
   "known_issues": [
-    "Admin panel does not load / user cannot access panel when logged in as traviscastonguay@gmail.com."
+    "Home screen 'Order Now' button(s) not working.",
+    "Other app buttons intermittently not working.",
+    "TREY-C security is not running (needs to be restarted/restored)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-fix-the-admin-route-infinite-loading-state-by-handling-the-case-where-the-authenticated-user-is-signed-in-but-the-backend-actor-is-not-available-or-admin-check-cannot-run-update-the-admin-gating-ui-to-show-a-clear-error-state-with-a-retry-action-instead-of-spinning-forever",
-      "title": "Fix the admin route infinite loading state by handling the case where the authenticated user is signed in but the backend actor is not available (or admin check cannot run). Update the admin-gating UI to show a clear error state with a retry action instead of spinning forever.",
+      "id": "feature-fix-the-home-landing-page-cta-buttons-including-the-order-now-button-so-they-reliably-navigate-to-the-intended-routes-and-never-appear-unclickable-due-to-layout-overlay-issues",
+      "title": "Fix the Home (Landing) page CTA buttons (including the \"Order Now\" button) so they reliably navigate to the intended routes and never appear unclickable due to layout/overlay issues.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-an-owner-indicator-in-the-admin-ui-that-displays-the-email-traviscastonguay-gmail-com-with-a-lock-icon-and-the-label-owner-and-ensure-it-cannot-be-edited-from-the-ui",
-      "title": "Add an Owner indicator in the admin UI that displays the email \"traviscastonguay@gmail.com\" with a lock icon and the label \"Owner\", and ensure it cannot be edited from the UI.",
+      "id": "feature-replace-the-current-placeholder-unavailable-trey-c-security-ui-in-the-admin-panel-with-a-functional-dashboard-that-reads-real-security-config-stats-events-from-the-backend-and-allows-admins-to-manage-security-settings",
+      "title": "Replace the current placeholder/unavailable TREY-C security UI in the Admin panel with a functional dashboard that reads real security config/stats/events from the backend and allows admins to manage security settings.",
       "reqIds": [
-        "REQ-3"
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-and-display-a-working-trey-c-security-protection-modal-banner-component-currently-empty-in-a-way-that-does-not-interfere-with-clicking-underlying-buttons-links",
+      "title": "Implement and display a working TREY-C security protection modal/banner component (currently empty) in a way that does not interfere with clicking underlying buttons/links.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [
     {
-      "id": "AR-1",
-      "summary": "In admin settings, show traviscastonguay@gmail.com as Owner with a lock indicator and prevent editing that owner email.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Ensure the owner account associated with the email \"traviscastonguay@gmail.com\" can successfully gain admin access so the admin panel loads. Implement a backend owner bootstrap mechanism that can grant admin privileges to the principal that proves ownership by having a saved user profile email matching \"traviscastonguay@gmail.com\".",
+      "id": "AR-2",
+      "summary": "Audit and fix any other non-working buttons/CTAs across the app by ensuring each interactive element has a valid handler (navigate, submit, mutation) and is not accidentally disabled or blocked by an overlay; prioritize primary conversion/navigation buttons in the header and marketing pages.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Restore and implement \"TREY-C security\" as a working feature: add backend security state + APIs for enabling/disabling protection, rate limiting configuration, capturing security events, and exposing security stats/events to admins.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
     }
   ],
-  "projectName": "Fix admin panel access/loading for owner account and show locked Owner email in admin UI",
+  "projectName": "Fix non-working Home 'Order Now' and restore TREY-C security functionality",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -111,6 +111,27 @@ export const PromoCode = IDL.Record({
   'discountPercentage' : IDL.Nat,
   'validUntil' : Time,
 });
+export const TreyCSecurityConfig = IDL.Record({
+  'rateLimitWindow' : IDL.Nat,
+  'maxCallsPerWindow' : IDL.Nat,
+  'enabled' : IDL.Bool,
+});
+export const TreyCSecurityEvent = IDL.Record({
+  'result' : IDL.Variant({
+    'allowed' : IDL.Null,
+    'denied' : IDL.Null,
+    'throttled' : IDL.Null,
+  }),
+  'principal' : IDL.Principal,
+  'action' : IDL.Text,
+  'timestamp' : Time,
+  'reason' : IDL.Text,
+});
+export const TreyCSecurityStats = IDL.Record({
+  'deniedCalls' : IDL.Nat,
+  'allowedCalls' : IDL.Nat,
+  'throttledCalls' : IDL.Nat,
+});
 export const PromoCodeValidation = IDL.Record({
   'valid' : IDL.Bool,
   'discountPercentage' : IDL.Nat,
@@ -148,6 +169,7 @@ export const idlService = IDL.Service({
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'banUser' : IDL.Func([IDL.Principal], [], []),
   'bootstrapOwner' : IDL.Func([], [OwnerBootstrapStatus], []),
+  'clearTreyCSecurityEvents' : IDL.Func([], [], []),
   'createOrder' : IDL.Func(
       [
         IDL.Text,
@@ -178,6 +200,13 @@ export const idlService = IDL.Service({
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
   'getPromoCode' : IDL.Func([IDL.Text], [IDL.Opt(PromoCode)], ['query']),
+  'getTreyCSecurityConfig' : IDL.Func([], [TreyCSecurityConfig], ['query']),
+  'getTreyCSecurityEvents' : IDL.Func(
+      [],
+      [IDL.Vec(TreyCSecurityEvent)],
+      ['query'],
+    ),
+  'getTreyCSecurityStats' : IDL.Func([], [TreyCSecurityStats], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -185,10 +214,13 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerVIP' : IDL.Func([], [IDL.Bool], ['query']),
+  'isTreyCSecurityEnabled' : IDL.Func([], [IDL.Bool], ['query']),
   'isUserBanned' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
   'isUserVIP' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
+  'resetTreyCSecurityStats' : IDL.Func([], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'setTreyCSecurityConfig' : IDL.Func([TreyCSecurityConfig], [], []),
   'setVIPStatus' : IDL.Func([IDL.Principal, IDL.Bool], [], []),
   'unbanUser' : IDL.Func([IDL.Principal], [], []),
   'updateOrderDetails' : IDL.Func([IDL.Text, Details, Address], [], []),
@@ -302,6 +334,27 @@ export const idlFactory = ({ IDL }) => {
     'discountPercentage' : IDL.Nat,
     'validUntil' : Time,
   });
+  const TreyCSecurityConfig = IDL.Record({
+    'rateLimitWindow' : IDL.Nat,
+    'maxCallsPerWindow' : IDL.Nat,
+    'enabled' : IDL.Bool,
+  });
+  const TreyCSecurityEvent = IDL.Record({
+    'result' : IDL.Variant({
+      'allowed' : IDL.Null,
+      'denied' : IDL.Null,
+      'throttled' : IDL.Null,
+    }),
+    'principal' : IDL.Principal,
+    'action' : IDL.Text,
+    'timestamp' : Time,
+    'reason' : IDL.Text,
+  });
+  const TreyCSecurityStats = IDL.Record({
+    'deniedCalls' : IDL.Nat,
+    'allowedCalls' : IDL.Nat,
+    'throttledCalls' : IDL.Nat,
+  });
   const PromoCodeValidation = IDL.Record({
     'valid' : IDL.Bool,
     'discountPercentage' : IDL.Nat,
@@ -339,6 +392,7 @@ export const idlFactory = ({ IDL }) => {
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'banUser' : IDL.Func([IDL.Principal], [], []),
     'bootstrapOwner' : IDL.Func([], [OwnerBootstrapStatus], []),
+    'clearTreyCSecurityEvents' : IDL.Func([], [], []),
     'createOrder' : IDL.Func(
         [
           IDL.Text,
@@ -369,6 +423,13 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
     'getPromoCode' : IDL.Func([IDL.Text], [IDL.Opt(PromoCode)], ['query']),
+    'getTreyCSecurityConfig' : IDL.Func([], [TreyCSecurityConfig], ['query']),
+    'getTreyCSecurityEvents' : IDL.Func(
+        [],
+        [IDL.Vec(TreyCSecurityEvent)],
+        ['query'],
+      ),
+    'getTreyCSecurityStats' : IDL.Func([], [TreyCSecurityStats], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -376,10 +437,13 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerVIP' : IDL.Func([], [IDL.Bool], ['query']),
+    'isTreyCSecurityEnabled' : IDL.Func([], [IDL.Bool], ['query']),
     'isUserBanned' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
     'isUserVIP' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
+    'resetTreyCSecurityStats' : IDL.Func([], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'setTreyCSecurityConfig' : IDL.Func([TreyCSecurityConfig], [], []),
     'setVIPStatus' : IDL.Func([IDL.Principal, IDL.Bool], [], []),
     'unbanUser' : IDL.Func([IDL.Principal], [], []),
     'updateOrderDetails' : IDL.Func([IDL.Text, Details, Address], [], []),
