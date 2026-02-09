@@ -1,13 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useAuditLog } from '../../hooks/admin/useAuditLog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Loader2, Search, RefreshCw } from 'lucide-react';
+import { FileText, Search, AlertTriangle } from 'lucide-react';
 
 export default function AuditLogSection() {
   const { data: auditLog, isLoading, error, refetch } = useAuditLog(100);
@@ -18,122 +16,111 @@ export default function AuditLogSection() {
     if (!searchQuery.trim()) return auditLog;
 
     const query = searchQuery.toLowerCase();
-    return auditLog.filter(
-      (entry) =>
-        entry.action.toLowerCase().includes(query) ||
-        entry.details.toLowerCase().includes(query) ||
-        entry.admin.toString().toLowerCase().includes(query)
+    return auditLog.filter(entry =>
+      entry.action.toLowerCase().includes(query) ||
+      entry.details.toLowerCase().includes(query) ||
+      entry.admin.toText().toLowerCase().includes(query)
     );
   }, [auditLog, searchQuery]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-16 w-full bg-admin-card" />
+        <Skeleton className="h-32 w-full bg-admin-card" />
+        <Skeleton className="h-32 w-full bg-admin-card" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-admin-card border-admin-border shadow-lg">
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <AlertTriangle className="w-12 h-12 mx-auto text-destructive mb-4" />
+            <p className="text-destructive">Error loading audit log</p>
+            <p className="text-admin-muted text-sm mt-2">{(error as Error).message}</p>
+            <Button
+              onClick={() => refetch()}
+              className="mt-4 bg-admin-primary hover:bg-admin-primary/90"
+            >
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 bg-cyber-card rounded-lg flex items-center justify-center border border-cyber-primary/30 shadow-cyber">
-          <FileText className="w-7 h-7 text-cyber-primary" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold tracking-wider text-cyber-primary font-mono uppercase">
-            Admin Audit Log
-          </h2>
-          <p className="text-cyber-muted mt-1 font-mono text-sm">
-            [SYSTEM ACTIVITY MONITORING]
-          </p>
-        </div>
-      </div>
-
-      {/* Search */}
-      <Card className="bg-cyber-card border-cyber-primary/30 shadow-cyber">
-        <CardContent className="pt-6">
+      <Card className="bg-admin-card border-admin-border shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-admin-foreground flex items-center gap-2">
+            <FileText className="w-5 h-5 text-admin-primary" />
+            Audit Log
+          </CardTitle>
+          <CardDescription className="text-admin-muted">
+            Track all administrative actions and system changes
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-2">
-            <Label className="text-cyber-muted font-mono text-xs uppercase tracking-wider">
+            <Label className="text-admin-muted text-xs uppercase tracking-wider">
               <Search className="w-3 h-3 inline mr-1" />
               Search Audit Log
             </Label>
             <Input
-              placeholder="Action, details, admin principal..."
+              placeholder="Search by action, details, or admin..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-cyber-bg border-cyber-primary/30 text-cyber-primary font-mono"
+              className="bg-admin-bg border-admin-border text-admin-foreground focus:ring-admin-primary"
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* Audit Log Table */}
-      <Card className="bg-cyber-card border-cyber-primary/30 shadow-cyber">
+      {/* Audit Log Entries */}
+      <Card className="bg-admin-card border-admin-border shadow-lg">
         <CardHeader>
-          <CardTitle className="text-cyber-primary font-mono uppercase tracking-wider flex items-center gap-2">
-            Recent Admin Actions
-            {error && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => refetch()}
-                className="ml-auto text-xs font-mono"
-              >
-                <RefreshCw className="w-3 h-3 mr-1" />
-                Retry
-              </Button>
-            )}
+          <CardTitle className="text-admin-foreground">
+            Recent Actions ({filteredLog.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
-              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
-              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
-              <Skeleton className="h-12 w-full bg-cyber-primary/20" />
-            </div>
-          ) : error ? (
-            <div className="text-center py-12 space-y-4">
-              <p className="text-red-400 font-mono text-sm">Failed to load audit log</p>
-              <Button
-                onClick={() => refetch()}
-                variant="outline"
-                className="font-mono"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retry
-              </Button>
-            </div>
-          ) : !filteredLog || filteredLog.length === 0 ? (
-            <div className="text-center py-12 text-cyber-muted font-mono text-sm">
-              {searchQuery ? 'No matching audit entries found' : 'No audit entries recorded'}
+          {filteredLog.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="w-12 h-12 mx-auto text-admin-muted mb-4" />
+              <p className="text-admin-muted">
+                {searchQuery ? 'No audit entries match your search' : 'No audit entries yet'}
+              </p>
             </div>
           ) : (
-            <ScrollArea className="h-[500px]">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-cyber-primary/20">
-                    <TableHead className="text-cyber-muted font-mono text-xs">Timestamp</TableHead>
-                    <TableHead className="text-cyber-muted font-mono text-xs">Admin</TableHead>
-                    <TableHead className="text-cyber-muted font-mono text-xs">Action</TableHead>
-                    <TableHead className="text-cyber-muted font-mono text-xs">Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredLog.map((entry, idx) => (
-                    <TableRow key={idx} className="border-cyber-primary/10">
-                      <TableCell className="text-cyber-primary font-mono text-xs">
-                        {new Date(Number(entry.timestamp) / 1000000).toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-cyber-primary font-mono text-xs truncate max-w-[200px]">
-                        {entry.admin.toString().slice(0, 20)}...
-                      </TableCell>
-                      <TableCell className="text-cyber-accent font-mono text-xs font-semibold">
-                        {entry.action}
-                      </TableCell>
-                      <TableCell className="text-cyber-muted font-mono text-xs">
-                        {entry.details}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+            <div className="space-y-2 max-h-[600px] overflow-y-auto">
+              {filteredLog.map((entry, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-admin-bg border border-admin-border rounded-lg hover:border-admin-primary/50 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-admin-foreground font-semibold">{entry.action}</p>
+                        <span className="text-admin-muted text-xs">
+                          {new Date(Number(entry.timestamp) / 1_000_000).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-admin-muted text-sm mb-2">{entry.details}</p>
+                      <p className="text-admin-muted text-xs truncate" title={entry.admin.toText()}>
+                        Admin: {entry.admin.toText()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

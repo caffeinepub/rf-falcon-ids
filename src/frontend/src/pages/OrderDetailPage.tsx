@@ -1,211 +1,377 @@
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { useGetOrder } from '../hooks/orders/useGetOrder';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, Package, MapPin, Calendar, Hash, Download, Printer, Edit, User, Image as ImageIcon, FileSignature, Tag, Archive } from 'lucide-react';
 import IdCardPreview from '../components/IdCardPreview';
-import IdCardActions from '../components/IdCardActions';
-import { formatDOB } from '../utils/dob';
-import { normalizeStateName } from '../utils/stateFormat';
 import PageHeader from '../components/dashboard/PageHeader';
+import { formatOrderStatus, formatTimestamp } from '../utils/formatters';
+import { useIsAdmin } from '../hooks/auth/useIsAdmin';
+import { useState, useEffect } from 'react';
+import { exportIdCardToPNG, printIdCard } from '../utils/exportIdCard';
+import { toast } from 'sonner';
+import AdminEditOrderDialog from '../components/orders/AdminEditOrderDialog';
+import CopyableMonospaceText from '../components/common/CopyableMonospaceText';
 
 export default function OrderDetailPage() {
   const { orderId } = useParams({ from: '/orders/$orderId' });
   const navigate = useNavigate();
-  const { data: order, isLoading } = useGetOrder(orderId);
+  const { data: order, isLoading, error } = useGetOrder(orderId);
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
+  
+  const [photoUrl, setPhotoUrl] = useState<string>('');
+  const [signatureUrl, setSignatureUrl] = useState<string>('');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case 'approved':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'shipped':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      default:
-        return 'bg-chrome-300/20 text-chrome-300 border-chrome-300/30';
+  useEffect(() => {
+    if (order?.photo) {
+      setPhotoUrl(order.photo.getDirectURL());
+    }
+    if (order?.signature) {
+      setSignatureUrl(order.signature.getDirectURL());
+    }
+  }, [order]);
+
+  // Check if order is archived and user is not admin
+  const isArchivedAndNotAdmin = order?.archived && !isAdmin && !adminLoading;
+
+  const handleExport = async () => {
+    if (!order) return;
+    
+    try {
+      await exportIdCardToPNG(
+        order.details.first_name,
+        order.details.last_name,
+        order.details.dob,
+        order.details.gender,
+        order.details.height,
+        order.details.eye_color,
+        order.details.id_number,
+        order.details.state_name,
+        photoUrl
+      );
+      toast.success('ID card exported successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export ID card');
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+  const handlePrint = () => {
+    try {
+      printIdCard();
+      toast.success('Preparing to print...');
+    } catch (error) {
+      console.error('Print error:', error);
+      toast.error('Failed to print ID card');
+    }
   };
 
-  if (isLoading) {
+  if (isLoading || adminLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-chrome-300" />
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-64" />
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
-      <div className="space-y-6">
-        <PageHeader title="Order Not Found" />
-        <Card className="bg-card/80 border-chrome-300/20">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-6">The order you're looking for doesn't exist.</p>
-            <Button
-              onClick={() => navigate({ to: '/dashboard' })}
-              className="bg-chrome-300 hover:bg-chrome-200 text-black font-semibold"
-            >
+      <div className="text-center py-12">
+        <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+        <h2 className="text-2xl font-semibold mb-2">Order Not Found</h2>
+        <p className="text-muted-foreground mb-6">
+          The order you're looking for doesn't exist or you don't have permission to view it.
+        </p>
+        <Button onClick={() => navigate({ to: '/dashboard' })}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
+      </div>
+    );
+  }
+
+  if (isArchivedAndNotAdmin) {
+    return (
+      <div className="text-center py-12">
+        <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+        <h2 className="text-2xl font-semibold mb-2">Order Archived</h2>
+        <p className="text-muted-foreground mb-6">
+          This order has been archived and is no longer accessible.
+        </p>
+        <Button onClick={() => navigate({ to: '/dashboard' })}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Order Details"
+        description={`Order #${order.id}`}
+        action={
+          <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Order
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => navigate({ to: '/dashboard' })}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              Back
             </Button>
+          </div>
+        }
+      />
+
+      {/* Order Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Package className="w-8 h-8 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
+                <Badge variant={order.status === 'shipped' ? 'default' : 'secondary'} className="mt-1">
+                  {formatOrderStatus(order.status)}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-8 h-8 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Created</p>
+                <p className="text-sm font-medium mt-1 truncate">
+                  {formatTimestamp(order.creationTime)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Hash className="w-8 h-8 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">ID Number</p>
+                <p className="text-sm font-medium font-mono mt-1 truncate">
+                  {order.details.id_number}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <MapPin className="w-8 h-8 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Shipping To</p>
+                <p className="text-sm font-medium mt-1 truncate">
+                  {order.address.city}, {order.address.state}
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
-    );
-  }
 
-  const photoUrl = order.photo.getDirectURL();
+      {/* Admin-only metadata section */}
+      {isAdmin && (
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Admin Information
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {order.owner && (
+                <CopyableMonospaceText
+                  text={order.owner.toString()}
+                  label="Owner Principal"
+                />
+              )}
+              
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Promo Used</p>
+                <Badge variant={order.promoUsed ? 'default' : 'secondary'}>
+                  {order.promoUsed ? 'Yes (VIP 10%)' : 'No'}
+                </Badge>
+              </div>
+              
+              {order.promoCode && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Promo Code</p>
+                  <p className="text-sm font-mono bg-muted p-3 rounded border border-border">
+                    {order.promoCode}
+                  </p>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Archived Status</p>
+                <Badge variant={order.archived ? 'secondary' : 'outline'}>
+                  {order.archived ? (
+                    <>
+                      <Archive className="w-3 h-3 mr-1" />
+                      Archived
+                    </>
+                  ) : (
+                    'Active'
+                  )}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-  return (
-    <div className="space-y-6 sm:space-y-8 pb-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Button
-          onClick={() => navigate({ to: '/dashboard' })}
-          variant="ghost"
-          className="self-start h-10 px-3 sm:px-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <Badge className={`${getStatusColor(order.status)} self-start sm:self-auto`}>
-          {getStatusLabel(order.status)}
-        </Badge>
-      </div>
+      {/* ID Card Preview */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-6">
+            <IdCardPreview 
+              details={order.details} 
+              photoUrl={photoUrl}
+              signatureUrl={signatureUrl}
+            />
+            <div className="flex gap-3">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                className="flex-1 border-cyan-500/30 hover:bg-cyan-500/10"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export PNG
+              </Button>
+              <Button
+                onClick={handlePrint}
+                variant="outline"
+                className="flex-1 border-purple-500/30 hover:bg-purple-500/10"
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Print
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <PageHeader
-        title={`${order.details.first_name} ${order.details.last_name}`}
-        description={`Order ID: ${order.id}`}
-      />
+      {/* Admin-only Photo and Signature section */}
+      {isAdmin && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <ImageIcon className="w-5 h-5" />
+                Photo
+              </h3>
+              {photoUrl ? (
+                <div className="space-y-3">
+                  <img 
+                    src={photoUrl} 
+                    alt="Order photo" 
+                    className="w-full h-auto rounded border border-border"
+                  />
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => window.open(photoUrl, '_blank')}
+                  >
+                    <ImageIcon className="w-4 h-4 mr-2" />
+                    View Full Size
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No photo available</p>
+              )}
+            </CardContent>
+          </Card>
 
-      <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 min-w-0">
-        {/* Preview Column */}
-        <div className="space-y-6 min-w-0 order-1 lg:order-1">
-          <Card className="bg-card/80 border-chrome-300/20">
-            <CardHeader>
-              <CardTitle className="tracking-wide text-lg sm:text-xl">ID Preview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <IdCardPreview
-                firstName={order.details.first_name}
-                lastName={order.details.last_name}
-                dob={formatDOB(order.details.dob)}
-                gender={order.details.gender}
-                height={order.details.height}
-                eyeColor={order.details.eye_color}
-                idNumber={order.details.id_number}
-                state={order.details.state_name}
-                photoUrl={photoUrl}
-              />
-              <IdCardActions
-                firstName={order.details.first_name}
-                lastName={order.details.last_name}
-                dob={formatDOB(order.details.dob)}
-                gender={order.details.gender}
-                height={order.details.height}
-                eyeColor={order.details.eye_color}
-                idNumber={order.details.id_number}
-                state={order.details.state_name}
-                photoUrl={photoUrl}
-              />
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FileSignature className="w-5 h-5" />
+                Signature
+              </h3>
+              {signatureUrl ? (
+                <div className="space-y-3">
+                  <img 
+                    src={signatureUrl} 
+                    alt="Order signature" 
+                    className="w-full h-auto rounded border border-border bg-white"
+                  />
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => window.open(signatureUrl, '_blank')}
+                  >
+                    <FileSignature className="w-4 h-4 mr-2" />
+                    View Full Size
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No signature available</p>
+              )}
             </CardContent>
           </Card>
         </div>
+      )}
 
-        {/* Details Column */}
-        <div className="space-y-6 min-w-0 order-2 lg:order-2">
-          <Card className="bg-card/80 border-chrome-300/20">
-            <CardHeader>
-              <CardTitle className="tracking-wide text-lg sm:text-xl">Order Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm min-w-0">
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">First Name</span>
-                  <span className="text-chrome-300 break-words">{order.details.first_name}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">Last Name</span>
-                  <span className="text-chrome-300 break-words">{order.details.last_name}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">Date of Birth</span>
-                  <span className="text-chrome-300">{formatDOB(order.details.dob)}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">Gender</span>
-                  <span className="text-chrome-300">{order.details.gender}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">Height</span>
-                  <span className="text-chrome-300">{order.details.height}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">Eye Color</span>
-                  <span className="text-chrome-300">{order.details.eye_color}</span>
-                </div>
-                <div className="min-w-0 sm:col-span-2">
-                  <span className="text-muted-foreground block mb-1">Address</span>
-                  <span className="text-chrome-300 break-words">{order.details.address}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">City</span>
-                  <span className="text-chrome-300 break-words">{order.details.city}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">State</span>
-                  <span className="text-chrome-300 break-words">{normalizeStateName(order.details.state_name)}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">ZIP Code</span>
-                  <span className="text-chrome-300">{order.details.zip}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">ID Number</span>
-                  <span className="text-chrome-300 font-mono text-xs sm:text-sm break-all">{order.details.id_number}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Shipping Address */}
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+            Shipping Address
+          </h3>
+          <div className="space-y-1 text-sm">
+            <p className="font-medium">
+              {order.address.first_name} {order.address.last_name}
+            </p>
+            <p className="break-words">{order.address.address}</p>
+            <p>
+              {order.address.city}, {order.address.state} {order.address.zip}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-          <Card className="bg-card/80 border-chrome-300/20">
-            <CardHeader>
-              <CardTitle className="tracking-wide text-lg sm:text-xl">Shipping Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 text-sm min-w-0">
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">Name</span>
-                  <span className="text-chrome-300 break-words">
-                    {order.address.first_name} {order.address.last_name}
-                  </span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">Address</span>
-                  <span className="text-chrome-300 break-words">{order.address.address}</span>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-muted-foreground block mb-1">City, State ZIP</span>
-                  <span className="text-chrome-300 break-words">
-                    {order.address.city}, {order.address.state} {order.address.zip}
-                  </span>
-                </div>
-                {order.trackingNumber && (
-                  <div className="min-w-0">
-                    <span className="text-muted-foreground block mb-1">Tracking Number</span>
-                    <span className="text-green-300 font-mono text-xs sm:text-sm break-all">{order.trackingNumber}</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      {order.trackingNumber && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-2">Tracking Number</h3>
+            <p className="text-sm font-mono bg-muted p-3 rounded break-all">
+              {order.trackingNumber}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Admin Edit Dialog */}
+      {isAdmin && (
+        <AdminEditOrderDialog
+          order={order}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+        />
+      )}
     </div>
   );
 }

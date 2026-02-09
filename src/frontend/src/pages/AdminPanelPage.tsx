@@ -1,8 +1,10 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { useAllOrders } from '../hooks/orders/useAllOrders';
+import { useArchivedOrders } from '../hooks/orders/useArchivedOrders';
 import { useUpdateOrderStatus } from '../hooks/orders/useUpdateOrderStatus';
 import { useSetTrackingNumber } from '../hooks/orders/useSetTrackingNumber';
 import { useDeleteOrder } from '../hooks/orders/useDeleteOrder';
+import { useArchiveOrder } from '../hooks/orders/useArchiveOrder';
 import { useAdminResetAllData } from '../hooks/admin/useAdminResetAllData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +16,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { LayoutDashboard, Loader2, Trash2, Package, Search, Filter, TrendingUp, CheckCircle2, Clock, Truck, Database, Download, Shield, FileText, Users, Tag } from 'lucide-react';
-import { formatOrderStatus } from '../utils/formatters';
+import { LayoutDashboard, Loader2, Trash2, Package, Search, Filter, TrendingUp, CheckCircle2, Clock, Truck, Database, Download, Shield, FileText, Users, Tag, Archive, Edit, Image as ImageIcon, FileSignature } from 'lucide-react';
+import { formatOrderStatus, formatTimestamp } from '../utils/formatters';
 import { OrderStatus, type Order } from '../backend';
 import { toast } from 'sonner';
 import { exportOrdersToCSV } from '../utils/exportOrdersCsv';
 import BulkOrderActionsBar from '../components/admin/BulkOrderActionsBar';
 import AdminOrderOwnerAccountControls from '../components/admin/AdminOrderOwnerAccountControls';
+import AdminEditOrderDialog from '../components/orders/AdminEditOrderDialog';
+import CopyableMonospaceText from '../components/common/CopyableMonospaceText';
 
 // Lazy load heavy admin sections
 const TreyCSecuritySection = lazy(() => import('../components/admin/TreyCSecuritySection'));
@@ -44,16 +48,21 @@ function TabLoadingFallback() {
 
 export default function AdminPanelPage() {
   const { data: orders, isLoading } = useAllOrders();
+  const { data: archivedOrders, isLoading: archivedLoading } = useArchivedOrders();
   const updateStatus = useUpdateOrderStatus();
   const setTrackingNumber = useSetTrackingNumber();
   const deleteOrder = useDeleteOrder();
+  const archiveOrder = useArchiveOrder();
   const resetAllData = useAdminResetAllData();
   
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [trackingInputs, setTrackingInputs] = useState<Record<string, string>>({});
   const [savingTrackingId, setSavingTrackingId] = useState<string | null>(null);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+  const [archivingOrderId, setArchivingOrderId] = useState<string | null>(null);
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   // Advanced filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,12 +103,13 @@ export default function AdminPanelPage() {
 
   // Stats
   const stats = useMemo(() => {
-    if (!orders) return { total: 0, pending: 0, approved: 0, shipped: 0 };
+    if (!orders) return { total: 0, pending: 0, approved: 0, shipped: 0, completed: 0 };
     return {
       total: orders.length,
       pending: orders.filter(o => o.status === 'pending').length,
       approved: orders.filter(o => o.status === 'approved').length,
       shipped: orders.filter(o => o.status === 'shipped').length,
+      completed: orders.filter(o => o.status === 'completed').length,
     };
   }, [orders]);
 
@@ -170,6 +180,29 @@ export default function AdminPanelPage() {
     }
   };
 
+  const handleArchiveOrder = async (orderId: string) => {
+    setArchivingOrderId(orderId);
+    try {
+      await archiveOrder.mutateAsync(orderId);
+      toast.success('Order marked as completed and archived');
+      setSelectedOrderIds((prev) => {
+        const updated = new Set(prev);
+        updated.delete(orderId);
+        return updated;
+      });
+    } catch (error: any) {
+      console.error('Archive error:', error);
+      toast.error(error.message || 'Failed to archive order');
+    } finally {
+      setArchivingOrderId(null);
+    }
+  };
+
+  const handleEditOrder = (order: Order) => {
+    setEditingOrder(order);
+    setEditDialogOpen(true);
+  };
+
   const handleResetAllData = async () => {
     try {
       await resetAllData.mutateAsync();
@@ -213,452 +246,573 @@ export default function AdminPanelPage() {
     if (selectedOrderIds.size === filteredOrders.length) {
       setSelectedOrderIds(new Set());
     } else {
-      setSelectedOrderIds(new Set(filteredOrders.map((o) => o.id)));
+      setSelectedOrderIds(new Set(filteredOrders.map(o => o.id)));
     }
   };
 
-  const handleClearSelection = () => {
-    setSelectedOrderIds(new Set());
+  const renderOrderCard = (order: Order) => {
+    const isUpdating = updatingOrderId === order.id;
+    const isSavingTracking = savingTrackingId === order.id;
+    const isDeleting = deletingOrderId === order.id;
+    const isArchiving = archivingOrderId === order.id;
+    const isSelected = selectedOrderIds.has(order.id);
+
+    return (
+      <Card key={order.id} className="relative">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={() => handleToggleOrderSelection(order.id)}
+                aria-label={`Select order ${order.id}`}
+              />
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-base truncate">
+                  {order.details.first_name} {order.details.last_name}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground font-mono truncate">
+                  ID: {order.details.id_number}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formatTimestamp(order.creationTime)}
+                </p>
+              </div>
+            </div>
+            <Badge variant={order.status === 'shipped' ? 'default' : 'secondary'}>
+              {formatOrderStatus(order.status)}
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Admin metadata */}
+          <div className="space-y-3 p-3 bg-muted/50 rounded-lg border border-border">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <p className="text-muted-foreground uppercase tracking-wider mb-1">Order ID</p>
+                <p className="font-mono text-xs break-all">{order.id}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground uppercase tracking-wider mb-1">Promo Used</p>
+                <Badge variant={order.promoUsed ? 'default' : 'outline'} className="text-xs">
+                  {order.promoUsed ? 'VIP 10%' : 'None'}
+                </Badge>
+              </div>
+              {order.promoCode && (
+                <div className="col-span-2">
+                  <p className="text-muted-foreground uppercase tracking-wider mb-1">Promo Code</p>
+                  <p className="font-mono text-xs bg-background p-2 rounded border">{order.promoCode}</p>
+                </div>
+              )}
+              {order.owner && (
+                <div className="col-span-2">
+                  <p className="text-muted-foreground uppercase tracking-wider mb-1">Owner Principal</p>
+                  <p className="font-mono text-xs bg-background p-2 rounded border break-all">
+                    {order.owner.toString()}
+                  </p>
+                </div>
+              )}
+              {order.trackingNumber && (
+                <div className="col-span-2">
+                  <p className="text-muted-foreground uppercase tracking-wider mb-1">Tracking Number</p>
+                  <p className="font-mono text-xs bg-background p-2 rounded border break-all">
+                    {order.trackingNumber}
+                  </p>
+                </div>
+              )}
+              <div>
+                <p className="text-muted-foreground uppercase tracking-wider mb-1">Archived</p>
+                <Badge variant={order.archived ? 'secondary' : 'outline'} className="text-xs">
+                  {order.archived ? 'Yes' : 'No'}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Photo and Signature access */}
+            <div className="flex gap-2 pt-2 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => window.open(order.photo.getDirectURL(), '_blank')}
+              >
+                <ImageIcon className="w-3 h-3 mr-1" />
+                Photo
+              </Button>
+              {order.signature && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    if (order.signature) {
+                      window.open(order.signature.getDirectURL(), '_blank');
+                    }
+                  }}
+                >
+                  <FileSignature className="w-3 h-3 mr-1" />
+                  Signature
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Shipping Address */}
+          <div className="text-sm">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Shipping Address</p>
+            <div className="space-y-1">
+              <p className="font-medium">
+                {order.address.first_name} {order.address.last_name}
+              </p>
+              <p className="break-words">{order.address.address}</p>
+              <p>
+                {order.address.city}, {order.address.state} {order.address.zip}
+              </p>
+            </div>
+          </div>
+
+          {/* Account Controls */}
+          {order.owner && (
+            <AdminOrderOwnerAccountControls order={order} />
+          )}
+
+          {/* Status Update */}
+          <div className="space-y-2">
+            <Label htmlFor={`status-${order.id}`} className="text-xs">Update Status</Label>
+            <div className="flex gap-2">
+              <Select
+                value={order.status}
+                onValueChange={(value) => handleStatusChange(order.id, value)}
+                disabled={isUpdating}
+              >
+                <SelectTrigger id={`status-${order.id}`} className="flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="shipped">Shipped</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+              {isUpdating && <Loader2 className="w-4 h-4 animate-spin" />}
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex gap-2">
+            {order.status === 'pending' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleQuickAction(order.id, 'approve')}
+                disabled={isUpdating}
+                className="flex-1"
+              >
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Approve
+              </Button>
+            )}
+            {order.status === 'approved' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleQuickAction(order.id, 'ship')}
+                disabled={isUpdating}
+                className="flex-1"
+              >
+                <Truck className="w-3 h-3 mr-1" />
+                Ship
+              </Button>
+            )}
+          </div>
+
+          {/* Tracking Number */}
+          {!order.trackingNumber && (
+            <div className="space-y-2">
+              <Label htmlFor={`tracking-${order.id}`} className="text-xs">Add Tracking Number</Label>
+              <div className="flex gap-2">
+                <Input
+                  id={`tracking-${order.id}`}
+                  placeholder="Enter tracking number"
+                  value={trackingInputs[order.id] || ''}
+                  onChange={(e) => handleTrackingNumberChange(order.id, e.target.value)}
+                  disabled={isSavingTracking}
+                  className="flex-1"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => handleSaveTrackingNumber(order.id)}
+                  disabled={isSavingTracking || !trackingInputs[order.id]?.trim()}
+                >
+                  {isSavingTracking ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2 border-t">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleEditOrder(order)}
+              className="flex-1"
+            >
+              <Edit className="w-3 h-3 mr-1" />
+              Edit
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isArchiving}
+                  className="flex-1"
+                >
+                  {isArchiving ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Archive className="w-3 h-3 mr-1" />
+                  )}
+                  Complete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Archive Order?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will mark the order as completed and move it to the archived tab.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleArchiveOrder(order.id)}>
+                    Archive
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3 h-3" />
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Order?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the order.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDeleteOrder(order.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center space-y-4">
-          <LayoutDashboard className="w-12 h-12 mx-auto text-admin-primary animate-pulse" />
-          <div className="text-admin-primary text-sm">
-            Loading admin panel...
-          </div>
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32" />
+          ))}
         </div>
+        <Skeleton className="h-96" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-24">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-admin-card rounded-lg flex items-center justify-center border border-admin-border shadow-lg">
-            <LayoutDashboard className="w-7 h-7 text-admin-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-admin-foreground">
-              Admin Dashboard
-            </h1>
-            <p className="text-admin-muted mt-1 text-sm">
-              Manage orders and system settings
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                <Database className="w-4 h-4 mr-2" />
-                Reset System
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="bg-admin-card border-admin-border">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-admin-foreground">
-                  Reset System Data
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-admin-muted">
-                  This action cannot be undone. All orders will be permanently deleted and the system will be reset to initial state.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="border-admin-border text-admin-foreground hover:bg-admin-card">Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleResetAllData}
-                  disabled={resetAllData.isPending}
-                  className="bg-destructive hover:bg-destructive/90"
-                >
-                  {resetAllData.isPending ? 'Resetting...' : 'Confirm Reset'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <LayoutDashboard className="w-8 h-8" />
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Manage orders, users, and system settings
+          </p>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Package className="w-8 h-8 text-primary" />
+              <div>
+                <p className="text-2xl font-bold">{stats.total}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Orders</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Clock className="w-8 h-8 text-yellow-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.pending}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Pending</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-8 h-8 text-green-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.approved}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Approved</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Truck className="w-8 h-8 text-blue-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.shipped}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Shipped</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-8 h-8 text-purple-500" />
+              <div>
+                <p className="text-2xl font-bold">{stats.completed}</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Completed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content Tabs */}
       <Tabs defaultValue="orders" className="space-y-6">
-        <TabsList className="bg-admin-card border border-admin-border">
-          <TabsTrigger value="orders" className="text-admin-foreground data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="orders">
             <Package className="w-4 h-4 mr-2" />
             Orders
           </TabsTrigger>
-          <TabsTrigger value="promo" className="text-admin-foreground data-[state=active]:bg-admin-primary data-[state=active]:text-white">
-            <Tag className="w-4 h-4 mr-2" />
-            Promo Codes
+          <TabsTrigger value="archived">
+            <Archive className="w-4 h-4 mr-2" />
+            Archived
           </TabsTrigger>
-          <TabsTrigger value="security" className="text-admin-foreground data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+          <TabsTrigger value="accounts">
+            <Users className="w-4 h-4 mr-2" />
+            Accounts
+          </TabsTrigger>
+          <TabsTrigger value="security">
             <Shield className="w-4 h-4 mr-2" />
             Security
           </TabsTrigger>
-          <TabsTrigger value="audit" className="text-admin-foreground data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+          <TabsTrigger value="audit">
             <FileText className="w-4 h-4 mr-2" />
             Audit Log
           </TabsTrigger>
-          <TabsTrigger value="access" className="text-admin-foreground data-[state=active]:bg-admin-primary data-[state=active]:text-white">
-            <Users className="w-4 h-4 mr-2" />
-            Admin Access
+          <TabsTrigger value="promo">
+            <Tag className="w-4 h-4 mr-2" />
+            Promo
           </TabsTrigger>
         </TabsList>
 
         {/* Orders Tab */}
         <TabsContent value="orders" className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="bg-admin-card border-admin-border shadow-lg">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-admin-muted text-xs uppercase tracking-wider">Total Orders</p>
-                    <p className="text-3xl font-bold text-admin-foreground mt-1">{stats.total}</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-admin-primary opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-admin-card border-yellow-500/30 shadow-lg">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-admin-muted text-xs uppercase tracking-wider">Pending</p>
-                    <p className="text-3xl font-bold text-yellow-400 mt-1">{stats.pending}</p>
-                  </div>
-                  <Clock className="w-8 h-8 text-yellow-400 opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-admin-card border-blue-500/30 shadow-lg">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-admin-muted text-xs uppercase tracking-wider">Approved</p>
-                    <p className="text-3xl font-bold text-blue-400 mt-1">{stats.approved}</p>
-                  </div>
-                  <CheckCircle2 className="w-8 h-8 text-blue-400 opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-admin-card border-green-500/30 shadow-lg">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-admin-muted text-xs uppercase tracking-wider">Shipped</p>
-                    <p className="text-3xl font-bold text-green-400 mt-1">{stats.shipped}</p>
-                  </div>
-                  <Truck className="w-8 h-8 text-green-400 opacity-50" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filters */}
-          <Card className="bg-admin-card border-admin-border shadow-lg">
+          {/* Filters and Actions */}
+          <Card>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-admin-muted text-xs uppercase tracking-wider">
-                    <Search className="w-3 h-3 inline mr-1" />
-                    Search
-                  </Label>
-                  <Input
-                    placeholder="Search orders..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-admin-bg border-admin-border text-admin-foreground focus:ring-admin-primary"
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <Label htmlFor="search" className="text-xs mb-2 block">Search Orders</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="search"
+                      placeholder="Search by name, ID number, or order ID..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-admin-muted text-xs uppercase tracking-wider">
-                    <Filter className="w-3 h-3 inline mr-1" />
-                    Status Filter
-                  </Label>
+
+                <div>
+                  <Label htmlFor="status-filter" className="text-xs mb-2 block">Filter by Status</Label>
                   <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as FilterStatus)}>
-                    <SelectTrigger className="bg-admin-bg border-admin-border text-admin-foreground">
+                    <SelectTrigger id="status-filter">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-admin-card border-admin-border">
+                    <SelectContent>
                       <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="approved">Approved</SelectItem>
                       <SelectItem value="shipped">Shipped</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-admin-muted text-xs uppercase tracking-wider">Sort By</Label>
+
+                <div>
+                  <Label htmlFor="sort-by" className="text-xs mb-2 block">Sort By</Label>
                   <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                    <SelectTrigger className="bg-admin-bg border-admin-border text-admin-foreground">
+                    <SelectTrigger id="sort-by">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-admin-card border-admin-border">
+                    <SelectContent>
                       <SelectItem value="newest">Newest First</SelectItem>
                       <SelectItem value="oldest">Oldest First</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-admin-border">
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleToggleSelectAll}
-                    className="border-admin-border text-admin-foreground hover:bg-admin-primary/10"
-                  >
-                    <Checkbox
-                      checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
-                      className="mr-2"
-                    />
-                    Select All ({filteredOrders.length})
-                  </Button>
-                  {selectedOrderIds.size > 0 && (
-                    <span className="text-admin-muted text-sm">
-                      {selectedOrderIds.size} selected
-                    </span>
-                  )}
-                </div>
+
+              <div className="flex gap-2 mt-4 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleSelectAll}
+                >
+                  {selectedOrderIds.size === filteredOrders.length ? 'Deselect All' : 'Select All'}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleExportCSV}
                   disabled={filteredOrders.length === 0}
-                  className="border-admin-border text-admin-foreground hover:bg-admin-primary/10"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Export CSV
                 </Button>
+                <div className="flex-1" />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Database className="w-4 h-4 mr-2" />
+                      Reset All Data
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reset All Data?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all orders, user profiles, and settings. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleResetAllData}>
+                        Reset Everything
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
 
-          {/* Orders List */}
-          <Card className="bg-admin-card border-admin-border shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-admin-foreground">
-                Orders ({filteredOrders.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredOrders.length === 0 ? (
-                <div className="text-center py-12">
-                  <Package className="w-16 h-16 mx-auto text-admin-muted mb-4" />
-                  <p className="text-admin-muted text-lg">
-                    {searchQuery || statusFilter !== 'all' ? 'No orders match your filters' : 'No orders yet'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredOrders.map((order) => {
-                    const isUpdating = updatingOrderId === order.id;
-                    const isSavingTracking = savingTrackingId === order.id;
-                    const isDeleting = deletingOrderId === order.id;
-                    const isSelected = selectedOrderIds.has(order.id);
-                    const trackingValue = trackingInputs[order.id] ?? order.trackingNumber ?? '';
-
-                    return (
-                      <div
-                        key={order.id}
-                        className={`p-6 bg-admin-bg border rounded-lg transition-all ${
-                          isSelected
-                            ? 'border-admin-primary shadow-lg'
-                            : 'border-admin-border hover:border-admin-primary/50'
-                        }`}
-                      >
-                        <div className="flex items-start gap-4">
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => handleToggleOrderSelection(order.id)}
-                            className="mt-1"
-                          />
-                          <div className="flex-1 space-y-4">
-                            {/* Order Header */}
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <h3 className="text-admin-foreground font-semibold text-lg">
-                                    {order.details.first_name} {order.details.last_name}
-                                  </h3>
-                                  <Badge
-                                    className={
-                                      order.status === 'pending'
-                                        ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                                        : order.status === 'approved'
-                                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                                        : 'bg-green-500/20 text-green-400 border-green-500/30'
-                                    }
-                                  >
-                                    {formatOrderStatus(order.status)}
-                                  </Badge>
-                                  {order.promoUsed && (
-                                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                                      {order.promoCode || 'VIP Discount'}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-admin-muted text-sm">
-                                  ID: {order.details.id_number} • Order: {order.id}
-                                </p>
-                                <p className="text-admin-muted text-xs">
-                                  {new Date(Number(order.creationTime) / 1000000).toLocaleString()}
-                                </p>
-                              </div>
-                              <div className="flex gap-2">
-                                {order.status === 'pending' && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleQuickAction(order.id, 'approve')}
-                                    disabled={isUpdating}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                                  >
-                                    {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Approve'}
-                                  </Button>
-                                )}
-                                {order.status === 'approved' && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleQuickAction(order.id, 'ship')}
-                                    disabled={isUpdating}
-                                    className="bg-green-500 hover:bg-green-600 text-white"
-                                  >
-                                    {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Ship'}
-                                  </Button>
-                                )}
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      disabled={isDeleting}
-                                    >
-                                      {isDeleting ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                      ) : (
-                                        <Trash2 className="w-4 h-4" />
-                                      )}
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent className="bg-admin-card border-admin-border">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle className="text-admin-foreground">Delete Order</AlertDialogTitle>
-                                      <AlertDialogDescription className="text-admin-muted">
-                                        Are you sure you want to delete this order? This action cannot be undone.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel className="border-admin-border text-admin-foreground hover:bg-admin-card">
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() => handleDeleteOrder(order.id)}
-                                        className="bg-destructive hover:bg-destructive/90"
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </div>
-
-                            {/* Order Details Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <p className="text-admin-muted">Address</p>
-                                <p className="text-admin-foreground">
-                                  {order.address.address}, {order.address.city}, {order.address.state} {order.address.zip}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-admin-muted">Status</p>
-                                <Select
-                                  value={order.status}
-                                  onValueChange={(value) => handleStatusChange(order.id, value)}
-                                  disabled={isUpdating}
-                                >
-                                  <SelectTrigger className="bg-admin-bg border-admin-border text-admin-foreground w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-admin-card border-admin-border">
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="approved">Approved</SelectItem>
-                                    <SelectItem value="shipped">Shipped</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-
-                            {/* Tracking Number */}
-                            <div className="space-y-2">
-                              <Label className="text-admin-muted text-xs uppercase tracking-wider">
-                                Tracking Number
-                              </Label>
-                              <div className="flex gap-2">
-                                <Input
-                                  value={trackingValue}
-                                  onChange={(e) => handleTrackingNumberChange(order.id, e.target.value)}
-                                  placeholder="Enter tracking number..."
-                                  className="bg-admin-bg border-admin-border text-admin-foreground focus:ring-admin-primary"
-                                  disabled={isSavingTracking}
-                                />
-                                <Button
-                                  onClick={() => handleSaveTrackingNumber(order.id)}
-                                  disabled={isSavingTracking || !trackingInputs[order.id]?.trim()}
-                                  className="bg-admin-primary hover:bg-admin-primary/90"
-                                >
-                                  {isSavingTracking ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    'Save'
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Account Management Controls */}
-                            <AdminOrderOwnerAccountControls order={order} />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Orders Grid */}
+          {filteredOrders.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Orders Found</h3>
+                <p className="text-muted-foreground">
+                  {searchQuery || statusFilter !== 'all'
+                    ? 'Try adjusting your filters'
+                    : 'Orders will appear here once users start placing them'}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {filteredOrders.map(renderOrderCard)}
+            </div>
+          )}
         </TabsContent>
 
-        {/* Promo Codes Tab */}
-        <TabsContent value="promo" className="space-y-6">
+        {/* Archived Tab */}
+        <TabsContent value="archived" className="space-y-6">
+          {archivedLoading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className="h-48" />
+              ))}
+            </div>
+          ) : !archivedOrders || archivedOrders.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Archive className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Archived Orders</h3>
+                <p className="text-muted-foreground">
+                  Completed orders will appear here after archiving
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {archivedOrders.map(renderOrderCard)}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Accounts Tab */}
+        <TabsContent value="accounts">
           <Suspense fallback={<TabLoadingFallback />}>
-            <PromoCodesSection />
+            <AdminAccessSection />
           </Suspense>
         </TabsContent>
 
         {/* Security Tab */}
-        <TabsContent value="security" className="space-y-6">
+        <TabsContent value="security">
           <Suspense fallback={<TabLoadingFallback />}>
             <TreyCSecuritySection />
           </Suspense>
         </TabsContent>
 
         {/* Audit Log Tab */}
-        <TabsContent value="audit" className="space-y-6">
+        <TabsContent value="audit">
           <Suspense fallback={<TabLoadingFallback />}>
             <AuditLogSection />
           </Suspense>
         </TabsContent>
 
-        {/* Admin Access Tab */}
-        <TabsContent value="access" className="space-y-6">
+        {/* Promo Codes Tab */}
+        <TabsContent value="promo">
           <Suspense fallback={<TabLoadingFallback />}>
-            <AdminAccessSection />
+            <PromoCodesSection />
           </Suspense>
         </TabsContent>
       </Tabs>
@@ -667,7 +821,21 @@ export default function AdminPanelPage() {
       {selectedOrderIds.size > 0 && (
         <BulkOrderActionsBar
           selectedOrderIds={Array.from(selectedOrderIds)}
-          onClearSelection={handleClearSelection}
+          onClearSelection={() => setSelectedOrderIds(new Set())}
+        />
+      )}
+
+      {/* Edit Order Dialog */}
+      {editingOrder && (
+        <AdminEditOrderDialog
+          order={editingOrder}
+          open={editDialogOpen}
+          onOpenChange={(open) => {
+            setEditDialogOpen(open);
+            if (!open) {
+              setEditingOrder(null);
+            }
+          }}
         />
       )}
     </div>

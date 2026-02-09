@@ -1,134 +1,89 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "VIP source-of-truth alignment, VIP pricing, height select, and landing delivery-time message",
+  "title": "Signature pad dark-mode contrast + crisp rendering; add falcon ID favicon assets; fix build/deploy asset issues",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Align customer VIP detection with the backend VIP source of truth so admin VIP toggles reliably reflect in the customer UI.",
+      "summary": "Improve signature pad contrast in both light and dark themes by setting an explicit canvas background and theme-aware ink color.",
       "acceptanceCriteria": [
-        "When an admin grants VIP to a user, that same user is recognized as VIP in the customer UI (without requiring manual hacks like clearing storage).",
-        "When an admin revokes VIP, the user is no longer recognized as VIP in the customer UI.",
-        "VIP status is consistent across backend endpoints and frontend hooks (no mismatch between profile.isVIP and backend VIP tracking)."
+        "In dark mode, the signature strokes are clearly visible while drawing (high contrast) without requiring users to change their OS/browser theme.",
+        "In light mode, the signature strokes remain clearly visible and the signature pad remains visually consistent with the rest of the UI.",
+        "The signature pad still supports mouse + touch drawing, clearing, and emits a PNG data URL via onSignatureChange when drawing ends."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/auth/useIsCallerVIP.ts",
+          "path": "frontend/src/components/SignaturePad.tsx",
           "operation": "modify",
-          "description": "Update the VIP check to use the backend VIP source of truth (prefer actor.isCallerVIP()) instead of relying on profile.isVIP; ensure the query refetches often enough (e.g., refetchOnWindowFocus and/or a short refetchInterval) so VIP changes made by admins propagate to the customer UI without manual cache/storage clearing."
-        },
-        {
-          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "operation": "modify",
-          "description": "Ensure VIP-toggle success invalidates the specific VIP status query key (authKeys.vipStatus()) and any related cached auth/profile queries so admin actions do not leave stale VIP state in the UI."
-        },
-        {
-          "path": "frontend/src/components/VipCongratsDialog.tsx",
-          "operation": "modify",
-          "description": "Adjust VIP dialog visibility logic to rely solely on the updated useIsCallerVIP source-of-truth state (and not any cached/stored VIP assumptions) so it does not show VIP UX when VIP is revoked."
+          "description": "Update the signature pad to be theme-aware (e.g., via next-themes) and configure both: (1) an explicit canvas background fill color and (2) a high-contrast stroke (ink) color for light vs dark themes, while keeping existing mouse/touch handlers and PNG data URL emission on stroke end."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Apply and display the 10% VIP discount consistently in the new order pricing breakdown and final total.",
+      "summary": "Fix signature canvas sizing, DPR scaling, and clearing so strokes are crisp, coordinates align, and clear restores the intended background.",
       "acceptanceCriteria": [
-        "If the signed-in caller is VIP, the order form pricing section shows a line item for “VIP 10% Discount” and the total reflects 10% off the base order price.",
-        "If the signed-in caller is not VIP, no VIP discount line item is shown and the total equals the non-discounted pricing (plus/minus any other existing discounts already implemented).",
-        "The VIP discount amount equals exactly 10% of the base order price used by the app."
+        "Signature strokes are crisp (not scaled/blurry) on standard and high-DPI screens.",
+        "Clicking “Clear” fully clears the signature content and restores the pad background so new strokes are immediately visible.",
+        "If the canvas is re-measured (e.g., initial render/layout changes), drawing coordinates still align with the pointer location."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "path": "frontend/src/components/SignaturePad.tsx",
           "operation": "modify",
-          "description": "Ensure VIP pricing uses the existing vipPricing helpers and the VIP label renders exactly as “VIP 10% Discount”; verify the breakdown line item and final total reflect a precise 10% discount of the base order price for VIP users and show no VIP line item for non-VIP users."
-        },
-        {
-          "path": "frontend/src/components/OrderSuccessModal.tsx",
-          "operation": "modify",
-          "description": "Confirm the VIP savings messaging uses the same VIP source-of-truth hook and vipPricing calculation to avoid discrepancies between the order form and success messaging."
-        },
-        {
-          "path": "frontend/src/utils/vipPricing.ts",
-          "operation": "modify",
-          "description": "Add/adjust helpers as needed to guarantee the VIP discount amount is exactly 10% of the base order price used by the app and provide a single canonical label for the VIP discount line item."
+          "description": "Implement robust canvas sizing that accounts for devicePixelRatio (set backing store size from CSS size, then set a non-compounding transform via setTransform), ensure coordinate mapping matches CSS pixels, add re-measure support (e.g., ResizeObserver or resize handler) to reinitialize the backing store safely, and update the Clear behavior to reset the surface including restoring the chosen background fill (not just clearRect)."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Replace the height text input on the new order form with a dropdown/select while preserving the existing create-order payload field.",
+      "summary": "Add generated falcon “ID” favicon + apple touch icon assets and ensure they are served correctly from the existing HTML link tags.",
       "acceptanceCriteria": [
-        "The height field on the new order form is a dropdown/select control instead of a freeform text input.",
-        "Submitting an order sends the selected height value through the existing create-order payload field for height.",
-        "Form validation and UX do not block selection-based height entry (i.e., dropdown values are considered valid inputs)."
+        "The generated favicon file exists at frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp.",
+        "The generated apple touch icon file exists at frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp.",
+        "After building and deploying, browsers load the favicon and apple touch icon successfully (no 404s), and the icons visually depict a falcon with the letters “ID”."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/constants/heights.ts",
+          "path": "frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp",
           "operation": "create",
-          "description": "Add a centralized list of supported height options (string values) for the new order form dropdown to ensure consistent display and payload values."
+          "description": "Add the generated WebP favicon asset at the exact required path so the existing frontend/index.html <link rel=\"icon\"> reference resolves without 404s."
         },
         {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
-          "operation": "modify",
-          "description": "Replace the Height <Input> with the existing shadcn/ui Select components already used elsewhere on the form; wire the selected value into formData.height so order submission continues to send height via the existing create-order payload field. Verify the component's usage instructions before implementing."
+          "path": "frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp",
+          "operation": "create",
+          "description": "Add the generated WebP apple touch icon asset at the exact required path so the existing frontend/index.html <link rel=\"apple-touch-icon\"> reference resolves without 404s."
         },
         {
-          "path": "frontend/src/utils/validation.ts",
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Update/align any height validation/normalization to treat the dropdown’s predefined height values as valid inputs (and avoid blocking submission due to format expectations)."
+          "description": "Verify the existing favicon and apple-touch-icon <link> tags reference exactly /assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp and /assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp, and adjust only if necessary to ensure the deployed app loads the icons successfully."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Display a clear “2–3 week Delivery time” message on the landing page.",
+      "summary": "Audit and fix frontend build/deployment issues (missing assets and runtime errors) so production builds cleanly and key flows work without console errors.",
       "acceptanceCriteria": [
-        "The landing page displays the text “2–3 week Delivery time” in a clearly visible location (e.g., within the hero section).",
-        "The text is written in English exactly as “2–3 week Delivery time” (or “2–3 week delivery time” if styling requires capitalization consistency), and is not hidden behind interactions."
+        "A production frontend build completes without errors.",
+        "No missing static assets are referenced at runtime (no 404s for files referenced in HTML/CSS/TSX for critical UI paths).",
+        "Key user flows (sign-in, dashboard navigation, creating an order including signature capture) function without console errors in production mode."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/content/copy.ts",
+          "path": "frontend/src/components/SignaturePad.tsx",
           "operation": "modify",
-          "description": "Add a dedicated landing-page copy string for the delivery-time message so the text can be consistently rendered and maintained."
+          "description": "Harden signature pad initialization and cleanup to prevent production-mode runtime issues: ensure canvas context setup runs when the canvas is measurable, avoid transform compounding across re-measures, and ensure drawing/clearing logic cannot throw when the context is temporarily unavailable."
         },
         {
-          "path": "frontend/src/pages/LandingPage.tsx",
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Render the delivery-time message in a clearly visible location within the hero content (e.g., near the subtitle/CTAs), ensuring the displayed text matches “2–3 week Delivery time” (or the capitalization-consistent variant) and is visible without interaction."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Stabilize VIP- and order-related UI flows after changes so order creation, pricing display, and admin VIP toggling do not produce runtime errors.",
-      "acceptanceCriteria": [
-        "Creating an order works successfully for both VIP and non-VIP users.",
-        "No console errors occur during the VIP check, order creation, or when loading the landing page.",
-        "Admin VIP toggle actions complete without trapping/uncaught errors and the customer UI reflects the updated VIP state per REQ-1."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/auth/useIsCallerVIP.ts",
-          "operation": "modify",
-          "description": "Harden VIP-check error handling and loading states so failures do not break order pages or global UI (e.g., dialogs) and do not spam console errors during normal navigation."
+          "description": "Audit and correct any missing/incorrect static asset references in the HTML head (especially icon paths/types) to prevent deployment-time 404s in production."
         },
         {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
+          "path": "frontend/public/.ic-assets.json5",
           "operation": "modify",
-          "description": "Ensure the updated height Select and VIP pricing logic do not introduce uncontrolled/invalid state transitions; verify submission still sends the required fields and that pricing UI renders without runtime errors for VIP and non-VIP users."
-        },
-        {
-          "path": "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
-          "operation": "modify",
-          "description": "Verify the admin VIP toggle UI remains stable after VIP-source-of-truth changes (loading/error states, button disablement, and post-toggle UI state), avoiding uncaught errors during grant/revoke actions."
-        },
-        {
-          "path": "frontend/src/pages/LandingPage.tsx",
-          "operation": "modify",
-          "description": "Verify the added delivery-time message does not introduce layout/runtime errors and renders correctly across responsive breakpoints."
+          "description": "Confirm asset caching rules cover the favicon/apple-touch WebP assets and adjust match rules only if required to ensure they are shipped and cached appropriately during IC deployment (without changing unrelated security headers)."
         }
       ]
     }

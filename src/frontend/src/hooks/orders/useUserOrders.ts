@@ -22,7 +22,7 @@ export function useUserOrders() {
         return [];
       }
       
-      // Fetch orders by IDs
+      // Fetch orders by IDs and filter out archived orders
       try {
         const orders = await Promise.all(
           userOrderIds.map(async (id) => {
@@ -33,7 +33,11 @@ export function useUserOrders() {
             }
           })
         );
-        return orders.filter((order): order is Order => order !== null);
+        
+        // Filter out null orders and archived orders
+        return orders.filter((order): order is Order => 
+          order !== null && !order.archived
+        );
       } catch {
         return [];
       }

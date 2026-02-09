@@ -23,6 +23,14 @@ export interface Address {
     last_name: string;
 }
 export type Time = bigint;
+export interface PromoCode {
+    active: boolean;
+    code: string;
+    usageLimit: bigint;
+    timesUsed: bigint;
+    discountPercentage: bigint;
+    validUntil: Time;
+}
 export interface AuditLogEntry {
     action: string;
     admin: Principal;
@@ -31,8 +39,9 @@ export interface AuditLogEntry {
 }
 export interface Order {
     id: string;
-    status: Status;
+    status: OrderStatus;
     trackingNumber?: string;
+    signature?: ExternalBlob;
     owner?: Principal;
     promoCode?: string;
     promoUsed: boolean;
@@ -40,6 +49,7 @@ export interface Order {
     address: Address;
     details: Details;
     photo: ExternalBlob;
+    archived: boolean;
 }
 export interface AccountInfo {
     principal: Principal;
@@ -53,6 +63,10 @@ export interface AdminDashboardData {
     auditLog: Array<AuditLogEntry>;
     accounts: Array<AccountInfo>;
     securityStats: SecurityStats;
+}
+export interface PromoCodeValidation {
+    valid: boolean;
+    discountPercentage: bigint;
 }
 export interface Details {
     dob: string;
@@ -80,6 +94,7 @@ export interface UserProfile {
 export enum OrderStatus {
     shipped = "shipped",
     pending = "pending",
+    completed = "completed",
     approved = "approved"
 }
 export enum UserRole {
@@ -88,17 +103,24 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    archiveOrder(orderId: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     banUser(user: Principal): Promise<void>;
-    createOrder(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null): Promise<void>;
+    createOrder(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null, signature: ExternalBlob | null): Promise<void>;
+    createPromoCode(code: string, discountPercentage: bigint, validUntil: Time, usageLimit: bigint): Promise<void>;
+    deactivatePromoCode(code: string): Promise<void>;
+    deleteOrder(orderId: string): Promise<void>;
     getAccountInfo(user: Principal): Promise<AccountInfo | null>;
     getAdminDashboard(): Promise<AdminDashboardData>;
     getAllOrders(): Promise<Array<Order>>;
+    getAllPromoCodes(): Promise<Array<PromoCode>>;
+    getArchivedOrders(): Promise<Array<Order>>;
     getAuditLog(): Promise<Array<AuditLogEntry>>;
     getCallerOrders(): Promise<Array<Order>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
+    getPromoCode(code: string): Promise<PromoCode | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isCallerVIP(): Promise<boolean>;
@@ -108,5 +130,7 @@ export interface backendInterface {
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
     setVIPStatus(user: Principal, isVIP: boolean): Promise<void>;
     unbanUser(user: Principal): Promise<void>;
+    updateOrderDetails(orderId: string, newDetails: Details, newAddress: Address): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
+    validatePromoCode(code: string): Promise<PromoCodeValidation>;
 }

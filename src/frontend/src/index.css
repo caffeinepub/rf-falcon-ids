@@ -158,6 +158,21 @@
       transform: rotate(360deg);
     }
   }
+
+  /* Mobile-optimized scrolling for select dropdowns */
+  .mobile-scroll-select {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  /* Ensure the viewport for select content is properly constrained */
+  .mobile-scroll-select > div {
+    max-height: inherit;
+  }
 }
 
 /* Focus styles for accessibility */

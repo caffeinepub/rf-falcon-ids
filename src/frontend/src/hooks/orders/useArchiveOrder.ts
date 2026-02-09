@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { orderKeys } from './queryKeys';
 
-export function useDeleteOrder() {
+export function useArchiveOrder() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
@@ -12,14 +12,14 @@ export function useDeleteOrder() {
         throw new Error('Actor not available');
       }
       
-      await actor.deleteOrder(orderId);
+      await actor.archiveOrder(orderId);
     },
     onSuccess: () => {
       // Invalidate all order queries to refresh lists
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
     onError: (error: any) => {
-      console.error('Delete order error:', error);
+      console.error('Archive order error:', error);
       throw error;
     },
   });

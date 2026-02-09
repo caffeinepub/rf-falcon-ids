@@ -27,7 +27,7 @@ export default function PromoCodesSection() {
       return;
     }
 
-    if (promoCodes?.includes(trimmedCode)) {
+    if (promoCodes?.some(promo => promo.code === trimmedCode)) {
       toast.error('This promo code already exists');
       return;
     }
@@ -74,6 +74,9 @@ export default function PromoCodesSection() {
       </Alert>
     );
   }
+
+  // Filter only active promo codes
+  const activePromoCodes = promoCodes?.filter(promo => promo.active) || [];
 
   return (
     <div className="space-y-6">
@@ -136,11 +139,11 @@ export default function PromoCodesSection() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-admin-foreground">
             <Tag className="w-5 h-5 text-admin-primary" />
-            Active Promo Codes ({promoCodes?.length || 0})
+            Active Promo Codes ({activePromoCodes.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!promoCodes || promoCodes.length === 0 ? (
+          {activePromoCodes.length === 0 ? (
             <div className="text-center py-12">
               <Tag className="w-12 h-12 mx-auto text-admin-muted opacity-50 mb-4" />
               <p className="text-admin-muted">No promo codes available</p>
@@ -148,18 +151,18 @@ export default function PromoCodesSection() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {promoCodes.map((code) => (
+              {activePromoCodes.map((promo) => (
                 <div
-                  key={code}
+                  key={promo.code}
                   className="flex items-center justify-between p-4 bg-admin-bg border border-admin-border rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     <Tag className="w-5 h-5 text-admin-primary" />
                     <div>
                       <Badge variant="outline" className="font-mono text-sm border-admin-primary text-admin-primary">
-                        {code}
+                        {promo.code}
                       </Badge>
-                      <p className="text-xs text-admin-muted mt-1">5% off</p>
+                      <p className="text-xs text-admin-muted mt-1">{Number(promo.discountPercentage)}% off</p>
                     </div>
                   </div>
                   <AlertDialog>
@@ -167,10 +170,10 @@ export default function PromoCodesSection() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        disabled={removingCode === code}
+                        disabled={removingCode === promo.code}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
-                        {removingCode === code ? (
+                        {removingCode === promo.code ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <Trash2 className="w-4 h-4" />
@@ -183,7 +186,7 @@ export default function PromoCodesSection() {
                           Remove Promo Code
                         </AlertDialogTitle>
                         <AlertDialogDescription className="text-admin-muted">
-                          Are you sure you want to remove the promo code <span className="font-mono font-bold">{code}</span>? 
+                          Are you sure you want to remove the promo code <span className="font-mono font-bold">{promo.code}</span>? 
                           This code will no longer be valid for checkout.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
@@ -192,7 +195,7 @@ export default function PromoCodesSection() {
                           Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleRemovePromoCode(code)}
+                          onClick={() => handleRemovePromoCode(promo.code)}
                           className="bg-destructive hover:bg-destructive/90"
                         >
                           Remove

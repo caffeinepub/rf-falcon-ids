@@ -1,21 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { promoKeys } from '../orders/queryKeys';
-
-// Note: Promo code management is not implemented in the backend
-// These hooks return stub data to prevent TypeScript errors
+import type { PromoCode } from '../../backend';
 
 export function useGetPromoCodes() {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<string[]>({
+  return useQuery<PromoCode[]>({
     queryKey: promoKeys.list(),
     queryFn: async () => {
-      // Backend doesn't support promo codes
-      // Return empty array as stub
-      return [];
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAllPromoCodes();
     },
-    enabled: false, // Disabled since backend doesn't support this
+    enabled: !!actor && !actorFetching,
   });
 }
 
@@ -25,8 +22,19 @@ export function useAddPromoCode() {
 
   return useMutation({
     mutationFn: async (promoCode: string) => {
-      // Backend doesn't support promo codes
-      throw new Error('Promo code management is not available');
+      if (!actor) throw new Error('Actor not available');
+      
+      const normalizedCode = promoCode.trim().toUpperCase();
+      
+      // Create promo code with 5% discount, valid for 1 year, unlimited usage
+      const oneYearFromNow = BigInt(Date.now() * 1_000_000) + BigInt(365 * 24 * 60 * 60 * 1_000_000_000);
+      
+      await actor.createPromoCode(
+        normalizedCode,
+        BigInt(5), // 5% discount
+        oneYearFromNow,
+        BigInt(999999) // Effectively unlimited
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: promoKeys.list() });
@@ -40,8 +48,10 @@ export function useRemovePromoCode() {
 
   return useMutation({
     mutationFn: async (promoCode: string) => {
-      // Backend doesn't support promo codes
-      throw new Error('Promo code management is not available');
+      if (!actor) throw new Error('Actor not available');
+      
+      const normalizedCode = promoCode.trim().toUpperCase();
+      await actor.deactivatePromoCode(normalizedCode);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: promoKeys.list() });

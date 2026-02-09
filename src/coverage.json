@@ -1,108 +1,75 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T04:25:54.281Z",
+  "generatedAt": "2026-02-09T06:22:56.971Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Make VIP status work end-to-end by ensuring the frontend VIP check reflects the same VIP source of truth that admins toggle in the backend (so a VIP user consistently receives the VIP experience and pricing).",
+        "summary": "Improve the signature pad so users can clearly see the signature while drawing even when the site is in dark mode (dark background). Update the signature canvas styling and drawing configuration to ensure strong contrast between the canvas background and the ink color in both light and dark themes.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/auth/useIsCallerVIP.ts",
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/components/VipCongratsDialog.tsx"
+          "frontend/src/components/SignaturePad.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/auth/useIsCallerVIP.ts",
-          "frontend/src/hooks/admin/useAdminAccounts.ts",
-          "frontend/src/components/VipCongratsDialog.tsx"
+          "frontend/src/components/SignaturePad.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Apply a 10% VIP discount to order pricing everywhere the user sees pricing for a new order (including the order pricing breakdown and the final total), using the existing VIP pricing logic.",
+        "summary": "Fix signature pad canvas rendering issues related to sizing and clearing so that the drawn signature is not distorted/blurry and the clear action fully resets the drawing surface. Ensure canvas sizing accounts for devicePixelRatio correctly and that clearing resets the canvas to the intended background.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/components/OrderSuccessModal.tsx",
-          "frontend/src/utils/vipPricing.ts"
+          "frontend/src/components/SignaturePad.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/utils/vipPricing.ts"
+          "frontend/src/components/SignaturePad.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Change the height input on the new order form to a dropdown (select) for height selection.",
+        "summary": "Generate a site favicon and apple touch icon featuring a falcon with the letters “ID”, matching the existing site theme, and ensure the app uses these icons via the existing <link rel=\"icon\"> and <link rel=\"apple-touch-icon\"> tags in frontend/index.html.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/constants/heights.ts",
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/utils/validation.ts"
+          "frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp",
+          "frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp",
+          "frontend/index.html"
         ],
         "matchedFiles": [
-          "frontend/src/constants/heights.ts",
-          "frontend/src/pages/NewOrderPage.tsx"
+          "frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp",
+          "frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Add a visible “2–3 week Delivery time” message on the main (landing) page.",
+        "summary": "Audit the project for other errors/issues that could cause build or deployment failures (including missing assets referenced by the frontend and runtime errors), and fix the issues found so the app builds cleanly.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/pages/LandingPage.tsx"
+          "frontend/src/components/SignaturePad.tsx",
+          "frontend/index.html",
+          "frontend/public/.ic-assets.json5"
         ],
         "matchedFiles": [
-          "frontend/src/content/copy.ts",
-          "frontend/src/pages/LandingPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Fix any broken VIP- and order-related flows introduced by the above changes so that creating an order, viewing pricing, and toggling VIP as an admin work without runtime errors.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/auth/useIsCallerVIP.ts",
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
-          "frontend/src/pages/LandingPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/auth/useIsCallerVIP.ts",
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/pages/LandingPage.tsx"
+          "frontend/src/components/SignaturePad.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/VipCongratsDialog.tsx",
-    "frontend/src/constants/heights.ts",
-    "frontend/src/content/copy.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/admin/useAdminAccounts.ts",
-    "frontend/src/hooks/auth/useIsCallerVIP.ts",
-    "frontend/src/pages/LandingPage.tsx",
-    "frontend/src/pages/NewOrderPage.tsx",
-    "frontend/src/utils/vipPricing.ts",
+    "frontend/public/assets/generated/falcon-ids-apple-touch-gothic.dim_180x180.webp",
+    "frontend/public/assets/generated/falcon-ids-favicon-gothic.dim_32x32.webp",
+    "frontend/src/components/SignaturePad.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

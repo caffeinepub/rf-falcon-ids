@@ -53,8 +53,9 @@ export interface Details {
 export type ExternalBlob = Uint8Array;
 export interface Order {
   'id' : string,
-  'status' : Status,
+  'status' : OrderStatus,
   'trackingNumber' : [] | [string],
+  'signature' : [] | [ExternalBlob],
   'owner' : [] | [Principal],
   'promoCode' : [] | [string],
   'promoUsed' : boolean,
@@ -62,18 +63,29 @@ export interface Order {
   'address' : Address,
   'details' : Details,
   'photo' : ExternalBlob,
+  'archived' : boolean,
 }
 export type OrderStatus = { 'shipped' : null } |
   { 'pending' : null } |
+  { 'completed' : null } |
   { 'approved' : null };
+export interface PromoCode {
+  'active' : boolean,
+  'code' : string,
+  'usageLimit' : bigint,
+  'timesUsed' : bigint,
+  'discountPercentage' : bigint,
+  'validUntil' : Time,
+}
+export interface PromoCodeValidation {
+  'valid' : boolean,
+  'discountPercentage' : bigint,
+}
 export interface SecurityStats {
   'deniedCalls' : bigint,
   'allowedCalls' : bigint,
   'throttledCalls' : bigint,
 }
-export type Status = { 'shipped' : null } |
-  { 'pending' : null } |
-  { 'approved' : null };
 export type Time = bigint;
 export interface UserProfile {
   'name' : string,
@@ -111,20 +123,34 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'archiveOrder' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'banUser' : ActorMethod<[Principal], undefined>,
   'createOrder' : ActorMethod<
-    [string, Details, Address, ExternalBlob, [] | [string]],
+    [
+      string,
+      Details,
+      Address,
+      ExternalBlob,
+      [] | [string],
+      [] | [ExternalBlob],
+    ],
     undefined
   >,
+  'createPromoCode' : ActorMethod<[string, bigint, Time, bigint], undefined>,
+  'deactivatePromoCode' : ActorMethod<[string], undefined>,
+  'deleteOrder' : ActorMethod<[string], undefined>,
   'getAccountInfo' : ActorMethod<[Principal], [] | [AccountInfo]>,
   'getAdminDashboard' : ActorMethod<[], AdminDashboardData>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getAllPromoCodes' : ActorMethod<[], Array<PromoCode>>,
+  'getArchivedOrders' : ActorMethod<[], Array<Order>>,
   'getAuditLog' : ActorMethod<[], Array<AuditLogEntry>>,
   'getCallerOrders' : ActorMethod<[], Array<Order>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getOrder' : ActorMethod<[string], [] | [Order]>,
+  'getPromoCode' : ActorMethod<[string], [] | [PromoCode]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isCallerVIP' : ActorMethod<[], boolean>,
@@ -134,7 +160,9 @@ export interface _SERVICE {
   'setTrackingNumber' : ActorMethod<[string, string], undefined>,
   'setVIPStatus' : ActorMethod<[Principal, boolean], undefined>,
   'unbanUser' : ActorMethod<[Principal], undefined>,
+  'updateOrderDetails' : ActorMethod<[string, Details, Address], undefined>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
+  'validatePromoCode' : ActorMethod<[string], PromoCodeValidation>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

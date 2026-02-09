@@ -2,12 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-make-vip-status-work-end-to-end-by-ensuring-the-frontend-vip-check-reflects-the-same-vip-source-of-truth-that-admins-toggle-in-the-backend-so-a-vip-user-consistently-receives-the-vip-experience-and-pricing",
-      "featureTitle": "Make VIP status work end-to-end by ensuring the frontend VIP check reflects the same VIP source of truth that admins toggle in the backend (so a VIP user consistently receives the VIP experience and pricing).",
+      "featureId": "feature-improve-the-signature-pad-so-users-can-clearly-see-the-signature-while-drawing-even-when-the-site-is-in-dark-mode-dark-background-update-the-signature-canvas-styling-and-drawing-configuration-to-ensure-strong-contrast-between-the-canvas-background-and-the-ink-color-in-both-light-and-dark-themes",
+      "featureTitle": "Improve the signature pad so users can clearly see the signature while drawing even when the site is in dark mode (dark background). Update the signature canvas styling and drawing configuration to ensure strong contrast between the canvas background and the ink color in both light and dark themes.",
       "files": [
-        "frontend/src/components/VipCongratsDialog.tsx",
-        "frontend/src/hooks/admin/useAdminAccounts.ts",
-        "frontend/src/hooks/auth/useIsCallerVIP.ts"
+        "frontend/src/components/SignaturePad.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,11 +22,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-apply-a-10-vip-discount-to-order-pricing-everywhere-the-user-sees-pricing-for-a-new-order-including-the-order-pricing-breakdown-and-the-final-total-using-the-existing-vip-pricing-logic",
-      "featureTitle": "Apply a 10% VIP discount to order pricing everywhere the user sees pricing for a new order (including the order pricing breakdown and the final total), using the existing VIP pricing logic.",
+      "featureId": "feature-fix-signature-pad-canvas-rendering-issues-related-to-sizing-and-clearing-so-that-the-drawn-signature-is-not-distorted-blurry-and-the-clear-action-fully-resets-the-drawing-surface-ensure-canvas-sizing-accounts-for-devicepixelratio-correctly-and-that-clearing-resets-the-canvas-to-the-intended-background",
+      "featureTitle": "Fix signature pad canvas rendering issues related to sizing and clearing so that the drawn signature is not distorted/blurry and the clear action fully resets the drawing surface. Ensure canvas sizing accounts for devicePixelRatio correctly and that clearing resets the canvas to the intended background.",
       "files": [
-        "frontend/src/pages/NewOrderPage.tsx",
-        "frontend/src/utils/vipPricing.ts"
+        "frontend/src/components/SignaturePad.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -45,12 +42,9 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-change-the-height-input-on-the-new-order-form-to-a-dropdown-select-for-height-selection",
-      "featureTitle": "Change the height input on the new order form to a dropdown (select) for height selection.",
-      "files": [
-        "frontend/src/constants/heights.ts",
-        "frontend/src/pages/NewOrderPage.tsx"
-      ],
+      "featureId": "feature-generate-a-site-favicon-and-apple-touch-icon-featuring-a-falcon-with-the-letters-id-matching-the-existing-site-theme-and-ensure-the-app-uses-these-icons-via-the-existing-link-rel-icon-and-link-rel-apple-touch-icon-tags-in-frontend-index-html",
+      "featureTitle": "Generate a site favicon and apple touch icon featuring a falcon with the letters “ID”, matching the existing site theme, and ensure the app uses these icons via the existing <link rel=\"icon\"> and <link rel=\"apple-touch-icon\"> tags in frontend/index.html.",
+      "files": [],
       "components": [
         "authorization@4.0.0",
         "blob-storage@4.0.0",
@@ -66,11 +60,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-visible-2-3-week-delivery-time-message-on-the-main-landing-page",
-      "featureTitle": "Add a visible “2–3 week Delivery time” message on the main (landing) page.",
+      "featureId": "feature-audit-the-project-for-other-errors-issues-that-could-cause-build-or-deployment-failures-including-missing-assets-referenced-by-the-frontend-and-runtime-errors-and-fix-the-issues-found-so-the-app-builds-cleanly",
+      "featureTitle": "Audit the project for other errors/issues that could cause build or deployment failures (including missing assets referenced by the frontend and runtime errors), and fix the issues found so the app builds cleanly.",
       "files": [
-        "frontend/src/content/copy.ts",
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/src/components/SignaturePad.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -83,28 +76,6 @@
       ],
       "testIds": [
         "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-fix-any-broken-vip-and-order-related-flows-introduced-by-the-above-changes-so-that-creating-an-order-viewing-pricing-and-toggling-vip-as-an-admin-work-without-runtime-errors",
-      "featureTitle": "Fix any broken VIP- and order-related flows introduced by the above changes so that creating an order, viewing pricing, and toggling VIP as an admin work without runtime errors.",
-      "files": [
-        "frontend/src/hooks/auth/useIsCallerVIP.ts",
-        "frontend/src/pages/LandingPage.tsx",
-        "frontend/src/pages/NewOrderPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
       ],
       "confidence": "high"
     }

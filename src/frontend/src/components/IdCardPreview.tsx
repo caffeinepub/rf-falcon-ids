@@ -1,125 +1,104 @@
-import { useMemo } from 'react';
-import StateSeal from './StateSeal';
 import { formatDOB } from '../utils/dob';
+import { normalizeStateName } from '../utils/stateFormat';
+import { getStateSealPath } from '../utils/stateSeals';
+import StateSeal from './StateSeal';
+import type { Details } from '../backend';
 
 interface IdCardPreviewProps {
-  firstName: string;
-  lastName: string;
-  dob: string;
-  gender: string;
-  height: string;
-  eyeColor: string;
-  idNumber: string;
-  state: string;
-  photoUrl?: string;
+  details: Details;
+  photoUrl: string;
+  signatureUrl?: string;
 }
 
-export default function IdCardPreview({
-  firstName,
-  lastName,
-  dob,
-  gender,
-  height,
-  eyeColor,
-  idNumber,
-  state,
-  photoUrl,
-}: IdCardPreviewProps) {
-  const displayName = useMemo(() => {
-    const parts: string[] = [];
-    if (firstName) parts.push(firstName);
-    if (lastName) parts.push(lastName);
-    return parts.join(' ') || 'NAME';
-  }, [firstName, lastName]);
-
-  const displayIdNumber = idNumber || '00000000';
-  const displayDOB = formatDOB(dob) || 'MM/DD/YYYY';
+export default function IdCardPreview({ details, photoUrl, signatureUrl }: IdCardPreviewProps) {
+  const stateName = normalizeStateName(details.state_name);
+  const sealPath = getStateSealPath(stateName);
 
   return (
     <div
       id="id-card-preview"
-      className="relative w-full max-w-[420px] aspect-[1.586/1] bg-gradient-to-br from-black via-zinc-950 to-black rounded overflow-hidden border-2 border-chrome-300/30 shadow-2xl shadow-chrome-300/10"
-      role="img"
-      aria-label={`ID card preview for ${displayName}`}
+      className="relative w-full max-w-2xl mx-auto bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-lg shadow-2xl overflow-hidden"
+      style={{ aspectRatio: '1.586' }}
     >
-      {/* Scan line effect */}
-      <div className="absolute inset-0 scan-line pointer-events-none z-20" aria-hidden="true" />
-      
-      {/* Subtle metallic sheen */}
-      <div className="absolute inset-0 bg-gradient-to-br from-chrome-300/5 via-transparent to-chrome-300/5 pointer-events-none" aria-hidden="true" />
-      
-      <div className="relative z-10 p-4 sm:p-6 h-full flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <StateSeal state={state} className="w-10 h-10 sm:w-12 sm:h-12" />
+      {/* Header */}
+      <div className="absolute top-0 left-0 right-0 bg-blue-600 dark:bg-blue-800 text-white py-3 px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <StateSeal state={stateName} className="w-12 h-12" />
             <div>
-              <div className="text-chrome-300 text-[10px] sm:text-xs font-semibold tracking-widest">
-                {state || 'STATE'}
-              </div>
-              <div className="text-chrome-400 text-[8px] sm:text-[10px] tracking-wider">
-                IDENTIFICATION
-              </div>
+              <h2 className="text-xl font-bold tracking-wide">{stateName}</h2>
+              <p className="text-xs opacity-90">IDENTIFICATION CARD</p>
             </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xs opacity-75">ID NUMBER</p>
+            <p className="text-sm font-mono font-semibold">{details.id_number}</p>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex gap-3 sm:gap-4 flex-1">
-          {/* Photo */}
-          <div className="w-20 h-24 sm:w-24 sm:h-28 bg-zinc-900 border border-chrome-300/20 rounded flex items-center justify-center overflow-hidden shrink-0">
-            {photoUrl ? (
-              <img 
-                src={photoUrl} 
-                alt={`ID photo of ${displayName}`}
-                className="w-full h-full object-cover"
-                decoding="async"
-              />
-            ) : (
-              <div className="text-chrome-400/30 text-[10px] sm:text-xs text-center px-2" aria-label="No photo uploaded">
-                PHOTO
-              </div>
-            )}
+      {/* Content */}
+      <div className="absolute top-20 left-0 right-0 bottom-0 p-6 flex gap-6">
+        {/* Photo */}
+        <div className="flex-shrink-0">
+          <img
+            src={photoUrl}
+            alt={`${details.first_name} ${details.last_name}`}
+            className="w-32 h-40 object-cover rounded border-2 border-blue-300 dark:border-blue-700 shadow-lg"
+          />
+        </div>
+
+        {/* Details */}
+        <div className="flex-1 space-y-3 text-gray-900 dark:text-gray-100">
+          <div>
+            <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">Name</p>
+            <p className="text-lg font-semibold break-words">
+              {details.first_name} {details.last_name}
+            </p>
           </div>
 
-          {/* Details */}
-          <div className="flex-1 space-y-1.5 sm:space-y-2 text-[10px] sm:text-xs min-w-0">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">NAME</div>
-              <div className="text-chrome-300 font-semibold tracking-wide truncate">
-                {displayName}
-              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">DOB</p>
+              <p className="text-sm font-medium">{formatDOB(details.dob)}</p>
             </div>
-
-            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-              <div>
-                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">DOB</div>
-                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{displayDOB}</div>
-              </div>
-              <div>
-                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">SEX</div>
-                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{gender || 'X'}</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-              <div>
-                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">HGT</div>
-                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{height || "0'0\""}</div>
-              </div>
-              <div>
-                <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">EYES</div>
-                <div className="text-chrome-300 text-[10px] sm:text-[11px]">{eyeColor || 'XXX'}</div>
-              </div>
-            </div>
-
             <div>
-              <div className="text-chrome-400 text-[8px] sm:text-[9px] tracking-wider">ID NUMBER</div>
-              <div className="text-chrome-300 text-[10px] sm:text-[11px] font-mono tracking-wider">
-                {displayIdNumber}
-              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">Gender</p>
+              <p className="text-sm font-medium">{details.gender}</p>
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">Height</p>
+              <p className="text-sm font-medium">{details.height}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">Eyes</p>
+              <p className="text-sm font-medium">{details.eye_color}</p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider">Address</p>
+            <p className="text-sm font-medium break-words">
+              {details.address}, {details.city}, {details.state_name} {details.zip}
+            </p>
+          </div>
+
+          {/* Signature */}
+          {signatureUrl && (
+            <div className="mt-4 pt-4 border-t border-gray-300 dark:border-gray-700">
+              <p className="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">Signature</p>
+              <div className="h-12 flex items-center">
+                <img
+                  src={signatureUrl}
+                  alt="Signature"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import { useNavigate } from '@tanstack/react-router';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Home, Search } from 'lucide-react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
@@ -18,31 +18,24 @@ export default function NotFoundPage() {
   };
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4">
-      <Card className="max-w-md w-full bg-card/80 border-chrome-300/20">
+    <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4">
+      <Card className="w-full max-w-md bg-card/90 backdrop-blur border-border shadow-glow">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-20 h-20 rounded-full bg-chrome-300/10 flex items-center justify-center">
-            <Search className="w-10 h-10 text-chrome-300" />
+          <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
+            <Search className="w-10 h-10 text-primary" aria-hidden="true" />
           </div>
-          <div>
-            <CardTitle className="text-3xl font-bold tracking-wide mb-2">
-              404 - Page Not Found
-            </CardTitle>
-            <CardDescription className="text-base">
-              The page you're looking for doesn't exist or has been moved.
-            </CardDescription>
-          </div>
+          <CardTitle className="text-3xl font-display text-foreground">Page Not Found</CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
+            The page you're looking for doesn't exist or has been moved.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-chrome-300 text-center">
-            You may have mistyped the address or the page may have been removed.
-          </p>
           <Button
             onClick={handleGoHome}
-            className="w-full"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-glow"
             size="lg"
           >
-            <Home className="w-4 h-4 mr-2" />
+            <Home className="w-5 h-5 mr-2" aria-hidden="true" />
             {isAuthenticated ? 'Go to Dashboard' : 'Go to Home'}
           </Button>
         </CardContent>

@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { useInternetIdentity } from '../useInternetIdentity';
-import { orderKeys, accountKeys, authKeys } from './queryKeys';
-import type { Details, Address } from '../../backend';
-import { ExternalBlob } from '../../backend';
+import { orderKeys, authKeys, accountKeys } from './queryKeys';
 import { normalizeOrderError } from '../../utils/orderErrors';
 import { withTimeout } from '../../utils/withTimeout';
+import type { Details, Address } from '../../backend';
+import { ExternalBlob } from '../../backend';
 
 interface CreateOrderParams {
   id: string;
@@ -13,6 +13,7 @@ interface CreateOrderParams {
   address: Address;
   photo: ExternalBlob;
   promoCode?: string | null;
+  signature?: ExternalBlob | null;
 }
 
 export function useCreateOrder() {
@@ -21,57 +22,69 @@ export function useCreateOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, details, address, photo, promoCode }: CreateOrderParams) => {
+    mutationFn: async (params: CreateOrderParams) => {
       if (!actor) {
         throw new Error('Actor not available');
       }
 
       if (!identity) {
-        throw new Error('You must be logged in to place an order');
+        throw new Error('You must be logged in to create an order');
       }
 
-      // Check if user is banned before attempting order creation
-      try {
-        const principal = identity.getPrincipal();
-        const isBanned = await withTimeout(
-          actor.isUserBanned(principal),
-          30000,
-          'Ban check timed out'
-        );
-        
-        if (isBanned) {
-          throw new Error('Your account has been banned from placing orders');
-        }
-      } catch (error: any) {
-        // If the ban check itself fails, let it through but log it
-        if (error.message !== 'Your account has been banned from placing orders') {
-          console.warn('Ban check failed:', error);
-        } else {
-          throw error;
-        }
+      const principal = identity.getPrincipal();
+
+      // Check if user is banned
+      const isBanned = await actor.isUserBanned(principal);
+      if (isBanned) {
+        throw new Error('BANNED');
       }
 
-      // Normalize promo code: trim and uppercase, or null if empty
-      const normalizedPromoCode = promoCode?.trim().toUpperCase() || null;
+      // Normalize promo code (trim + uppercase)
+      const normalizedPromoCode = params.promoCode?.trim().toUpperCase() || null;
 
-      // Create the order with timeout
+      // Create order with timeout
       await withTimeout(
-        actor.createOrder(id, details, address, photo, normalizedPromoCode),
-        30000,
-        'Order creation timed out'
+        actor.createOrder(
+          params.id,
+          params.details,
+          params.address,
+          params.photo,
+          normalizedPromoCode,
+          params.signature || null
+        ),
+        30000
       );
 
-      return { id };
+      // Store order ID in localStorage for user's order list
+      const principalString = principal.toString();
+      const existingOrders = JSON.parse(
+        localStorage.getItem(`user_orders_${principalString}`) || '[]'
+      ) as string[];
+      
+      if (!existingOrders.includes(params.id)) {
+        existingOrders.push(params.id);
+        localStorage.setItem(
+          `user_orders_${principalString}`,
+          JSON.stringify(existingOrders)
+        );
+      }
     },
     onSuccess: () => {
-      // Invalidate all relevant queries to refresh data
+      // Invalidate all relevant queries
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      queryClient.invalidateQueries({ queryKey: accountKeys.all });
       queryClient.invalidateQueries({ queryKey: authKeys.all });
+      
+      if (identity) {
+        const principalText = identity.getPrincipal().toString();
+        queryClient.invalidateQueries({ 
+          queryKey: accountKeys.info(principalText) 
+        });
+      }
     },
     onError: (error: any) => {
-      console.error('Order creation error:', error);
-      // Error normalization happens in the component via normalizeOrderError
+      const normalizedError = normalizeOrderError(error);
+      console.error('Create order error:', normalizedError);
+      throw new Error(normalizedError);
     },
   });
 }

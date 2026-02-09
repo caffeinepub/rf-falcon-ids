@@ -46,6 +46,7 @@ export const Address = IDL.Record({
   'last_name' : IDL.Text,
 });
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const Time = IDL.Int;
 export const UserProfile = IDL.Record({
   'name' : IDL.Text,
   'email' : IDL.Opt(IDL.Text),
@@ -58,16 +59,17 @@ export const AccountInfo = IDL.Record({
   'isVIP' : IDL.Bool,
   'profile' : IDL.Opt(UserProfile),
 });
-export const Status = IDL.Variant({
+export const OrderStatus = IDL.Variant({
   'shipped' : IDL.Null,
   'pending' : IDL.Null,
+  'completed' : IDL.Null,
   'approved' : IDL.Null,
 });
-export const Time = IDL.Int;
 export const Order = IDL.Record({
   'id' : IDL.Text,
-  'status' : Status,
+  'status' : OrderStatus,
   'trackingNumber' : IDL.Opt(IDL.Text),
+  'signature' : IDL.Opt(ExternalBlob),
   'owner' : IDL.Opt(IDL.Principal),
   'promoCode' : IDL.Opt(IDL.Text),
   'promoUsed' : IDL.Bool,
@@ -75,6 +77,7 @@ export const Order = IDL.Record({
   'address' : Address,
   'details' : Details,
   'photo' : ExternalBlob,
+  'archived' : IDL.Bool,
 });
 export const AuditLogEntry = IDL.Record({
   'action' : IDL.Text,
@@ -93,10 +96,17 @@ export const AdminDashboardData = IDL.Record({
   'accounts' : IDL.Vec(AccountInfo),
   'securityStats' : SecurityStats,
 });
-export const OrderStatus = IDL.Variant({
-  'shipped' : IDL.Null,
-  'pending' : IDL.Null,
-  'approved' : IDL.Null,
+export const PromoCode = IDL.Record({
+  'active' : IDL.Bool,
+  'code' : IDL.Text,
+  'usageLimit' : IDL.Nat,
+  'timesUsed' : IDL.Nat,
+  'discountPercentage' : IDL.Nat,
+  'validUntil' : Time,
+});
+export const PromoCodeValidation = IDL.Record({
+  'valid' : IDL.Bool,
+  'discountPercentage' : IDL.Nat,
 });
 
 export const idlService = IDL.Service({
@@ -127,13 +137,24 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'archiveOrder' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'banUser' : IDL.Func([IDL.Principal], [], []),
   'createOrder' : IDL.Func(
-      [IDL.Text, Details, Address, ExternalBlob, IDL.Opt(IDL.Text)],
+      [
+        IDL.Text,
+        Details,
+        Address,
+        ExternalBlob,
+        IDL.Opt(IDL.Text),
+        IDL.Opt(ExternalBlob),
+      ],
       [],
       [],
     ),
+  'createPromoCode' : IDL.Func([IDL.Text, IDL.Nat, Time, IDL.Nat], [], []),
+  'deactivatePromoCode' : IDL.Func([IDL.Text], [], []),
+  'deleteOrder' : IDL.Func([IDL.Text], [], []),
   'getAccountInfo' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(AccountInfo)],
@@ -141,11 +162,14 @@ export const idlService = IDL.Service({
     ),
   'getAdminDashboard' : IDL.Func([], [AdminDashboardData], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+  'getAllPromoCodes' : IDL.Func([], [IDL.Vec(PromoCode)], ['query']),
+  'getArchivedOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAuditLog' : IDL.Func([], [IDL.Vec(AuditLogEntry)], ['query']),
   'getCallerOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
+  'getPromoCode' : IDL.Func([IDL.Text], [IDL.Opt(PromoCode)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -159,7 +183,9 @@ export const idlService = IDL.Service({
   'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'setVIPStatus' : IDL.Func([IDL.Principal, IDL.Bool], [], []),
   'unbanUser' : IDL.Func([IDL.Principal], [], []),
+  'updateOrderDetails' : IDL.Func([IDL.Text, Details, Address], [], []),
   'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
+  'validatePromoCode' : IDL.Func([IDL.Text], [PromoCodeValidation], ['query']),
 });
 
 export const idlInitArgs = [];
@@ -203,6 +229,7 @@ export const idlFactory = ({ IDL }) => {
     'last_name' : IDL.Text,
   });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const Time = IDL.Int;
   const UserProfile = IDL.Record({
     'name' : IDL.Text,
     'email' : IDL.Opt(IDL.Text),
@@ -215,16 +242,17 @@ export const idlFactory = ({ IDL }) => {
     'isVIP' : IDL.Bool,
     'profile' : IDL.Opt(UserProfile),
   });
-  const Status = IDL.Variant({
+  const OrderStatus = IDL.Variant({
     'shipped' : IDL.Null,
     'pending' : IDL.Null,
+    'completed' : IDL.Null,
     'approved' : IDL.Null,
   });
-  const Time = IDL.Int;
   const Order = IDL.Record({
     'id' : IDL.Text,
-    'status' : Status,
+    'status' : OrderStatus,
     'trackingNumber' : IDL.Opt(IDL.Text),
+    'signature' : IDL.Opt(ExternalBlob),
     'owner' : IDL.Opt(IDL.Principal),
     'promoCode' : IDL.Opt(IDL.Text),
     'promoUsed' : IDL.Bool,
@@ -232,6 +260,7 @@ export const idlFactory = ({ IDL }) => {
     'address' : Address,
     'details' : Details,
     'photo' : ExternalBlob,
+    'archived' : IDL.Bool,
   });
   const AuditLogEntry = IDL.Record({
     'action' : IDL.Text,
@@ -250,10 +279,17 @@ export const idlFactory = ({ IDL }) => {
     'accounts' : IDL.Vec(AccountInfo),
     'securityStats' : SecurityStats,
   });
-  const OrderStatus = IDL.Variant({
-    'shipped' : IDL.Null,
-    'pending' : IDL.Null,
-    'approved' : IDL.Null,
+  const PromoCode = IDL.Record({
+    'active' : IDL.Bool,
+    'code' : IDL.Text,
+    'usageLimit' : IDL.Nat,
+    'timesUsed' : IDL.Nat,
+    'discountPercentage' : IDL.Nat,
+    'validUntil' : Time,
+  });
+  const PromoCodeValidation = IDL.Record({
+    'valid' : IDL.Bool,
+    'discountPercentage' : IDL.Nat,
   });
   
   return IDL.Service({
@@ -284,13 +320,24 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'archiveOrder' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'banUser' : IDL.Func([IDL.Principal], [], []),
     'createOrder' : IDL.Func(
-        [IDL.Text, Details, Address, ExternalBlob, IDL.Opt(IDL.Text)],
+        [
+          IDL.Text,
+          Details,
+          Address,
+          ExternalBlob,
+          IDL.Opt(IDL.Text),
+          IDL.Opt(ExternalBlob),
+        ],
         [],
         [],
       ),
+    'createPromoCode' : IDL.Func([IDL.Text, IDL.Nat, Time, IDL.Nat], [], []),
+    'deactivatePromoCode' : IDL.Func([IDL.Text], [], []),
+    'deleteOrder' : IDL.Func([IDL.Text], [], []),
     'getAccountInfo' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(AccountInfo)],
@@ -298,11 +345,14 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getAdminDashboard' : IDL.Func([], [AdminDashboardData], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+    'getAllPromoCodes' : IDL.Func([], [IDL.Vec(PromoCode)], ['query']),
+    'getArchivedOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAuditLog' : IDL.Func([], [IDL.Vec(AuditLogEntry)], ['query']),
     'getCallerOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
+    'getPromoCode' : IDL.Func([IDL.Text], [IDL.Opt(PromoCode)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -316,7 +366,13 @@ export const idlFactory = ({ IDL }) => {
     'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'setVIPStatus' : IDL.Func([IDL.Principal, IDL.Bool], [], []),
     'unbanUser' : IDL.Func([IDL.Principal], [], []),
+    'updateOrderDetails' : IDL.Func([IDL.Text, Details, Address], [], []),
     'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
+    'validatePromoCode' : IDL.Func(
+        [IDL.Text],
+        [PromoCodeValidation],
+        ['query'],
+      ),
   });
 };
 
