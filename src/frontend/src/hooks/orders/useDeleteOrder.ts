@@ -2,18 +2,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { orderKeys } from './queryKeys';
 
+// Note: Delete order is not implemented in the backend
+// This hook throws an error to prevent accidental use
+
 export function useDeleteOrder() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (orderId: string) => {
-      if (!actor) throw new Error('Actor not available');
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.deleteOrder(orderId, token);
-      
-      return actor.deleteOrder(orderId);
+      // Backend doesn't support order deletion
+      throw new Error('Order deletion is not available');
     },
     onSuccess: () => {
       // Invalidate all order queries to refresh lists

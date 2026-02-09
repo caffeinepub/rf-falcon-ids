@@ -1,15 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Add admin-managed promo codes that apply a fixed 5% discount at checkout, and record/display promo usage on orders.
+**Goal:** Simplify the Admin Panel by removing the standalone Accounts area and allow admins to manage a user’s account (ban/VIP) directly from the Orders admin UI.
 
 **Planned changes:**
-- Extend the backend order model to store optional promo usage details (whether a promo was applied and the promo code string used), with safe defaults for existing orders.
-- Add admin-only backend APIs to list, add, and remove/deactivate promo codes (normalized/trimmed; consistent matching).
-- Update backend order creation to accept an optional promo code, validate it against configured promo codes, apply the 5% discount only when valid, and reject invalid codes with a clear English error.
-- Add an Admin Panel “Promo Codes” section to view existing promo codes, add new codes, and remove/deactivate codes with loading/error states and no full page reload.
-- Update the checkout/new order UI to include an optional “Promo code” input, show a 5% discount in the pricing summary when valid, and show an invalid-code message when not valid.
-- Display promo usage on existing admin order list/detail views as “No promo” or the promo code string used.
-- Add React Query hooks + stable query keys for promo code admin operations and invalidate/refetch lists after mutations.
+- Remove the Admin Panel “Accounts” tab/section (trigger, content, and related lazy imports) and update Admin Panel header/description text to no longer reference managing accounts from a separate dashboard section.
+- In the Admin Orders management UI, add per-order account controls for the order owner (when present): ban/unban and grant/revoke VIP, including clear messaging when an order has no owner.
+- Add an admin-only backend API to fetch account status for a specific Principal (targeted lookup) to support the order-linked account management UI, and refresh UI state after changes without a manual reload.
 
-**User-visible outcome:** Admins can manage promo codes in the admin panel, customers can apply a valid promo code for 5% off at checkout, and admins can see on each order whether a promo was used and which code was applied.
+**User-visible outcome:** Admins no longer see an Accounts tab, and can ban/unban users and toggle VIP status directly from an order (when the order has an associated owner), with the UI reflecting updates immediately.

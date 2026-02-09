@@ -3,18 +3,16 @@ import { useActor } from '../useActor';
 import { securityKeys } from '../orders/queryKeys';
 import { Principal } from '@dfinity/principal';
 
+// Note: Security mutations are not implemented in the backend
+// These hooks throw errors to prevent accidental use
+
 export function useToggleSecurity() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (enabled: boolean) => {
-      if (!actor) throw new Error('Actor not available');
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.setSecurityEnabled(enabled, token);
-      
-      return actor.setSecurityEnabled(enabled);
+      throw new Error('Security toggle is not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: securityKeys.config() });
@@ -29,12 +27,7 @@ export function useUpdateRateLimits() {
 
   return useMutation({
     mutationFn: async ({ window, maxCalls }: { window: number; maxCalls: number }) => {
-      if (!actor) throw new Error('Actor not available');
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.updateRateLimits(BigInt(window), BigInt(maxCalls), token);
-      
-      return actor.updateRateLimits(BigInt(window), BigInt(maxCalls));
+      throw new Error('Rate limit updates are not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: securityKeys.config() });
@@ -49,12 +42,7 @@ export function useClearSecurityCounters() {
 
   return useMutation({
     mutationFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.clearSecurityCounters(token);
-      
-      return actor.clearSecurityCounters();
+      throw new Error('Clear security counters is not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: securityKeys.stats() });
@@ -69,13 +57,7 @@ export function useAddToBlocklist() {
 
   return useMutation({
     mutationFn: async (principalText: string) => {
-      if (!actor) throw new Error('Actor not available');
-      const principal = Principal.fromText(principalText);
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.addToBlocklist(principal, token);
-      
-      return actor.addToBlocklist(principal);
+      throw new Error('Blocklist management is not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: securityKeys.config() });
@@ -90,13 +72,7 @@ export function useRemoveFromBlocklist() {
 
   return useMutation({
     mutationFn: async (principalText: string) => {
-      if (!actor) throw new Error('Actor not available');
-      const principal = Principal.fromText(principalText);
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.removeFromBlocklist(principal, token);
-      
-      return actor.removeFromBlocklist(principal);
+      throw new Error('Blocklist management is not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: securityKeys.config() });
@@ -111,13 +87,7 @@ export function useAddToAllowlist() {
 
   return useMutation({
     mutationFn: async (principalText: string) => {
-      if (!actor) throw new Error('Actor not available');
-      const principal = Principal.fromText(principalText);
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.addToAllowlist(principal, token);
-      
-      return actor.addToAllowlist(principal);
+      throw new Error('Allowlist management is not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: securityKeys.config() });
@@ -132,13 +102,7 @@ export function useRemoveFromAllowlist() {
 
   return useMutation({
     mutationFn: async (principalText: string) => {
-      if (!actor) throw new Error('Actor not available');
-      const principal = Principal.fromText(principalText);
-      
-      // Note: CSRF token support prepared but backend not yet implemented
-      // When available: const { token } = useCsrfToken(); await actor.removeFromAllowlist(principal, token);
-      
-      return actor.removeFromAllowlist(principal);
+      throw new Error('Allowlist management is not available');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: securityKeys.config() });

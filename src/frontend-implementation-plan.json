@@ -1,95 +1,63 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin-managed 5% promo codes with checkout discount UI and admin promo visibility",
+  "title": "Remove Admin Accounts tab and manage order-linked accounts from Orders UI",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "Add an admin Promo Codes section to list/add/remove promo codes with loading and error states.",
+      "id": "REQ-1",
+      "summary": "Remove the standalone Admin “Accounts” tab/section (and related lazy imports) and update admin dashboard copy to reflect the new UI.",
       "acceptanceCriteria": [
-        "Admin Dashboard includes a new tab/section labeled \"Promo Codes\" (English).",
-        "Admins can enter a promo code and save it; the list updates without a full page reload.",
-        "Admins can remove/deactivate a promo code from the list; the list updates after the action.",
-        "UI shows loading and error states for promo code operations."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/admin/PromoCodesSection.tsx",
-          "operation": "create",
-          "description": "Create an admin-only PromoCodesSection UI that uses React Query promo-code hooks to render the current promo code list, add form, and remove/deactivate actions, including loading, empty, and error states. Use the authorization component/system to ensure only admins can access admin features (app already uses AdminGate); verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
-          "operation": "modify",
-          "description": "Wire PromoCodesSection into the existing Admin Dashboard by adding a new TabsTrigger labeled \"Promo Codes\" and a corresponding TabsContent rendering the section within the admin styling/layout. Use the authorization component/system via the existing admin route gating patterns to keep this section admin-only; verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Add optional promo code input to checkout, apply 5% discount on valid code, and submit promo code with order creation.",
-      "acceptanceCriteria": [
-        "New Order page includes a \"Promo code\" input (optional).",
-        "When a valid promo code is entered, the pricing summary reflects a 5% discount and updates the displayed total accordingly.",
-        "When an invalid promo code is entered, the UI clearly indicates the code is invalid and does not apply the discount.",
-        "On successful order creation with a promo code, the promo code value is included in the order creation call and is visible later on the order data returned from the backend."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/NewOrderPage.tsx",
-          "operation": "modify",
-          "description": "Add a new optional \"Promo code\" input to the order form, include inline validation messaging (valid/invalid/loading), and update the pricing summary to apply an additional 5% off when the entered code validates. Ensure the computed total reflects the promo discount when valid and does not discount when invalid."
-        },
-        {
-          "path": "frontend/src/hooks/orders/usePromoCodeValidation.ts",
-          "operation": "create",
-          "description": "Add a React Query-based hook that validates a user-entered promo code by fetching the configured promo codes from the backend actor and performing normalization (trim + case-insensitive match) client-side, returning states suitable for the New Order UI (loading/valid/invalid/error)."
-        },
-        {
-          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
-          "operation": "modify",
-          "description": "Extend the create order mutation to accept an optional promoCode and pass it through to the backend order creation call (send null when empty). Preserve current behavior for no promo code, and surface backend invalid-promo errors so NewOrderPage can show a clear message."
-        },
-        {
-          "path": "frontend/src/utils/orderErrors.ts",
-          "operation": "modify",
-          "description": "Update error normalization to map the backend invalid-promo error into a clear English message that the promo code is invalid, suitable for display in the New Order page."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Show promo usage on admin order views (list and/or detail) as 'No promo' or the applied promo code.",
-      "acceptanceCriteria": [
-        "In the admin orders list and/or order detail surfaces already present in the admin panel, each order shows promo usage: either \"No promo\" or the promo code string used.",
-        "The display remains readable and consistent with the existing admin styling."
+        "Admin panel no longer shows an “Accounts” tab/section.",
+        "No unused/lazy imports remain for the removed Accounts section (e.g., AdminAccountsSection).",
+        "Admin Panel header/description text is updated so it does not claim admins manage accounts from the dashboard if the accounts area was removed."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/AdminPanelPage.tsx",
           "operation": "modify",
-          "description": "Update the admin orders list rendering to display promo usage per order using the existing order fields (promoUsed and promoCode), showing either \"No promo\" or the promo code string in a readable, style-consistent way (e.g., a small label/badge in each order card row). Use the authorization component/system via existing AdminGate patterns for admin-only visibility; verify the component's usage instructions before implementing."
+          "description": "Remove the Accounts tab trigger and tab content from the Admin Panel UI, and delete the related lazy import(s) (e.g., AdminAccountsSection). Update the Admin Dashboard header/description text so it no longer advertises a separate accounts area."
+        },
+        {
+          "path": "frontend/src/components/admin/AdminAccountsSection.tsx",
+          "operation": "delete",
+          "description": "Delete the standalone Admin Accounts section UI component so it cannot be navigated to from the admin tabs and does not leave dead code behind."
+        },
+        {
+          "path": "frontend/src/hooks/orders/queryKeys.ts",
+          "operation": "modify",
+          "description": "Remove any accounts-list-specific query keys that are now unused by the UI after deleting the standalone Accounts section (keep/add only keys needed for order-linked account status)."
         }
       ]
     },
     {
-      "id": "REQ-7",
-      "summary": "Add React Query hooks and stable query keys for promo code admin list/add/remove operations with proper invalidation.",
+      "id": "REQ-2",
+      "summary": "Add per-order account management controls in the admin Orders UI to view owner status and ban/unban or grant/revoke VIP for the owner principal.",
       "acceptanceCriteria": [
-        "Promo code list is fetched via a dedicated React Query query with a stable query key.",
-        "After add/remove/deactivate promo code mutations succeed, the promo code list query is invalidated and refetched.",
-        "No edits are made to frontend immutable paths (per project constraints)."
+        "For any order that has an owner principal, the admin UI exposes controls to: (1) ban/unban the owner, and (2) grant/revoke VIP for the owner, without navigating to a separate Accounts page.",
+        "If an order has no owner (owner is null), the UI clearly indicates that account management is unavailable for that order and does not show broken controls.",
+        "After a ban/unban or VIP change, the UI refreshes to reflect the updated account status and does not require a manual page reload.",
+        "User-facing text for these controls and confirmations is in English."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/orders/queryKeys.ts",
           "operation": "modify",
-          "description": "Add stable promo-code-related query keys (e.g., promoKeys.list()) to the centralized query key file so promo list and mutations can reliably invalidate/refetch without collisions."
+          "description": "Add a targeted account-status query key (e.g., accountKeys.info(principalText)) to support fetching/updating account status per order owner without relying on a full accounts list."
         },
         {
-          "path": "frontend/src/hooks/admin/useAdminPromoCodes.ts",
+          "path": "frontend/src/hooks/admin/useAdminAccounts.ts",
+          "operation": "modify",
+          "description": "Refactor admin account hooks to support targeted order-linked account management: add a React Query hook that fetches account status for a single Principal using the backend function typed as getAccountInfo(user). Ensure VIP/ban mutations invalidate the targeted account-status query key (and other relevant keys) so the UI refreshes automatically. Use the selected \"authorization\" component patterns for handling authorization failures gracefully on the frontend; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
           "operation": "create",
-          "description": "Create React Query hooks for admin promo code operations: list promo codes (query) plus add/remove (mutations), using the backend actor methods for promo codes and invalidating the promo list query on mutation success."
+          "description": "Create an admin-only UI component to be embedded in each order card that: (1) shows current account status for the order owner (VIP/banned/orderCount/profile name/email when present), (2) provides ban/unban and grant/revoke VIP controls with English confirmation dialogs, and (3) renders a clear disabled/unavailable state when order.owner is missing. Use existing shadcn-ui composed components (e.g., Card/Badge/Button/AlertDialog) for consistent styling; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Wire the new per-order account management component into the Orders tab UI for each order row/card. When an order has no owner, show a clear message (e.g., 'No owner on this order; account management unavailable') and do not render action buttons. Ensure successful mutations trigger a status refresh via React Query invalidation (no manual reload needed)."
         }
       ]
     }

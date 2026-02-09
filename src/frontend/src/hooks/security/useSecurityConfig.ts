@@ -10,15 +10,25 @@ export interface SecurityConfig {
   allowlistSize: bigint;
 }
 
+// Note: Security config is not implemented in the backend
+// This hook returns stub data to prevent TypeScript errors
+
 export function useSecurityConfig() {
   const { actor, isFetching: actorFetching } = useActor();
 
   return useQuery<SecurityConfig>({
     queryKey: securityKeys.config(),
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getSecurityConfig();
+      // Backend doesn't support security config
+      // Return stub data
+      return {
+        enabled: false,
+        rateLimitWindow: BigInt(60),
+        maxCallsPerWindow: BigInt(100),
+        blocklistSize: BigInt(0),
+        allowlistSize: BigInt(0),
+      };
     },
-    enabled: !!actor && !actorFetching,
+    enabled: false, // Disabled since backend doesn't support this
   });
 }

@@ -1,111 +1,71 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T02:34:55.638Z",
+  "generatedAt": "2026-02-09T04:02:53.661Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 7,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Extend the backend order model to record promo usage per order, including whether a promo code was applied and which promo code string was used.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Remove the standalone “Accounts” area from the Admin Panel UI (including its tab trigger, tab content, and any related lazy imports) so admins no longer manage accounts from a separate Admin Accounts section.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/components/admin/AdminAccountsSection.tsx",
+          "frontend/src/hooks/orders/queryKeys.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminPanelPage.tsx",
+          "frontend/src/components/admin/AdminAccountsSection.tsx",
+          "frontend/src/hooks/orders/queryKeys.ts"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add backend admin APIs to manage promo codes that provide a 5% discount, including: list promo codes, add a promo code, and remove (or deactivate) a promo code. Promo code management must be restricted to admins.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Add account management controls to admin order management so an admin can ban/unban and manage VIP status for the account tied to an order directly from the order UI.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/admin/useAdminAccounts.ts",
+          "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/orders/queryKeys.ts",
+          "frontend/src/hooks/admin/useAdminAccounts.ts",
+          "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
+          "frontend/src/pages/AdminPanelPage.tsx"
+        ]
       },
       {
         "id": "REQ-3",
-        "summary": "Update backend order creation to accept an optional promo code, validate it against the promo codes configured by admins, and store the promo code used on the order when valid. Invalid promo codes must not be accepted for discount application.",
+        "summary": "Provide a backend API to fetch account status for a specific principal (used by the order-linked account management UI) without requiring loading the entire accounts list.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Add a new Promo Codes section in the admin panel UI where admins can add and remove (or deactivate) promo codes, and view the current list of configured promo codes.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/admin/PromoCodesSection.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/admin/PromoCodesSection.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Update the checkout/order creation UI to allow users to enter an optional promo code, apply a 5% discount when the promo code is valid, and submit the promo code with the order creation request.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/hooks/orders/usePromoCodeValidation.ts",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/utils/orderErrors.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/NewOrderPage.tsx",
-          "frontend/src/hooks/orders/usePromoCodeValidation.ts",
-          "frontend/src/hooks/orders/useCreateOrder.ts",
-          "frontend/src/utils/orderErrors.ts"
-        ]
-      },
-      {
-        "id": "REQ-6",
-        "summary": "Display promo usage on order views in the admin panel so admins can see whether a promo was used and which code was applied for each order.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/AdminPanelPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Add React Query hooks and query keys for promo code admin operations (list/add/remove or deactivate) and ensure relevant queries are invalidated/refetched after mutations.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/orders/queryKeys.ts",
-          "frontend/src/hooks/admin/useAdminPromoCodes.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/orders/queryKeys.ts",
-          "frontend/src/hooks/admin/useAdminPromoCodes.ts"
-        ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/admin/PromoCodesSection.tsx",
+    "frontend/src/components/admin/AdminAccountsSection.tsx",
+    "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/admin/useAdminPromoCodes.ts",
+    "frontend/src/hooks/admin/useAdminAccounts.ts",
     "frontend/src/hooks/orders/queryKeys.ts",
-    "frontend/src/hooks/orders/useCreateOrder.ts",
-    "frontend/src/hooks/orders/usePromoCodeValidation.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/NewOrderPage.tsx",
-    "frontend/src/utils/orderErrors.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,58 +1,38 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T02:34:55.635Z",
-  "summary": "Diff adds promo fields to the backend Order type and includes a migration to backfill existing orders with default promo fields. Frontend adds promo-code admin section, React Query hooks/query keys for promo codes, and checkout-side promo code input/validation plus sending promo code with order creation. However, the backend admin promo-code APIs and backend-side promo validation/error behavior are not evidenced in the provided backend diff, and admin order views showing promo usage are not clearly evidenced.",
+  "generatedAt": "2026-02-09T04:02:53.657Z",
+  "summary": "Diff adds an order-linked account management UI component and supporting React Query hooks for targeted account info + ban/unban/VIP mutations. However, evidence is insufficient that the standalone Admin “Accounts” tab/section was removed, and the backend targeted admin-only getAccountInfo API is not clearly present in the shown backend diff excerpt.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Add backend admin APIs to manage promo codes (list/add/remove or deactivate) restricted to admins, with normalized/consistent promo code treatment.",
-      "reason": "Frontend calls `actor.getAllPromoCodes()`, `actor.addPromoCode()`, and `actor.removePromoCode()`, but the diff summary for `backend/main.mo` only shows the `promoCodes` map variable and does not show any public/shared methods implementing these admin APIs or enforcing admin-only access.",
+      "id": "REQ-1",
+      "requirement": "Remove the standalone “Accounts” area from the Admin Panel UI (including its tab trigger, tab content, and any related lazy imports) so admins no longer manage accounts from a separate Admin Accounts section; update Admin Panel header/description accordingly.",
+      "reason": "The diff summary shows `frontend/src/components/admin/AdminAccountsSection.tsx` is modified (not removed), and the provided `AdminPanelPage.tsx` excerpt still shows multiple lazy-loaded sections but does not provide clear evidence that the Accounts tab trigger/content and lazy import were removed, nor that the header/description text was updated.",
       "evidence": [
-        "frontend/src/hooks/admin/useAdminPromoCodes.ts",
-        "backend/main.mo (truncated; shows `var promoCodes = ...` but no API methods visible)"
+        "frontend/src/components/admin/AdminAccountsSection.tsx",
+        "frontend/src/pages/AdminPanelPage.tsx"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Update backend order creation to accept optional promo code, validate against admin-configured promo codes, store promo code on the order when valid, and reject invalid promo codes with a clear English error message.",
-      "reason": "Frontend `useCreateOrder` now passes a `normalizedPromoCode` into `actor.createOrder(...)`, but the backend diff excerpt does not show an updated `createOrder` signature/implementation, promo validation, discount logic, or the required clear invalid-code error message.",
+      "requirement": "Backend exposes an admin-only query method to fetch account info for a given Principal (including at least: isBanned, isVIP, profile if present, and orderCount) and traps for non-admin callers; frontend uses this targeted API.",
+      "reason": "Frontend hook `useAccountInfo` calls `actor.getAccountInfo(principal)`, but the shown `backend/main.mo` excerpt does not include an exposed `getAccountInfo` admin-only query method or its authorization/trap behavior. Because the backend diff is truncated, implementation cannot be confirmed from provided evidence.",
       "evidence": [
-        "frontend/src/hooks/orders/useCreateOrder.ts",
-        "backend/main.mo (truncated; `createOrder` implementation not shown)"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "requirement": "Display promo usage on order views in the admin panel (e.g., orders list/detail) showing either \"No promo\" or the promo code used.",
-      "reason": "The diff shows `AdminPanelPage.tsx` was modified and `PromoCodesSection` was added, but the provided truncated excerpt does not show any rendering of `order.promoUsed` / `order.promoCode` in the admin orders list/detail UI.",
-      "evidence": [
-        "frontend/src/pages/AdminPanelPage.tsx (truncated)"
+        "frontend/src/hooks/admin/useAdminAccounts.ts",
+        "backend/main.mo"
       ]
     }
   ],
-  "hallucinated_features": [
-    {
-      "description": "Pre-populating the backend promo code store with default codes (\"PROMO1\", \"PROMO2\", \"PROMO3\").",
-      "reason": "The BuildRequest does not request any default/seed promo codes; it specifies admin-managed promo codes.",
-      "evidence": [
-        "backend/main.mo (`var promoCodes = Map.fromIter([\"PROMO1\", \"PROMO2\", \"PROMO3\"]...)`)"
-      ]
-    }
-  ],
-  "confidence": 0.66,
+  "hallucinated_features": [],
+  "confidence": 0.55,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/admin/PromoCodesSection.tsx",
-    "frontend/src/hooks/admin/useAdminPromoCodes.ts",
+    "frontend/src/components/admin/AdminAccountsSection.tsx",
+    "frontend/src/components/admin/AdminOrderOwnerAccountControls.tsx",
+    "frontend/src/hooks/admin/useAdminAccounts.ts",
     "frontend/src/hooks/orders/queryKeys.ts",
-    "frontend/src/hooks/orders/useCreateOrder.ts",
-    "frontend/src/hooks/orders/usePromoCodeValidation.ts",
     "frontend/src/pages/AdminPanelPage.tsx",
-    "frontend/src/pages/NewOrderPage.tsx",
-    "frontend/src/utils/orderErrors.ts",
     "project_state.json"
   ]
 }

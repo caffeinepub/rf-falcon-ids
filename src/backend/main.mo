@@ -1,9 +1,7 @@
-import Array "mo:core/Array";
 import Iter "mo:core/Iter";
 import List "mo:core/List";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
-import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Set "mo:core/Set";
@@ -13,14 +11,9 @@ import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
-  let bannedUsers = Set.empty<Principal>();
-  let activeAccounts = Set.empty<Principal>();
-
-  type Address = {
+  public type Address = {
     first_name : Text;
     last_name : Text;
     address : Text;
@@ -29,7 +22,7 @@ actor {
     zip : Text;
   };
 
-  type Details = {
+  public type Details = {
     dob : Text;
     address : Text;
     state_name : Text;
@@ -56,10 +49,6 @@ actor {
       trackingNumber : ?Text;
       promoUsed : Bool;
       promoCode : ?Text;
-    };
-
-    public func compare(o1 : Order, o2 : Order) : Order.Order {
-      Text.compare(o1.id, o2.id);
     };
   };
   public type Order = OrderModule.Order;
@@ -117,111 +106,21 @@ actor {
 
   var orders = Map.empty<Text, Order>();
   var userProfiles = Map.empty<Principal, UserProfile>();
+  let bannedUsers = Set.empty<Principal>();
+  let activeAccounts = Set.empty<Principal>();
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  var securityConfig : SecurityConfig = {
-    enabled = true;
-    rateLimitWindow = 60_000_000_000;
-    maxCallsPerWindow = 100;
-  };
-
-  var callHistory = Map.empty<Principal, List.List<Time.Time>>();
-  var blocklist = Map.empty<Principal, Bool>();
-  var allowlist = Map.empty<Principal, Bool>();
-  var securityEvents = List.empty<SecurityEvent>();
+  var auditLog = List.empty<AuditLogEntry>();
   var securityStats : SecurityStats = {
     allowedCalls = 0;
     deniedCalls = 0;
     throttledCalls = 0;
   };
-  var auditLog = List.empty<AuditLogEntry>();
 
-  var adminEmails = Map.empty<Text, Bool>();
-  var emailToPrincipal = Map.empty<Text, Principal>();
-  let OWNER_EMAIL = "traviscastonguay@gmail.com";
-  var ownerPrincipal : ?Principal = null;
+  let vipUsers = Set.empty<Principal>(); // Track VIP users
 
-  var promoCodes = Map.fromIter(
-    ["PROMO1", "PROMO2", "PROMO3"].values().map(func(code) { (code, true) })
-  );
-
-  func checkRateLimit(caller : Principal, action : Text) : Bool {
-    if (not securityConfig.enabled) {
-      return true;
-    };
-
-    if (allowlist.containsKey(caller)) {
-      securityStats := {
-        securityStats with allowedCalls = securityStats.allowedCalls + 1;
-      };
-      logSecurityEvent(caller, action, #allowed, "Allowlisted principal");
-      return true;
-    };
-
-    if (blocklist.containsKey(caller)) {
-      securityStats := {
-        securityStats with deniedCalls = securityStats.deniedCalls + 1;
-      };
-      logSecurityEvent(caller, action, #denied, "Principal is blocklisted");
-      return false;
-    };
-
-    let now = Time.now();
-    let windowStart = now - securityConfig.rateLimitWindow;
-
-    let history = switch (callHistory.get(caller)) {
-      case (null) { List.empty<Time.Time>() };
-      case (?h) { h };
-    };
-
-    var recentCalls = List.empty<Time.Time>();
-    var callCount = 0;
-    for (timestamp in history.values()) {
-      if (timestamp > windowStart) {
-        recentCalls.add(timestamp);
-        callCount += 1;
-      };
-    };
-
-    if (callCount >= securityConfig.maxCallsPerWindow) {
-      securityStats := {
-        securityStats with throttledCalls = securityStats.throttledCalls + 1;
-      };
-      logSecurityEvent(caller, action, #throttled, "Rate limit exceeded");
-      return false;
-    };
-
-    recentCalls.add(now);
-    callHistory.add(caller, recentCalls);
-
-    securityStats := {
-      securityStats with allowedCalls = securityStats.allowedCalls + 1;
-    };
-    logSecurityEvent(caller, action, #allowed, "Within rate limit");
-    return true;
-  };
-
-  func logSecurityEvent(principal : Principal, action : Text, result : { #allowed; #denied; #throttled }, reason : Text) {
-    let event : SecurityEvent = {
-      timestamp = Time.now();
-      principal;
-      action;
-      result;
-      reason;
-    };
-    securityEvents.add(event);
-
-    let size = securityEvents.size();
-    if (size > 1000) {
-      let eventsArray = securityEvents.toArray();
-      let startIndex = size - 1000;
-      let recentEvents = Array.tabulate(1000, func(i) { eventsArray[startIndex + i] });
-      securityEvents := List.fromArray(recentEvents);
-    };
-  };
-
-  func logAuditEntry(admin : Principal, action : Text, details : Text) {
+  func logAudit(admin : Principal, action : Text, details : Text) {
     let entry : AuditLogEntry = {
       timestamp = Time.now();
       admin;
@@ -229,37 +128,6 @@ actor {
       details;
     };
     auditLog.add(entry);
-
-    let size = auditLog.size();
-    if (size > 500) {
-      let logArray = auditLog.toArray();
-      let startIndex = size - 500;
-      let recentLog = Array.tabulate(500, func(i) { logArray[startIndex + i] });
-      auditLog := List.fromArray(recentLog);
-    };
-  };
-
-  func isOwner(caller : Principal) : Bool {
-    switch (ownerPrincipal) {
-      case (null) { false };
-      case (?owner) { caller == owner };
-    };
-  };
-
-  func isAdminByPrincipal(caller : Principal) : Bool {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      return false;
-    };
-
-    switch (userProfiles.get(caller)) {
-      case (null) { false };
-      case (?profile) {
-        switch (profile.email) {
-          case (null) { false };
-          case (?email) { adminEmails.containsKey(email) };
-        };
-      };
-    };
   };
 
   func countOrdersForPrincipal(principal : Principal) : Nat {
@@ -271,131 +139,35 @@ actor {
             count += 1;
           };
         };
-        case (null) { };
+        case (null) {};
       };
     };
     count;
   };
 
-  public query ({ caller }) func isOrderOwner(orderId : Text) : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can check order ownership");
-    };
-
-    switch (orders.get(orderId)) {
-      case (null) { false };
-      case (?order) { order.owner == ?caller };
-    };
-  };
-
+  // User Profile Management - User-level authorization
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+      Runtime.trap("Unauthorized: Only users can access profiles");
     };
     userProfiles.get(caller);
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can view profiles");
-    };
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
     };
     userProfiles.get(user);
   };
 
-  public query ({ caller }) func isCallerVIP() : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can check VIP status");
-    };
-    switch (userProfiles.get(caller)) {
-      case (?profile) { profile.isVIP };
-      case (null) { false };
-    };
-  };
-
-  public shared ({ caller }) func grantVIPStatus(user : Principal) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can grant VIP status");
-    };
-
-    if (not activeAccounts.contains(user)) {
-      Runtime.trap("User account not found");
-    };
-
-    switch (userProfiles.get(user)) {
-      case (?profile) {
-        let updatedProfile = { profile with isVIP = true };
-        userProfiles.add(user, updatedProfile);
-        logAuditEntry(caller, "grantVIPStatus", "VIP status granted to " # user.toText());
-      };
-      case (null) { Runtime.trap("User profile not found") };
-    };
-  };
-
-  public shared ({ caller }) func revokeVIPStatus(user : Principal) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can revoke VIP status");
-    };
-
-    if (not activeAccounts.contains(user)) {
-      Runtime.trap("User account not found");
-    };
-
-    switch (userProfiles.get(user)) {
-      case (?profile) {
-        let updatedProfile = { profile with isVIP = false };
-        userProfiles.add(user, updatedProfile);
-        logAuditEntry(caller, "revokeVIPStatus", "VIP status revoked for " # user.toText());
-      };
-      case (null) { Runtime.trap("User profile not found") };
-    };
-  };
-
-  public query ({ caller }) func getAllVIPAccounts() : async [(Principal, Bool)] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view VIP accounts");
-    };
-    let vipList = List.empty<(Principal, Bool)>();
-    for ((principal, profile) in userProfiles.entries()) {
-      vipList.add((principal, profile.isVIP));
-    };
-    vipList.toArray();
-  };
-
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
-
-    if (not checkRateLimit(caller, "saveCallerUserProfile")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    switch (profile.email) {
-      case (?email) {
-        emailToPrincipal.add(email, caller);
-
-        if (email == OWNER_EMAIL and ownerPrincipal == null) {
-          ownerPrincipal := ?caller;
-          adminEmails.add(email, true);
-          logAuditEntry(caller, "ownerInitialized", "Owner principal set for " # OWNER_EMAIL);
-        };
-      };
-      case (null) { };
-    };
-
-    let existingProfile = userProfiles.get(caller);
-    let isVIP = switch (existingProfile) {
-      case (?p) { p.isVIP };
-      case (null) { false };
-    };
-
-    userProfiles.add(caller, { profile with isVIP });
-    activeAccounts.add(caller);
+    userProfiles.add(caller, profile);
   };
 
+  // Order Management - User-level authorization for creation, admin for modifications
   public shared ({ caller }) func createOrder(
     id : Text,
     details : Details,
@@ -408,29 +180,13 @@ actor {
     };
 
     if (bannedUsers.contains(caller)) {
-      Runtime.trap("Your account has been banned from placing orders");
+      Runtime.trap("Unauthorized: Banned users cannot create orders");
     };
 
-    if (not checkRateLimit(caller, "createOrder")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
+    // Check if user is VIP for discount application
+    let isVIP = vipUsers.contains(caller);
 
-    if (orders.containsKey(id)) {
-      Runtime.trap("Order ID already exists");
-    };
-
-    let (promoUsed, validPromoCode) = switch (promoCode) {
-      case (null) { (false, null) };
-      case (?code) {
-        if (promoCodes.containsKey(code)) {
-          (true, ?code);
-        } else {
-          (false, null);
-        };
-      };
-    };
-
-    let newOrder : Order = {
+    let order : Order = {
       id;
       details;
       address;
@@ -439,645 +195,229 @@ actor {
       status = #pending;
       owner = ?caller;
       trackingNumber = null;
-      promoUsed;
-      promoCode = validPromoCode;
+      promoUsed = isVIP; // VIP discount applied at order creation time
+      promoCode;
     };
 
-    orders.add(id, newOrder);
+    orders.add(id, order);
     activeAccounts.add(caller);
+  };
 
-    if (not userProfiles.containsKey(caller)) {
-      let defaultProfile : UserProfile = {
-        name = details.first_name # " " # details.last_name;
-        email = null;
-        isVIP = false;
+  public query ({ caller }) func getOrder(orderId : Text) : async ?Order {
+    let order = orders.get(orderId);
+    switch (order) {
+      case (?o) {
+        // Users can view their own orders, admins can view all
+        switch (o.owner) {
+          case (?owner) {
+            if (caller != owner and not AccessControl.isAdmin(accessControlState, caller)) {
+              Runtime.trap("Unauthorized: Can only view your own orders");
+            };
+          };
+          case (null) {
+            if (not AccessControl.isAdmin(accessControlState, caller)) {
+              Runtime.trap("Unauthorized: Can only view your own orders");
+            };
+          };
+        };
+        order;
       };
-      userProfiles.add(caller, defaultProfile);
+      case (null) { null };
     };
   };
 
+  public query ({ caller }) func getCallerOrders() : async [Order] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access orders");
+    };
+
+    let userOrders = List.empty<Order>();
+    for ((_, order) in orders.entries()) {
+      switch (order.owner) {
+        case (?owner) {
+          if (owner == caller) {
+            userOrders.add(order);
+          };
+        };
+        case (null) {};
+      };
+    };
+    userOrders.toArray();
+  };
+
+  // Admin-only: Get all orders
+  public query ({ caller }) func getAllOrders() : async [Order] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can access all orders");
+    };
+
+    let allOrders = List.empty<Order>();
+    for ((_, order) in orders.entries()) {
+      allOrders.add(order);
+    };
+    allOrders.toArray();
+  };
+
+  // Admin-only: Update order status
   public shared ({ caller }) func updateOrderStatus(orderId : Text, status : OrderStatus) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can update order status");
     };
 
-    if (not checkRateLimit(caller, "updateOrderStatus")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
     switch (orders.get(orderId)) {
-      case (null) { Runtime.trap("Order not found") };
       case (?order) {
-        orders.add(orderId, { order with status });
-        logAuditEntry(caller, "updateOrderStatus", "Order " # orderId # " status updated");
+        let updatedOrder = {
+          order with status = status;
+        };
+        orders.add(orderId, updatedOrder);
+        logAudit(caller, "update_order_status", "Order: " # orderId # ", Status: " # debug_show(status));
+      };
+      case (null) {
+        Runtime.trap("Order not found");
       };
     };
   };
 
+  // Admin-only: Set tracking number
   public shared ({ caller }) func setTrackingNumber(orderId : Text, trackingNumber : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set tracking numbers");
     };
 
-    if (not checkRateLimit(caller, "setTrackingNumber")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
     switch (orders.get(orderId)) {
-      case (null) { Runtime.trap("Order not found") };
       case (?order) {
-        if (order.status == #pending) {
-          Runtime.trap("Cannot set tracking number for pending orders");
+        let updatedOrder = {
+          order with trackingNumber = ?trackingNumber;
         };
-        let updatedOrder = { order with trackingNumber = ?trackingNumber };
         orders.add(orderId, updatedOrder);
-        logAuditEntry(caller, "setTrackingNumber", "Tracking number set for order " # orderId);
+        logAudit(caller, "set_tracking_number", "Order: " # orderId # ", Tracking: " # trackingNumber);
+      };
+      case (null) {
+        Runtime.trap("Order not found");
       };
     };
   };
 
-  public query ({ caller }) func getOrder(orderId : Text) : async ?Order {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can view orders");
-    };
-
-    switch (orders.get(orderId)) {
-      case (null) { null };
-      case (?order) {
-        if (AccessControl.isAdmin(accessControlState, caller) or order.owner == ?caller) {
-          ?order;
-        } else {
-          Runtime.trap("Unauthorized: You can only view your own orders");
-        };
-      };
-    };
-  };
-
-  public query ({ caller }) func getAllOrders() : async [Order] {
+  // Admin-only: Set VIP status
+  public shared ({ caller }) func setVIPStatus(user : Principal, isVIP : Bool) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can retrieve all orders");
+      Runtime.trap("Unauthorized: Only admins can set VIP status");
     };
-    orders.values().toArray().sort();
+
+    if (isVIP) {
+      vipUsers.add(user); // Add to VIP set
+    } else {
+      vipUsers.remove(user); // Remove from VIP set
+    };
+
+    logAudit(
+      caller,
+      "set_vip_status",
+      "User: " # user.toText() # ", VIP: " # debug_show(isVIP),
+    );
   };
 
-  public query ({ caller }) func getOrdersByStatus(status : OrderStatus) : async [Order] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can retrieve orders by status");
-    };
-
-    let resultList = List.empty<Order>();
-    for ((_, order) in orders.entries()) {
-      if (order.status == status) {
-        resultList.add(order);
-      };
-    };
-    resultList.values().toArray();
-  };
-
-  public shared ({ caller }) func deleteOrder(orderId : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can delete orders");
-    };
-
-    if (not checkRateLimit(caller, "deleteOrder")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    if (not orders.containsKey(orderId)) {
-      Runtime.trap("Order not found");
-    };
-
-    orders.remove(orderId);
-    logAuditEntry(caller, "deleteOrder", "Order " # orderId # " deleted");
-  };
-
-  public shared ({ caller }) func resetAllData() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can reset data");
-    };
-
-    if (not checkRateLimit(caller, "resetAllData")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    orders.clear();
-    logAuditEntry(caller, "resetAllData", "All order data reset");
-  };
-
-  public shared ({ caller }) func createOrderWithCallback(
-    id : Text,
-    details : Details,
-    address : Address,
-    photo : Storage.ExternalBlob,
-    promoCode : ?Text,
-  ) : async Order {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can create orders");
-    };
-
-    if (bannedUsers.contains(caller)) {
-      Runtime.trap("Your account has been banned from placing orders");
-    };
-
-    if (not checkRateLimit(caller, "createOrderWithCallback")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    if (orders.containsKey(id)) {
-      Runtime.trap("Order ID already exists");
-    };
-
-    let (promoUsed, validPromoCode) = switch (promoCode) {
-      case (null) { (false, null) };
-      case (?code) {
-        if (promoCodes.containsKey(code)) {
-          (true, ?code);
-        } else {
-          (false, null);
-        };
-      };
-    };
-
-    let newOrder : Order = {
-      id;
-      details;
-      address;
-      photo;
-      creationTime = Time.now();
-      status = #pending;
-      owner = ?caller;
-      trackingNumber = null;
-      promoUsed;
-      promoCode = validPromoCode;
-    };
-
-    orders.add(id, newOrder);
-    activeAccounts.add(caller);
-
-    if (not userProfiles.containsKey(caller)) {
-      let defaultProfile : UserProfile = {
-        name = details.first_name # " " # details.last_name;
-        email = null;
-        isVIP = false;
-      };
-      userProfiles.add(caller, defaultProfile);
-    };
-
-    newOrder;
-  };
-
-  public query ({ caller }) func getSecurityStats() : async SecurityStats {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view security stats");
-    };
-    securityStats;
-  };
-
-  public query ({ caller }) func getSecurityEvents(limit : Nat) : async [SecurityEvent] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view security events");
-    };
-
-    let eventsArray = securityEvents.toArray();
-    let size = eventsArray.size();
-    let actualLimit = if (limit < size) { limit } else { size };
-
-    let startIndex = if (size > actualLimit) { size - actualLimit } else { 0 };
-    Array.tabulate<SecurityEvent>(actualLimit, func(i) { eventsArray[startIndex + i] });
-  };
-
-  public query ({ caller }) func getSecurityConfig() : async {
-    enabled : Bool;
-    rateLimitWindow : Nat;
-    maxCallsPerWindow : Nat;
-    blocklistSize : Nat;
-    allowlistSize : Nat;
-  } {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view security config");
-    };
-    {
-      enabled = securityConfig.enabled;
-      rateLimitWindow = securityConfig.rateLimitWindow;
-      maxCallsPerWindow = securityConfig.maxCallsPerWindow;
-      blocklistSize = blocklist.size();
-      allowlistSize = allowlist.size();
-    };
-  };
-
-  public shared ({ caller }) func setSecurityEnabled(enabled : Bool) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can configure security");
-    };
-
-    if (not checkRateLimit(caller, "setSecurityEnabled")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    securityConfig := { securityConfig with enabled };
-    logAuditEntry(caller, "setSecurityEnabled", "Security " # (if (enabled) { "enabled" } else { "disabled" }));
-  };
-
-  public shared ({ caller }) func updateRateLimits(rateLimitWindow : Nat, maxCallsPerWindow : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can configure security");
-    };
-
-    if (not checkRateLimit(caller, "updateRateLimits")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    securityConfig := {
-      enabled = securityConfig.enabled;
-      rateLimitWindow;
-      maxCallsPerWindow;
-    };
-    logAuditEntry(caller, "updateRateLimits", "Rate limits updated: window=" # rateLimitWindow.toText() # ", max=" # maxCallsPerWindow.toText());
-  };
-
-  public shared ({ caller }) func clearSecurityCounters() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can clear security counters");
-    };
-
-    if (not checkRateLimit(caller, "clearSecurityCounters")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    securityStats := {
-      allowedCalls = 0;
-      deniedCalls = 0;
-      throttledCalls = 0;
-    };
-    securityEvents.clear();
-    logAuditEntry(caller, "clearSecurityCounters", "Security counters and events cleared");
-  };
-
-  public shared ({ caller }) func addToBlocklist(principal : Principal) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can manage blocklist");
-    };
-
-    if (not checkRateLimit(caller, "addToBlocklist")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    blocklist.add(principal, true);
-    logAuditEntry(caller, "addToBlocklist", "Principal " # principal.toText() # " added to blocklist");
-  };
-
-  public shared ({ caller }) func removeFromBlocklist(principal : Principal) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can manage blocklist");
-    };
-
-    if (not checkRateLimit(caller, "removeFromBlocklist")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    blocklist.remove(principal);
-    logAuditEntry(caller, "removeFromBlocklist", "Principal " # principal.toText() # " removed from blocklist");
-  };
-
-  public shared ({ caller }) func addToAllowlist(principal : Principal) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can manage allowlist");
-    };
-
-    if (not checkRateLimit(caller, "addToAllowlist")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    allowlist.add(principal, true);
-    logAuditEntry(caller, "addToAllowlist", "Principal " # principal.toText() # " added to allowlist");
-  };
-
-  public shared ({ caller }) func removeFromAllowlist(principal : Principal) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can manage allowlist");
-    };
-
-    if (not checkRateLimit(caller, "removeFromAllowlist")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    allowlist.remove(principal);
-    logAuditEntry(caller, "removeFromAllowlist", "Principal " # principal.toText() # " removed from allowlist");
-  };
-
-  public shared ({ caller }) func bulkApproveOrders(orderIds : [Text]) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform bulk actions");
-    };
-
-    if (not checkRateLimit(caller, "bulkApproveOrders")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    for (orderId in orderIds.vals()) {
-      switch (orders.get(orderId)) {
-        case (null) { };
-        case (?order) {
-          orders.add(orderId, { order with status = #approved });
-        };
-      };
-    };
-    logAuditEntry(caller, "bulkApproveOrders", orderIds.size().toText() # " orders approved");
-  };
-
-  public shared ({ caller }) func bulkShipOrders(orderIds : [Text]) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform bulk actions");
-    };
-
-    if (not checkRateLimit(caller, "bulkShipOrders")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    for (orderId in orderIds.vals()) {
-      switch (orders.get(orderId)) {
-        case (null) { };
-        case (?order) {
-          orders.add(orderId, { order with status = #shipped });
-        };
-      };
-    };
-    logAuditEntry(caller, "bulkShipOrders", orderIds.size().toText() # " orders shipped");
-  };
-
-  public shared ({ caller }) func bulkDeleteOrders(orderIds : [Text]) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform bulk actions");
-    };
-
-    if (not checkRateLimit(caller, "bulkDeleteOrders")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    for (orderId in orderIds.vals()) {
-      orders.remove(orderId);
-    };
-    logAuditEntry(caller, "bulkDeleteOrders", orderIds.size().toText() # " orders deleted");
-  };
-
-  public query ({ caller }) func exportOrdersCSV() : async Text {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can export data");
-    };
-
-    var csv = "Order ID,First Name,Last Name,Status,Creation Time,Tracking Number,Owner,Promo Used,Promo Code\n";
-    for ((_, order) in orders.entries()) {
-      let statusText = switch (order.status) {
-        case (#pending) { "pending" };
-        case (#approved) { "approved" };
-        case (#shipped) { "shipped" };
-      };
-      let trackingText = switch (order.trackingNumber) {
-        case (null) { "" };
-        case (?tn) { tn };
-      };
-      let ownerText = switch (order.owner) {
-        case (null) { "" };
-        case (?p) { p.toText() };
-      };
-      let promoText = if (order.promoUsed) { "Yes" } else { "" };
-      let promoCodeText = switch (order.promoCode) { case (null) { "" }; case (?p) { p } };
-
-      csv #= order.id # "," # order.details.first_name # "," # order.details.last_name # "," # statusText # "," # order.creationTime.toText() # "," # trackingText # "," # ownerText # "," # promoText # "," # promoCodeText # "\n";
-    };
-
-    csv;
-  };
-
-  public query ({ caller }) func getAuditLog(limit : Nat) : async [AuditLogEntry] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view audit log");
-    };
-
-    let logArray = auditLog.toArray();
-    let size = logArray.size();
-    let actualLimit = if (limit < size) { limit } else { size };
-
-    let startIndex = if (size > actualLimit) { size - actualLimit } else { 0 };
-    Array.tabulate<AuditLogEntry>(actualLimit, func(i) { logArray[startIndex + i] });
-  };
-
-  public shared ({ caller }) func grantAdminAccess(admin_email : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can grant admin access");
-    };
-
-    if (not checkRateLimit(caller, "grantAdminAccess")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    adminEmails.add(admin_email, true);
-
-    switch (emailToPrincipal.get(admin_email)) {
-      case (?principal) {
-        AccessControl.assignRole(accessControlState, caller, principal, #admin);
-      };
-      case (null) { };
-    };
-
-    logAuditEntry(caller, "grantAdminAccess", "Admin access granted to " # admin_email);
-  };
-
-  public shared ({ caller }) func revokeAdminAccess(admin_email : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can revoke admin access");
-    };
-
-    if (admin_email == OWNER_EMAIL) {
-      Runtime.trap("Cannot revoke owner's admin access");
-    };
-
-    if (not checkRateLimit(caller, "revokeAdminAccess")) {
-      Runtime.trap("TREY C SECURITY: Rate limit exceeded or access denied");
-    };
-
-    adminEmails.remove(admin_email);
-
-    switch (emailToPrincipal.get(admin_email)) {
-      case (?principal) {
-        AccessControl.assignRole(accessControlState, caller, principal, #user);
-      };
-      case (null) { };
-    };
-
-    logAuditEntry(caller, "revokeAdminAccess", "Admin access revoked for " # admin_email);
-  };
-
-  public query ({ caller }) func listAdminEmails() : async [Text] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can list admin emails");
-    };
-
-    let emailList = List.empty<Text>();
-    for ((email, _) in adminEmails.entries()) {
-      emailList.add(email);
-    };
-    emailList.toArray();
-  };
-
-  public query ({ caller }) func isAdminEmail(email : Text) : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can check admin status");
-    };
-    adminEmails.containsKey(email);
-  };
-
+  // Admin-only: Ban user
   public shared ({ caller }) func banUser(user : Principal) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform account actions");
-    };
-
-    if (not activeAccounts.contains(user)) {
-      Runtime.trap("User account not found");
-    };
-
-    if (user == caller) {
-      Runtime.trap("Cannot ban yourself");
-    };
-
-    if (isOwner(user)) {
-      Runtime.trap("Cannot ban the owner");
-    };
-
-    if (AccessControl.isAdmin(accessControlState, user)) {
-      Runtime.trap("Cannot ban other admins");
+      Runtime.trap("Unauthorized: Only admins can ban users");
     };
 
     bannedUsers.add(user);
-    logAuditEntry(caller, "banUser", "User " # user.toText() # " banned");
+    logAudit(caller, "ban_user", "User: " # user.toText());
   };
 
+  // Admin-only: Unban user
   public shared ({ caller }) func unbanUser(user : Principal) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform account actions");
-    };
-
-    if (not bannedUsers.contains(user)) {
-      Runtime.trap("User is not banned");
+      Runtime.trap("Unauthorized: Only admins can unban users");
     };
 
     bannedUsers.remove(user);
-    logAuditEntry(caller, "unbanUser", "User " # user.toText() # " unbanned");
+    logAudit(caller, "unban_user", "User: " # user.toText());
   };
 
-  public query ({ caller }) func isUserBanned(user : Principal) : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can check banned status");
-    };
-
-    if (not activeAccounts.contains(user)) {
-      Runtime.trap("User account not found");
-    };
-
-    bannedUsers.contains(user);
-  };
-
-  public query ({ caller }) func isCallerBanned() : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can check their ban status");
-    };
-    bannedUsers.contains(caller);
-  };
-
+  // Admin-only: Get dashboard data
   public query ({ caller }) func getAdminDashboard() : async AdminDashboardData {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access dashboard");
     };
 
-    let ordersArray = orders.values().toArray();
+    let allOrders = List.empty<Order>();
+    for ((_, order) in orders.entries()) {
+      allOrders.add(order);
+    };
 
     let accountsList = List.empty<AccountInfo>();
     for (principal in activeAccounts.values()) {
-      let profile = userProfiles.get(principal);
-      let isBanned = bannedUsers.contains(principal);
-      let isVIP = switch (profile) {
-        case (?p) { p.isVIP };
-        case (null) { false };
-      };
       let orderCount = countOrdersForPrincipal(principal);
 
-      let accountInfo : AccountInfo = {
-        principal;
-        profile;
-        isBanned;
-        isVIP;
-        orderCount;
-      };
-      accountsList.add(accountInfo);
-    };
+      // Only include accounts with at least one order
+      if (orderCount > 0) {
+        let profile = userProfiles.get(principal);
+        let isBanned = bannedUsers.contains(principal);
+        let isVIP = vipUsers.contains(principal);
 
-    let auditLogArray = auditLog.toArray();
+        let accountInfo : AccountInfo = {
+          principal;
+          profile;
+          isBanned;
+          isVIP;
+          orderCount;
+        };
+        accountsList.add(accountInfo);
+      };
+    };
 
     {
-      orders = ordersArray;
+      orders = allOrders.toArray();
       accounts = accountsList.toArray();
       securityStats;
-      auditLog = auditLogArray;
+      auditLog = auditLog.toArray();
     };
   };
 
-  public query ({ caller }) func getActiveAccounts() : async [Principal] {
+  // Admin-only: Get audit log
+  public query ({ caller }) func getAuditLog() : async [AuditLogEntry] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can access active accounts");
+      Runtime.trap("Unauthorized: Only admins can access audit log");
     };
-    activeAccounts.toArray();
+
+    auditLog.toArray();
   };
 
-  public query ({ caller }) func getAllAccounts() : async [AccountInfo] {
+  // Admin-only: Get account info for a specific user (enhanced for admin UI)
+  public query ({ caller }) func getAccountInfo(user : Principal) : async ?AccountInfo {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access account information");
     };
 
-    let accountsList = List.empty<AccountInfo>();
-    for (principal in activeAccounts.values()) {
-      let profile = userProfiles.get(principal);
-      let isBanned = bannedUsers.contains(principal);
-      let isVIP = switch (profile) {
-        case (?p) { p.isVIP };
-        case (null) { false };
-      };
-      let orderCount = countOrdersForPrincipal(principal);
+    let orderCount = countOrdersForPrincipal(user);
 
-      let accountInfo : AccountInfo = {
-        principal;
+    if (orderCount > 0) {
+      let profile = userProfiles.get(user);
+      let isBanned = bannedUsers.contains(user);
+      let isVIP = vipUsers.contains(user);
+
+      ?{
+        principal = user;
         profile;
         isBanned;
         isVIP;
         orderCount;
       };
-      accountsList.add(accountInfo);
+    } else {
+      null;
     };
-
-    accountsList.toArray();
   };
 
-  // -- Promo code management
-
-  public query ({ caller }) func getAllPromoCodes() : async [Text] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can get all promo codes");
-    };
-    promoCodes.keys().toArray();
+  // Public: Check if user is banned (no auth required for transparency)
+  public query func isUserBanned(user : Principal) : async Bool {
+    bannedUsers.contains(user);
   };
 
-  public shared ({ caller }) func addPromoCode(promoCode : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can add promo codes");
-    };
-
-    promoCodes.add(promoCode, true);
-  };
-
-  public shared ({ caller }) func removePromoCode(promoCode : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can remove promo codes");
-    };
-
-    promoCodes.remove(promoCode);
+  // Public: Check if user is VIP
+  public query func isUserVIP(user : Principal) : async Bool {
+    vipUsers.contains(user);
   };
 };

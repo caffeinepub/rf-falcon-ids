@@ -513,7 +513,7 @@ export default function NewOrderPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {US_STATES.map((state) => (
-                      <SelectItem key={state.code} value={state.name}>
+                      <SelectItem key={state.code} value={state.code}>
                         {state.name}
                       </SelectItem>
                     ))}
@@ -535,26 +535,21 @@ export default function NewOrderPage() {
         </Card>
 
         {/* Submit Button */}
-        <div className="flex justify-end gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate({ to: '/dashboard' })}
-            disabled={createOrder.isPending}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={!isFormValid || createOrder.isPending} className="min-w-[140px]">
-            {createOrder.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              'Place Order'
-            )}
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          disabled={!isFormValid || createOrder.isPending || vipLoading}
+          className="w-full"
+          size="lg"
+        >
+          {createOrder.isPending ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Creating Order...
+            </>
+          ) : (
+            'Create Order'
+          )}
+        </Button>
       </form>
     </div>
   );

@@ -1,159 +1,75 @@
 {
   "kind": "build_request",
-  "title": "Add admin-managed promo codes (5% off) and promo usage tracking on orders",
+  "title": "Remove Admin Accounts tab and manage user accounts from Orders",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Extend the backend order model to record promo usage per order, including whether a promo code was applied and which promo code string was used.",
-      "target": "backend",
+      "text": "Remove the standalone “Accounts” area from the Admin Panel UI (including its tab trigger, tab content, and any related lazy imports) so admins no longer manage accounts from a separate Admin Accounts section.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-6"
         ],
         "quotes": [
-          "Add a spot in the admin panel where admins can add promo codes for checkout from the website %5 off for codes added and on orders put if they used a promo and what one they used"
+          "Ok yes remove the accounts area in the admin panel"
         ]
       },
       "acceptanceCriteria": [
-        "Creating an order can optionally include a promo code value.",
-        "When an order is retrieved via existing order endpoints, the promo usage information is returned with the order data.",
-        "Existing orders created before this change continue to load (promo fields default to empty / null)."
+        "Admin panel no longer shows an “Accounts” tab/section.",
+        "No unused/lazy imports remain for the removed Accounts section (e.g., AdminAccountsSection).",
+        "Admin Panel header/description text is updated so it does not claim admins manage accounts from the dashboard if the accounts area was removed."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add backend admin APIs to manage promo codes that provide a 5% discount, including: list promo codes, add a promo code, and remove (or deactivate) a promo code. Promo code management must be restricted to admins.",
-      "target": "backend",
+      "text": "Add account management controls to admin order management so an admin can ban/unban and manage VIP status for the account tied to an order directly from the order UI.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-6"
         ],
         "quotes": [
-          "Add a spot in the admin panel where admins can add promo codes for checkout from the website %5 off for codes added"
+          "make me be able to ban and manage people accounts from there order so if they place a order i can manage there account from the order"
         ]
       },
       "acceptanceCriteria": [
-        "Non-admin callers are rejected when attempting to add/remove/list promo codes.",
-        "Admins can add a new promo code and see it appear in the promo code list.",
-        "Admins can remove/deactivate an existing promo code and it no longer validates for checkout.",
-        "Promo codes are treated consistently (trimmed; matching is case-insensitive or stored in a normalized form)."
+        "For any order that has an owner principal, the admin UI exposes controls to: (1) ban/unban the owner, and (2) grant/revoke VIP for the owner, without navigating to a separate Accounts page.",
+        "If an order has no owner (owner is null), the UI clearly indicates that account management is unavailable for that order and does not show broken controls.",
+        "After a ban/unban or VIP change, the UI refreshes to reflect the updated account status and does not require a manual page reload.",
+        "User-facing text for these controls and confirmations is in English."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Update backend order creation to accept an optional promo code, validate it against the promo codes configured by admins, and store the promo code used on the order when valid. Invalid promo codes must not be accepted for discount application.",
+      "text": "Provide a backend API to fetch account status for a specific principal (used by the order-linked account management UI) without requiring loading the entire accounts list.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-6"
         ],
         "quotes": [
-          "promo codes for checkout from the website %5 off for codes added"
+          "ban and manage people accounts from there order"
         ]
       },
       "acceptanceCriteria": [
-        "Submitting an order with a valid promo code succeeds and the created order records the promo code used.",
-        "Submitting an order with an invalid promo code returns a clear error message (in English) indicating the code is invalid.",
-        "Submitting an order with no promo code continues to work exactly as before."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Add a new Promo Codes section in the admin panel UI where admins can add and remove (or deactivate) promo codes, and view the current list of configured promo codes.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3"
-        ],
-        "quotes": [
-          "Add a spot in the admin panel where admins can add promo codes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin Dashboard includes a new tab/section labeled \"Promo Codes\" (English).",
-        "Admins can enter a promo code and save it; the list updates without a full page reload.",
-        "Admins can remove/deactivate a promo code from the list; the list updates after the action.",
-        "UI shows loading and error states for promo code operations."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Update the checkout/order creation UI to allow users to enter an optional promo code, apply a 5% discount when the promo code is valid, and submit the promo code with the order creation request.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3"
-        ],
-        "quotes": [
-          "promo codes for checkout from the website %5 off for codes added"
-        ]
-      },
-      "acceptanceCriteria": [
-        "New Order page includes a \"Promo code\" input (optional).",
-        "When a valid promo code is entered, the pricing summary reflects a 5% discount and updates the displayed total accordingly.",
-        "When an invalid promo code is entered, the UI clearly indicates the code is invalid and does not apply the discount.",
-        "On successful order creation with a promo code, the promo code value is included in the order creation call and is visible later on the order data returned from the backend."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Display promo usage on order views in the admin panel so admins can see whether a promo was used and which code was applied for each order.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3"
-        ],
-        "quotes": [
-          "on orders put if they used a promo and what one they used"
-        ]
-      },
-      "acceptanceCriteria": [
-        "In the admin orders list and/or order detail surfaces already present in the admin panel, each order shows promo usage: either \"No promo\" or the promo code string used.",
-        "The display remains readable and consistent with the existing admin styling."
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Add React Query hooks and query keys for promo code admin operations (list/add/remove or deactivate) and ensure relevant queries are invalidated/refetched after mutations.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3"
-        ],
-        "quotes": [
-          "Add a spot in the admin panel where admins can add promo codes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Promo code list is fetched via a dedicated React Query query with a stable query key.",
-        "After add/remove/deactivate promo code mutations succeed, the promo code list query is invalidated and refetched.",
-        "No edits are made to frontend immutable paths (per project constraints)."
+        "Backend exposes an admin-only query method to fetch account info for a given Principal (including at least: isBanned, isVIP, profile if present, and orderCount).",
+        "The method traps with an authorization error when called by a non-admin.",
+        "Frontend order-linked account management UI uses this targeted API (or an equivalent targeted mechanism) to display current status for the order owner."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single-actor Motoko architecture with logic in backend/main.mo.",
-    "Only generate backend/migration.mo if required to preserve existing persisted state during upgrade (conditional migration policy).",
-    "Do not edit files under frontend/src/components/ui or other frontend immutable paths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single-actor Motoko canister (all logic in backend/main.mo).",
+    "Do not edit any frontend files under frontend/src/components/ui or other immutablePaths listed in SYSTEM_CONTEXT; compose those components instead."
   ],
   "nonGoals": [
-    "Implementing percentage values other than a fixed 5% off for promo codes.",
-    "Integrating external payment processors or third-party coupon systems.",
-    "Adding user-specific promo restrictions (usage limits, expiration dates, minimum order amounts) unless explicitly requested."
+    "Do not add third-party authentication providers (Internet Identity only).",
+    "Do not add promo-code backend functionality or other unrelated admin features.",
+    "Do not implement bulk account actions beyond per-order/per-owner management."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

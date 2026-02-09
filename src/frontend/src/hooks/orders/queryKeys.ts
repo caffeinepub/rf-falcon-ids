@@ -26,8 +26,7 @@ export const auditKeys = {
 
 export const accountKeys = {
   all: ['accounts'] as const,
-  allAccounts: () => [...accountKeys.all, 'admin', 'all'] as const,
-  vipAccounts: () => [...accountKeys.all, 'vip'] as const,
+  info: (principalText: string) => [...accountKeys.all, 'info', principalText] as const,
 };
 
 export const promoKeys = {

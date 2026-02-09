@@ -430,15 +430,16 @@ export default function TreyCSecuritySection() {
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {event.result === 'allowed' ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
                     ) : event.result === 'denied' ? (
-                      <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                     ) : (
-                      <Clock className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                      <Clock className="w-5 h-5 text-yellow-400 flex-shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-admin-foreground text-sm truncate">{event.action}</p>
-                      <p className="text-admin-muted text-xs truncate">{event.principal.toText()}</p>
+                      <p className="text-admin-foreground text-sm font-medium">{event.action}</p>
+                      <p className="text-admin-muted text-xs truncate">{event.principal}</p>
+                      <p className="text-admin-muted text-xs">{event.reason}</p>
                     </div>
                   </div>
                   <Badge

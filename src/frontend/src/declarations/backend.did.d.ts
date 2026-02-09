@@ -66,15 +66,6 @@ export interface Order {
 export type OrderStatus = { 'shipped' : null } |
   { 'pending' : null } |
   { 'approved' : null };
-export interface SecurityEvent {
-  'result' : { 'allowed' : null } |
-    { 'denied' : null } |
-    { 'throttled' : null },
-  'principal' : Principal,
-  'action' : string,
-  'timestamp' : Time,
-  'reason' : string,
-}
 export interface SecurityStats {
   'deniedCalls' : bigint,
   'allowedCalls' : bigint,
@@ -120,70 +111,29 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addPromoCode' : ActorMethod<[string], undefined>,
-  'addToAllowlist' : ActorMethod<[Principal], undefined>,
-  'addToBlocklist' : ActorMethod<[Principal], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'banUser' : ActorMethod<[Principal], undefined>,
-  'bulkApproveOrders' : ActorMethod<[Array<string>], undefined>,
-  'bulkDeleteOrders' : ActorMethod<[Array<string>], undefined>,
-  'bulkShipOrders' : ActorMethod<[Array<string>], undefined>,
-  'clearSecurityCounters' : ActorMethod<[], undefined>,
   'createOrder' : ActorMethod<
     [string, Details, Address, ExternalBlob, [] | [string]],
     undefined
   >,
-  'createOrderWithCallback' : ActorMethod<
-    [string, Details, Address, ExternalBlob, [] | [string]],
-    Order
-  >,
-  'deleteOrder' : ActorMethod<[string], undefined>,
-  'exportOrdersCSV' : ActorMethod<[], string>,
-  'getActiveAccounts' : ActorMethod<[], Array<Principal>>,
+  'getAccountInfo' : ActorMethod<[Principal], [] | [AccountInfo]>,
   'getAdminDashboard' : ActorMethod<[], AdminDashboardData>,
-  'getAllAccounts' : ActorMethod<[], Array<AccountInfo>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
-  'getAllPromoCodes' : ActorMethod<[], Array<string>>,
-  'getAllVIPAccounts' : ActorMethod<[], Array<[Principal, boolean]>>,
-  'getAuditLog' : ActorMethod<[bigint], Array<AuditLogEntry>>,
+  'getAuditLog' : ActorMethod<[], Array<AuditLogEntry>>,
+  'getCallerOrders' : ActorMethod<[], Array<Order>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getOrder' : ActorMethod<[string], [] | [Order]>,
-  'getOrdersByStatus' : ActorMethod<[OrderStatus], Array<Order>>,
-  'getSecurityConfig' : ActorMethod<
-    [],
-    {
-      'blocklistSize' : bigint,
-      'allowlistSize' : bigint,
-      'rateLimitWindow' : bigint,
-      'maxCallsPerWindow' : bigint,
-      'enabled' : boolean,
-    }
-  >,
-  'getSecurityEvents' : ActorMethod<[bigint], Array<SecurityEvent>>,
-  'getSecurityStats' : ActorMethod<[], SecurityStats>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
-  'grantAdminAccess' : ActorMethod<[string], undefined>,
-  'grantVIPStatus' : ActorMethod<[Principal], undefined>,
-  'isAdminEmail' : ActorMethod<[string], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'isCallerBanned' : ActorMethod<[], boolean>,
-  'isCallerVIP' : ActorMethod<[], boolean>,
-  'isOrderOwner' : ActorMethod<[string], boolean>,
   'isUserBanned' : ActorMethod<[Principal], boolean>,
-  'listAdminEmails' : ActorMethod<[], Array<string>>,
-  'removeFromAllowlist' : ActorMethod<[Principal], undefined>,
-  'removeFromBlocklist' : ActorMethod<[Principal], undefined>,
-  'removePromoCode' : ActorMethod<[string], undefined>,
-  'resetAllData' : ActorMethod<[], undefined>,
-  'revokeAdminAccess' : ActorMethod<[string], undefined>,
-  'revokeVIPStatus' : ActorMethod<[Principal], undefined>,
+  'isUserVIP' : ActorMethod<[Principal], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'setSecurityEnabled' : ActorMethod<[boolean], undefined>,
   'setTrackingNumber' : ActorMethod<[string, string], undefined>,
+  'setVIPStatus' : ActorMethod<[Principal, boolean], undefined>,
   'unbanUser' : ActorMethod<[Principal], undefined>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
-  'updateRateLimits' : ActorMethod<[bigint, bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

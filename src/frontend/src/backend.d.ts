@@ -23,13 +23,6 @@ export interface Address {
     last_name: string;
 }
 export type Time = bigint;
-export interface SecurityEvent {
-    result: Variant_allowed_denied_throttled;
-    principal: Principal;
-    action: string;
-    timestamp: Time;
-    reason: string;
-}
 export interface AuditLogEntry {
     action: string;
     admin: Principal;
@@ -94,65 +87,25 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
-export enum Variant_allowed_denied_throttled {
-    allowed = "allowed",
-    denied = "denied",
-    throttled = "throttled"
-}
 export interface backendInterface {
-    addPromoCode(promoCode: string): Promise<void>;
-    addToAllowlist(principal: Principal): Promise<void>;
-    addToBlocklist(principal: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     banUser(user: Principal): Promise<void>;
-    bulkApproveOrders(orderIds: Array<string>): Promise<void>;
-    bulkDeleteOrders(orderIds: Array<string>): Promise<void>;
-    bulkShipOrders(orderIds: Array<string>): Promise<void>;
-    clearSecurityCounters(): Promise<void>;
     createOrder(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null): Promise<void>;
-    createOrderWithCallback(id: string, details: Details, address: Address, photo: ExternalBlob, promoCode: string | null): Promise<Order>;
-    deleteOrder(orderId: string): Promise<void>;
-    exportOrdersCSV(): Promise<string>;
-    getActiveAccounts(): Promise<Array<Principal>>;
+    getAccountInfo(user: Principal): Promise<AccountInfo | null>;
     getAdminDashboard(): Promise<AdminDashboardData>;
-    getAllAccounts(): Promise<Array<AccountInfo>>;
     getAllOrders(): Promise<Array<Order>>;
-    getAllPromoCodes(): Promise<Array<string>>;
-    getAllVIPAccounts(): Promise<Array<[Principal, boolean]>>;
-    getAuditLog(limit: bigint): Promise<Array<AuditLogEntry>>;
+    getAuditLog(): Promise<Array<AuditLogEntry>>;
+    getCallerOrders(): Promise<Array<Order>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getOrder(orderId: string): Promise<Order | null>;
-    getOrdersByStatus(status: OrderStatus): Promise<Array<Order>>;
-    getSecurityConfig(): Promise<{
-        blocklistSize: bigint;
-        allowlistSize: bigint;
-        rateLimitWindow: bigint;
-        maxCallsPerWindow: bigint;
-        enabled: boolean;
-    }>;
-    getSecurityEvents(limit: bigint): Promise<Array<SecurityEvent>>;
-    getSecurityStats(): Promise<SecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
-    grantAdminAccess(admin_email: string): Promise<void>;
-    grantVIPStatus(user: Principal): Promise<void>;
-    isAdminEmail(email: string): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
-    isCallerBanned(): Promise<boolean>;
-    isCallerVIP(): Promise<boolean>;
-    isOrderOwner(orderId: string): Promise<boolean>;
     isUserBanned(user: Principal): Promise<boolean>;
-    listAdminEmails(): Promise<Array<string>>;
-    removeFromAllowlist(principal: Principal): Promise<void>;
-    removeFromBlocklist(principal: Principal): Promise<void>;
-    removePromoCode(promoCode: string): Promise<void>;
-    resetAllData(): Promise<void>;
-    revokeAdminAccess(admin_email: string): Promise<void>;
-    revokeVIPStatus(user: Principal): Promise<void>;
+    isUserVIP(user: Principal): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    setSecurityEnabled(enabled: boolean): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
+    setVIPStatus(user: Principal, isVIP: boolean): Promise<void>;
     unbanUser(user: Principal): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
-    updateRateLimits(rateLimitWindow: bigint, maxCallsPerWindow: bigint): Promise<void>;
 }

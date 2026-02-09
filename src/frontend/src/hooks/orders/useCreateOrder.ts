@@ -32,8 +32,9 @@ export function useCreateOrder() {
 
       // Check if user is banned before attempting order creation
       try {
+        const principal = identity.getPrincipal();
         const isBanned = await withTimeout(
-          actor.isCallerBanned(),
+          actor.isUserBanned(principal),
           30000,
           'Ban check timed out'
         );
@@ -66,7 +67,7 @@ export function useCreateOrder() {
       // Invalidate all relevant queries to refresh data
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
       queryClient.invalidateQueries({ queryKey: accountKeys.all });
-      queryClient.invalidateQueries({ queryKey: authKeys.vipStatus() });
+      queryClient.invalidateQueries({ queryKey: authKeys.all });
     },
     onError: (error: any) => {
       console.error('Order creation error:', error);

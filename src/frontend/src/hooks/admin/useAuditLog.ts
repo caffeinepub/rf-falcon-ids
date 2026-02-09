@@ -10,7 +10,8 @@ export function useAuditLog(limit: number = 100) {
     queryKey: auditKeys.log(limit),
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getAuditLog(BigInt(limit));
+      // Backend getAuditLog doesn't accept parameters
+      return actor.getAuditLog();
     },
     enabled: !!actor && !actorFetching,
     staleTime: 8000, // Consider data fresh for 8 seconds

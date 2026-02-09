@@ -37,7 +37,10 @@ export default function OrderSuccessModal({ open, onClose }: OrderSuccessModalPr
                   VIP Discount Applied
                 </div>
                 <p className="text-sm">
-                  You saved <span className="font-bold">{formatPrice(discount)}</span> on this order!
+                  You saved <span className="font-bold">{formatPrice(discount)}</span> on this order with your VIP status!
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Your VIP discount will automatically apply to all future orders.
                 </p>
               </div>
             )}
