@@ -52,11 +52,12 @@ export interface OwnerBootstrapStatus {
     status: Variant_boostrap_succeeded_already_admin;
     adminSaved: boolean;
 }
-export interface AuditLogEntry {
-    action: string;
-    admin: Principal;
-    timestamp: Time;
-    details: string;
+export interface HealthCheck {
+    updateLogs: Array<string>;
+    isHealthy: boolean;
+    version: string;
+    config: Config;
+    time_ns: bigint;
 }
 export interface Order {
     id: string;
@@ -71,6 +72,16 @@ export interface Order {
     details: Details;
     photo: ExternalBlob;
     archived: boolean;
+}
+export interface Config {
+    healthCheckEnabled: boolean;
+    version: string;
+}
+export interface AuditLogEntry {
+    action: string;
+    admin: Principal;
+    timestamp: Time;
+    details: string;
 }
 export interface AccountInfo {
     principal: Principal;
@@ -151,12 +162,14 @@ export interface backendInterface {
     getCallerOrders(): Promise<Array<Order>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getCanisterId(): Promise<Principal>;
     getOrder(orderId: string): Promise<Order | null>;
     getPromoCode(code: string): Promise<PromoCode | null>;
     getTreyCSecurityConfig(): Promise<TreyCSecurityConfig>;
     getTreyCSecurityEvents(): Promise<Array<TreyCSecurityEvent>>;
     getTreyCSecurityStats(): Promise<TreyCSecurityStats>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    healthCheck(): Promise<HealthCheck>;
     isCallerAdmin(): Promise<boolean>;
     isCallerVIP(): Promise<boolean>;
     isTreyCSecurityEnabled(): Promise<boolean>;
@@ -164,10 +177,12 @@ export interface backendInterface {
     isUserVIP(user: Principal): Promise<boolean>;
     resetTreyCSecurityStats(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    setCanisterId(newCanisterId: Principal): Promise<void>;
     setTrackingNumber(orderId: string, trackingNumber: string): Promise<void>;
     setTreyCSecurityConfig(config: TreyCSecurityConfig): Promise<void>;
     setVIPStatus(user: Principal, isVIP: boolean): Promise<void>;
     unbanUser(user: Principal): Promise<void>;
+    updateConfig(newConfig: Config): Promise<void>;
     updateOrderDetails(orderId: string, newDetails: Details, newAddress: Address): Promise<void>;
     updateOrderStatus(orderId: string, status: OrderStatus): Promise<void>;
     validatePromoCode(code: string): Promise<PromoCodeValidation>;

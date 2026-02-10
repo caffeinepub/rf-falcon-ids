@@ -1,0 +1,5 @@
+{
+  "backendCanisterId": "",
+  "_comment": "For static hosting (cPanel, etc.): Set backendCanisterId to your backend canister principal ID, then reload the page. For IC deployment: Leave empty; VITE_BACKEND_CANISTER_ID is injected at build time."
+}
+

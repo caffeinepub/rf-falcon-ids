@@ -1,26 +1,70 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Web app with existing user/admin dashboard where clicking Get Started fails due to missing Internet Computer backend canister configuration; user wants errors fixed (including ordering placement issues) and a build that can be hosted on cPanel as a static site with an index.html.",
   "architectural_notes": [
-    "Update routing/CTA handlers (Get Started / Order) to check auth state: if already signed in, redirect to Dashboard instead of Sign In."
+    "Frontend relies on Internet Computer backend canister principal ID provided via VITE_BACKEND_CANISTER_ID; production deployments must inject this value before the app can connect.",
+    "Need a downloadable static build (index.html + assets) compatible with standard web hosting (cPanel), not just platform deployment."
   ],
   "known_issues": [
-    "Clicking 'Get Started' or 'Order' redirects signed-in users to Sign In instead of Dashboard (prevents placing an order)."
+    "Production build misconfigured: VITE_BACKEND_CANISTER_ID not set, causing Get Started/dashboard connectivity failure and blocking backend-dependent flows (including ordering)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-landing-page-cta-buttons-so-that-clicking-get-started-or-order-now-routes-authenticated-users-to-the-dashboard-instead-of-the-sign-in-page-unauthenticated-users-should-still-be-routed-to-sign-in",
-      "title": "Update the Landing page CTA buttons so that clicking \"Get Started\" or \"Order Now\" routes authenticated users to the Dashboard instead of the Sign In page; unauthenticated users should still be routed to Sign In.",
+      "id": "feature-add-a-runtime-config-fallback-for-the-backend-canister-id-so-the-app-can-be-hosted-as-a-static-site-e-g-on-cpanel-without-requiring-build-time-injection-while-preserving-the-existing-current-behavior-when-vite-backend-canister-id-is-correctly-set-at-build-time",
+      "title": "Add a runtime-config fallback for the backend canister ID so the app can be hosted as a static site (e.g., on cPanel) without requiring build-time injection, while preserving the existing current behavior when VITE_BACKEND_CANISTER_ID is correctly set at build time.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-create-a-cpanel-friendly-static-deployment-bundle-and-documentation-ensure-the-production-build-output-includes-an-index-html-entry-point-and-all-required-assets-and-add-clear-steps-for-uploading-to-cpanel-including-spa-routing-configuration-refreshing-deep-links-like-dashboard-should-work",
+      "title": "Create a cPanel-friendly static deployment bundle and documentation: ensure the production build output includes an index.html entry point and all required assets, and add clear steps for uploading to cPanel including SPA routing configuration (refreshing deep links like /dashboard should work).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-dashboard-admin-dashboard-flows-so-authenticated-users-can-reach-the-dashboard-via-the-get-started-flow-and-place-orders-without-being-blocked-by-configuration-errors-when-properly-configured-keep-the-current-design-and-behavior-unchanged-except-for-error-fixes",
+      "title": "Fix the dashboard/admin-dashboard flows so authenticated users can reach the dashboard via the Get Started flow and place orders without being blocked by configuration errors when properly configured; keep the current design and behavior unchanged except for error fixes.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-the-deployment-scripts-docs-so-that-when-deploying-to-the-internet-computer-the-build-reliably-injects-vite-backend-canister-id-retrieving-it-via-dfx-when-available-and-the-failure-mode-is-actionable-do-not-hardcode-canister-ids-into-version-control",
+      "title": "Improve the deployment scripts/docs so that when deploying to the Internet Computer, the build reliably injects VITE_BACKEND_CANISTER_ID (retrieving it via dfx when available), and the failure mode is actionable; do not hardcode canister IDs into version control.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Fix Landing page CTA routing for signed-in users",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Fix deployment/config so VITE_BACKEND_CANISTER_ID is set/injected (detect existing backend canister ID if present, otherwise set up a backend canister) and redeploy so dashboard Get Started connects successfully.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Provide a static-site build output suitable for cPanel hosting, including an index.html entry point (and necessary assets) so user can download and self-host the website.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Fix dashboard/admin dashboard issues preventing users from placing orders (\"ordering placing\" errors) while keeping current design and behavior.",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Fix backend canister ID misconfiguration and enable static cPanel hosting build",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

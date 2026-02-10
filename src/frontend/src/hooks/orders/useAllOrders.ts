@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { orderKeys } from './queryKeys';
+import { logErrorWithContext } from '../../utils/errorReporting';
 import type { Order } from '../../backend';
 
 export function useAllOrders() {
@@ -13,14 +14,18 @@ export function useAllOrders() {
       try {
         return await actor.getAllOrders();
       } catch (error: any) {
-        console.error('Get all orders error:', error);
+        // Log with context preservation
+        logErrorWithContext('getAllOrders', error);
+
+        // Check for unauthorized and provide friendly message
         if (error.message?.includes('Unauthorized')) {
-          throw new Error('You do not have permission to view orders');
+          const friendlyError = new Error('You do not have permission to view orders');
+          (friendlyError as any).cause = error;
+          throw friendlyError;
         }
         throw error;
       }
     },
     enabled: !!actor && !actorFetching,
-    retry: false,
   });
 }

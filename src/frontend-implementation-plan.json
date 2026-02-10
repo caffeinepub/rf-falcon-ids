@@ -1,22 +1,140 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Landing page CTA routes authenticated users to dashboard",
+  "title": "Static-hostable runtime backend canister configuration + cPanel deployment support",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Update Landing page primary CTAs to route authenticated users to /dashboard and unauthenticated users to /signin using existing TanStack Router navigation.",
+      "summary": "Allow backend canister ID to be provided at runtime via a static, editable file when VITE_BACKEND_CANISTER_ID is missing, while preserving current build-time behavior and improving diagnostics.",
       "acceptanceCriteria": [
-        "When the user is authenticated (Internet Identity identity is present), clicking the Landing page \"Get Started\" button navigates to /dashboard.",
-        "When the user is authenticated, clicking the Landing page \"Order Now\" button navigates to /dashboard.",
-        "When the user is not authenticated, clicking either Landing page button navigates to /signin.",
-        "This change is implemented in frontend/src/pages/LandingPage.tsx and does not require changes to the auth provider hooks in immutable paths."
+        "If VITE_BACKEND_CANISTER_ID is set at build time, the app uses it exactly as before and no new configuration file is required.",
+        "If VITE_BACKEND_CANISTER_ID is missing/empty at build time, the app can still be configured by editing a static file in the deployed site (no rebuild required) and then reloading the page.",
+        "Backend connectivity diagnostics (the existing error screen) correctly reflects whether the backend canister ID came from build-time env or runtime config, and shows the configured principal once set.",
+        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/LandingPage.tsx",
+          "path": "frontend/public/runtime-config.json",
+          "operation": "create",
+          "description": "Add a runtime-editable static config file (checked into the build output) that can provide the backend canister principal for static hosting scenarios. Include minimal documented keys (e.g., backendCanisterId) and keep values empty by default for safety."
+        },
+        {
+          "path": "frontend/src/utils/runtimeConfig.ts",
           "operation": "modify",
-          "description": "Import and use the existing useInternetIdentity() hook to detect whether identity is present, then update the \"Get Started\" and \"Order Now\" onClick handlers to navigate({ to: isAuthenticated ? '/dashboard' : '/signin' }) while keeping the existing @tanstack/react-router useNavigate approach; do not modify any files under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts."
+          "description": "Extend runtime config resolution to: (1) prefer build-time import.meta.env.VITE_BACKEND_CANISTER_ID exactly as today when present; (2) when missing/empty, load and validate backend canister ID from the static runtime config file in frontend/public/runtime-config.json; (3) return diagnostics including the resolved canisterId, validity, and a new source field (e.g., build-time env vs runtime file vs missing/invalid) for UI rendering."
+        },
+        {
+          "path": "frontend/src/utils/backendConnectivity.ts",
+          "operation": "modify",
+          "description": "Update connectivity classification to use the enhanced runtimeConfig resolution (env first, then runtime file fallback) so static-hosted deployments can reach a non-misconfigured state after runtime-config.json is filled and the page is reloaded."
+        },
+        {
+          "path": "frontend/src/components/BackendConnectionErrorScreen.tsx",
+          "operation": "modify",
+          "description": "Update the existing configuration error UI and Diagnostics section to: (1) display whether the canister ID came from build-time env or runtime config; (2) show the configured principal once set; (3) update the 'How to Fix' instructions to describe editing the deployed frontend/public/runtime-config.json and reloading the page for static hosting (while keeping existing env-based guidance when applicable). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/BackendGate.tsx",
+          "operation": "modify",
+          "description": "Ensure BackendGate’s error/diagnostic rendering uses the updated runtimeConfig diagnostics so the error screen accurately reflects runtime-config fallback and does not get stuck in misleading states after configuration is provided and the page is reloaded. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Add cPanel-friendly static deployment documentation and supporting files so dist contains index.html/assets and deep-link refresh works via SPA routing rewrite.",
+      "acceptanceCriteria": [
+        "The build output folder (dist) contains index.html and the referenced JS/CSS/assets produced by the build.",
+        "Documentation is added/updated with cPanel upload steps and an example Apache .htaccess rewrite rule so direct navigation/refresh on app routes works (SPA fallback to /index.html).",
+        "Documentation includes instructions for setting the backend canister principal for self-hosting (using the runtime-config mechanism from REQ-1)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/DEPLOYMENT.md",
+          "operation": "modify",
+          "description": "Expand/append a cPanel static hosting section: how to run a production build, upload the contents of dist to the domain’s public web root, confirm index.html presence, and configure SPA routing with an Apache .htaccess rewrite fallback to /index.html; include explicit instructions for setting the backend canister principal using frontend/public/runtime-config.json from REQ-1."
+        },
+        {
+          "path": "frontend/public/.htaccess",
+          "operation": "create",
+          "description": "Add an Apache rewrite configuration file suitable for cPanel static hosting that performs SPA fallback routing to index.html while still serving existing files directly. This file should be included in dist via the Vite public/ copy mechanism."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Verify the entrypoint remains compatible with static hosting (relative asset behavior as currently implemented) and, if needed, add a short HTML comment pointing deployers to DEPLOYMENT.md for runtime-config.json and SPA routing notes (no functional change)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Fix dashboard/admin-dashboard navigation and ordering flow error states so properly configured authenticated users can reach dashboard and place orders; keep design/behavior unchanged except for error fixes.",
+      "acceptanceCriteria": [
+        "With a valid backend canister ID configured, an authenticated user can load the dashboard without seeing the configuration error screen.",
+        "With a valid backend canister ID configured, a user can complete the checkout flow that creates orders (Cart -> create orders -> redirected to /dashboard with success modal).",
+        "Admin dashboard routes continue to be protected (admin-only) and load without runtime exceptions when backend configuration is valid.",
+        "When backend configuration is missing/invalid, the UI continues to show a clear configuration error state (no infinite spinners or silent failures)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Ensure actor initialization uses the resolved backend canister ID from the updated runtime config logic (env first, runtime fallback) and that failures surface as actionable errors (not silent) so BackendGate can render the correct configuration/connection error state. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useBackendHealth.ts",
+          "operation": "modify",
+          "description": "Keep health-check behavior stable but ensure error messages are normalized/consistent for display so valid configurations don’t incorrectly present as misconfigured and missing/invalid configurations don’t cause infinite loading loops. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/CartPage.tsx",
+          "operation": "modify",
+          "description": "Harden checkout error handling so that when backend configuration is valid, transient createOrder failures do not incorrectly appear as configuration errors; ensure success path still redirects to /dashboard with the existing success modal behavior unchanged. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "operation": "modify",
+          "description": "Fix any runtime exceptions in the admin dashboard page caused by missing/stubbed sections by adding safe guards/fallback UI while keeping the current design and route protection intact. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AdminGate.tsx",
+          "operation": "modify",
+          "description": "Ensure admin-only protection remains intact while improving resilience to backend call failures (show clear error state rather than throwing) when configuration is missing/invalid. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Adjust frontend deployment scripts/docs so IC deployment still validates/injects VITE_BACKEND_CANISTER_ID via dfx when available, while avoiding hardcoded canister IDs in tracked env files.",
+      "acceptanceCriteria": [
+        "Mainnet/IC deployment flow continues to validate a missing/invalid backend canister ID and explains how to obtain it via dfx.",
+        "No canister principal IDs are committed into .env.production or other tracked env files."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/scripts/deploy-mainnet.sh",
+          "operation": "modify",
+          "description": "Refine messaging and guardrails so the script reliably retrieves VITE_BACKEND_CANISTER_ID via dfx when not provided, trims it, and clearly explains remediation when retrieval/validation fails (keep behavior that does not hardcode IDs)."
+        },
+        {
+          "path": "frontend/scripts/assert-vite-env.mjs",
+          "operation": "modify",
+          "description": "Update the validator so IC/mainnet deployment remains strict and actionable, but support static hosting builds by allowing an explicit opt-in to skip hard failure when VITE_BACKEND_CANISTER_ID is missing (documented in DEPLOYMENT.md), relying on runtime-config.json instead."
+        },
+        {
+          "path": "frontend/.env.production",
+          "operation": "modify",
+          "description": "Keep VITE_BACKEND_CANISTER_ID empty by default and update comments (if needed) to reflect: (1) IC deployments inject at build time; (2) static hosting can use runtime-config.json; (3) do not commit real canister IDs."
+        },
+        {
+          "path": "frontend/.env.example",
+          "operation": "modify",
+          "description": "Update developer-facing notes to reflect the new runtime-config fallback for self-hosting while keeping IC deployment instructions for build-time injection via dfx."
+        },
+        {
+          "path": "frontend/DEPLOYMENT.md",
+          "operation": "modify",
+          "description": "Update IC deployment documentation to continue requiring build-time injection for IC deployments, and add a clear note differentiating IC deployment (strict env validation) vs static hosting (runtime-config.json)."
         }
       ]
     }

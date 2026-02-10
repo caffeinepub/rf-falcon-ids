@@ -2,10 +2,14 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-landing-page-cta-buttons-so-that-clicking-get-started-or-order-now-routes-authenticated-users-to-the-dashboard-instead-of-the-sign-in-page-unauthenticated-users-should-still-be-routed-to-sign-in",
-      "featureTitle": "Update the Landing page CTA buttons so that clicking \"Get Started\" or \"Order Now\" routes authenticated users to the Dashboard instead of the Sign In page; unauthenticated users should still be routed to Sign In.",
+      "featureId": "feature-add-a-runtime-config-fallback-for-the-backend-canister-id-so-the-app-can-be-hosted-as-a-static-site-e-g-on-cpanel-without-requiring-build-time-injection-while-preserving-the-existing-current-behavior-when-vite-backend-canister-id-is-correctly-set-at-build-time",
+      "featureTitle": "Add a runtime-config fallback for the backend canister ID so the app can be hosted as a static site (e.g., on cPanel) without requiring build-time injection, while preserving the existing current behavior when VITE_BACKEND_CANISTER_ID is correctly set at build time.",
       "files": [
-        "frontend/src/pages/LandingPage.tsx"
+        "frontend/public/runtime-config.json",
+        "frontend/src/components/BackendConnectionErrorScreen.tsx",
+        "frontend/src/components/BackendGate.tsx",
+        "frontend/src/utils/backendConnectivity.ts",
+        "frontend/src/utils/runtimeConfig.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,6 +22,70 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-create-a-cpanel-friendly-static-deployment-bundle-and-documentation-ensure-the-production-build-output-includes-an-index-html-entry-point-and-all-required-assets-and-add-clear-steps-for-uploading-to-cpanel-including-spa-routing-configuration-refreshing-deep-links-like-dashboard-should-work",
+      "featureTitle": "Create a cPanel-friendly static deployment bundle and documentation: ensure the production build output includes an index.html entry point and all required assets, and add clear steps for uploading to cPanel including SPA routing configuration (refreshing deep links like /dashboard should work).",
+      "files": [
+        "frontend/DEPLOYMENT.md",
+        "frontend/index.html",
+        "frontend/public/.htaccess"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-the-dashboard-admin-dashboard-flows-so-authenticated-users-can-reach-the-dashboard-via-the-get-started-flow-and-place-orders-without-being-blocked-by-configuration-errors-when-properly-configured-keep-the-current-design-and-behavior-unchanged-except-for-error-fixes",
+      "featureTitle": "Fix the dashboard/admin-dashboard flows so authenticated users can reach the dashboard via the Get Started flow and place orders without being blocked by configuration errors when properly configured; keep the current design and behavior unchanged except for error fixes.",
+      "files": [
+        "frontend/src/components/AdminGate.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-improve-the-deployment-scripts-docs-so-that-when-deploying-to-the-internet-computer-the-build-reliably-injects-vite-backend-canister-id-retrieving-it-via-dfx-when-available-and-the-failure-mode-is-actionable-do-not-hardcode-canister-ids-into-version-control",
+      "featureTitle": "Improve the deployment scripts/docs so that when deploying to the Internet Computer, the build reliably injects VITE_BACKEND_CANISTER_ID (retrieving it via dfx when available), and the failure mode is actionable; do not hardcode canister IDs into version control.",
+      "files": [
+        "frontend/.env.example",
+        "frontend/.env.production",
+        "frontend/DEPLOYMENT.md"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

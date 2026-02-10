@@ -37,6 +37,7 @@ export interface AuditLogEntry {
   'timestamp' : Time,
   'details' : string,
 }
+export interface Config { 'healthCheckEnabled' : boolean, 'version' : string }
 export interface Details {
   'dob' : string,
   'zip' : string,
@@ -51,6 +52,13 @@ export interface Details {
   'eye_color' : string,
 }
 export type ExternalBlob = Uint8Array;
+export interface HealthCheck {
+  'updateLogs' : Array<string>,
+  'isHealthy' : boolean,
+  'version' : string,
+  'config' : Config,
+  'time_ns' : bigint,
+}
 export interface Order {
   'id' : string,
   'status' : OrderStatus,
@@ -175,12 +183,14 @@ export interface _SERVICE {
   'getCallerOrders' : ActorMethod<[], Array<Order>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getCanisterId' : ActorMethod<[], Principal>,
   'getOrder' : ActorMethod<[string], [] | [Order]>,
   'getPromoCode' : ActorMethod<[string], [] | [PromoCode]>,
   'getTreyCSecurityConfig' : ActorMethod<[], TreyCSecurityConfig>,
   'getTreyCSecurityEvents' : ActorMethod<[], Array<TreyCSecurityEvent>>,
   'getTreyCSecurityStats' : ActorMethod<[], TreyCSecurityStats>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'healthCheck' : ActorMethod<[], HealthCheck>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isCallerVIP' : ActorMethod<[], boolean>,
   'isTreyCSecurityEnabled' : ActorMethod<[], boolean>,
@@ -188,10 +198,12 @@ export interface _SERVICE {
   'isUserVIP' : ActorMethod<[Principal], boolean>,
   'resetTreyCSecurityStats' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setCanisterId' : ActorMethod<[Principal], undefined>,
   'setTrackingNumber' : ActorMethod<[string, string], undefined>,
   'setTreyCSecurityConfig' : ActorMethod<[TreyCSecurityConfig], undefined>,
   'setVIPStatus' : ActorMethod<[Principal, boolean], undefined>,
   'unbanUser' : ActorMethod<[Principal], undefined>,
+  'updateConfig' : ActorMethod<[Config], undefined>,
   'updateOrderDetails' : ActorMethod<[string, Details, Address], undefined>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
   'validatePromoCode' : ActorMethod<[string], PromoCodeValidation>,

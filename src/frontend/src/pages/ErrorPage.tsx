@@ -1,17 +1,27 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import { getRuntimeConfigDiagnostics, type RuntimeConfigDiagnostics } from '../utils/runtimeConfig';
+import { useEffect, useState } from 'react';
 
 export default function ErrorPage() {
   const navigate = useNavigate();
   const { identity } = useInternetIdentity();
+  const queryClient = useQueryClient();
   const routerState = useRouterState();
   const isAuthenticated = !!identity;
+  const [diagnostics, setDiagnostics] = useState<RuntimeConfigDiagnostics | null>(null);
 
   const error = routerState.matches.find((match) => match.error)?.error;
   const isDev = import.meta.env.DEV;
+
+  // Load diagnostics asynchronously
+  useEffect(() => {
+    getRuntimeConfigDiagnostics(isAuthenticated).then(setDiagnostics);
+  }, [isAuthenticated]);
 
   const handleGoHome = () => {
     if (isAuthenticated) {
@@ -22,11 +32,27 @@ export default function ErrorPage() {
   };
 
   const handleRetry = () => {
+    // Invalidate all queries to retry
+    queryClient.invalidateQueries();
+    // Reload the page as a fallback
     window.location.reload();
   };
 
+  // Extract error details while preserving context
   const errorMessage = error instanceof Error ? error.message : String(error || 'Unknown error');
   const errorStack = error instanceof Error ? error.stack : undefined;
+  const errorCause = error instanceof Error ? (error as any).cause : undefined;
+
+  // Log full error context to console for debugging
+  if (error) {
+    console.error('[ErrorPage] Rendering error boundary:', {
+      error,
+      message: errorMessage,
+      stack: errorStack,
+      cause: errorCause,
+      timestamp: new Date().toISOString(),
+    });
+  }
 
   return (
     <div className="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4">
@@ -61,15 +87,61 @@ export default function ErrorPage() {
             </Button>
           </div>
 
+          {diagnostics && (
+            <details className="p-4 bg-muted/50 rounded-lg border border-border">
+              <summary className="cursor-pointer font-semibold text-sm text-foreground mb-3">
+                Diagnostics
+              </summary>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground">Environment:</span>
+                  <span className="font-mono text-foreground">{diagnostics.environment}</span>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground">Authentication Status:</span>
+                  <span className="font-mono text-foreground">
+                    {diagnostics.isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 py-1">
+                  <span className="text-muted-foreground">Backend Canister ID:</span>
+                  <span className="font-mono text-xs text-foreground break-all bg-background/50 p-2 rounded border border-border">
+                    {diagnostics.backendCanisterId || '(not set)'}
+                  </span>
+                </div>
+              </div>
+            </details>
+          )}
+
           {isDev && error ? (
-            <details className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
+            <details className="p-4 bg-muted/50 rounded-lg border border-border">
               <summary className="cursor-pointer font-semibold text-sm text-foreground mb-2">
                 Error Details (Development Only)
               </summary>
-              <pre className="text-xs text-muted-foreground overflow-auto max-h-48 whitespace-pre-wrap break-words">
-                {errorMessage}
-                {errorStack && `\n\n${errorStack}`}
-              </pre>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">Message:</p>
+                  <pre className="text-xs text-foreground overflow-auto max-h-24 whitespace-pre-wrap break-words bg-background/50 p-2 rounded">
+                    {errorMessage}
+                  </pre>
+                </div>
+                {errorStack && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">Stack:</p>
+                    <pre className="text-xs text-muted-foreground overflow-auto max-h-32 whitespace-pre-wrap break-words bg-background/50 p-2 rounded">
+                      {errorStack}
+                    </pre>
+                  </div>
+                )}
+                {errorCause && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground mb-1">Cause:</p>
+                    <pre className="text-xs text-muted-foreground overflow-auto max-h-24 whitespace-pre-wrap break-words bg-background/50 p-2 rounded">
+                      {errorCause instanceof Error ? errorCause.message : String(errorCause)}
+                    </pre>
+                  </div>
+                )}
+              </div>
             </details>
           ) : null}
         </CardContent>
@@ -77,3 +149,4 @@ export default function ErrorPage() {
     </div>
   );
 }
+

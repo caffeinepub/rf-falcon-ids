@@ -9,12 +9,73 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Storage "blob-storage/Storage";
 
-
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 
 actor {
+  public type Config = {
+    healthCheckEnabled : Bool;
+    version : Text;
+  };
+
+  public type HealthCheck = {
+    version : Text;
+    isHealthy : Bool;
+    time_ns : Int;
+    config : Config;
+    updateLogs : [Text];
+  };
+
+  var config : Config = {
+    healthCheckEnabled = true;
+    version = "1.0.0";
+  };
+  var logs : [Text] = ["initial"];
+  var backendCanisterId : ?Principal = null;
+
+  public query func getCanisterId() : async Principal {
+    if (config.healthCheckEnabled and backendCanisterId != null) {
+      switch (backendCanisterId) {
+        case (?canisterId) { canisterId };
+        case (null) { Runtime.trap("Backend canister ID has not been configured!") };
+      };
+    } else {
+      Runtime.trap("Backend canister ID has not been configured!");
+    };
+  };
+
+  public shared ({ caller }) func setCanisterId(newCanisterId : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can access dashboard");
+    };
+    backendCanisterId := ?newCanisterId;
+  };
+
+  public shared ({ caller }) func updateConfig(newConfig : Config) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can access dashboard");
+    };
+    config := newConfig;
+    logs := logs.concat(["updated at " # Time.now().toText()]);
+  };
+
+  public query ({ caller }) func healthCheck() : async HealthCheck {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can access health check");
+    };
+    if (not config.healthCheckEnabled) {
+      Runtime.trap("Healthcheck is currently disabled!");
+    };
+    {
+      version = config.version;
+      isHealthy = true;
+      time_ns = Time.now();
+      config;
+      updateLogs = logs;
+    };
+  };
+
   public type Address = {
     first_name : Text;
     last_name : Text;
@@ -151,7 +212,7 @@ actor {
 
   var treyCSecurityConfig : TreyCSecurityConfig = {
     enabled = false;
-    rateLimitWindow = 60_000_000_000; // 60 seconds in nanoseconds
+    rateLimitWindow = 60_000_000_000;
     maxCallsPerWindow = 10;
   };
 
@@ -174,7 +235,6 @@ actor {
     };
     treyCSecurityEvents.add(event);
 
-    // Update stats
     switch (result) {
       case (#allowed) {
         treyCSecurityStats := {
@@ -203,13 +263,12 @@ actor {
     };
 
     let currentTime = Time.now();
-    
+
     switch (rateLimitMap.get(caller)) {
       case (?entry) {
         let timeSinceWindowStart = currentTime - entry.windowStart;
-        
+
         if (timeSinceWindowStart > treyCSecurityConfig.rateLimitWindow) {
-          // New window
           rateLimitMap.add(caller, {
             callCount = 1;
             windowStart = currentTime;
@@ -217,7 +276,6 @@ actor {
           logTreyCSecurityEvent(caller, action, #allowed, "New rate limit window");
           return true;
         } else {
-          // Within window
           if (entry.callCount >= treyCSecurityConfig.maxCallsPerWindow) {
             logTreyCSecurityEvent(caller, action, #throttled, "Rate limit exceeded");
             return false;
@@ -232,7 +290,6 @@ actor {
         };
       };
       case (null) {
-        // First call
         rateLimitMap.add(caller, {
           callCount = 1;
           windowStart = currentTime;
@@ -342,15 +399,11 @@ actor {
     count;
   };
 
-  // Owner bootstrap function
-  // called when trying to access admin panel first time
   public shared ({ caller }) func bootstrapOwner() : async OwnerBootstrapStatus {
-    // Must be at least a user (not guest/anonymous) to bootstrap
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can bootstrap owner access");
     };
 
-    // Check if already admin
     if (AccessControl.isAdmin(accessControlState, caller)) {
       return {
         status = #already_admin;
@@ -358,14 +411,11 @@ actor {
       };
     };
 
-    // Verify caller has a profile with the owner email
     switch (userProfiles.get(caller)) {
       case (?profile) {
         switch (profile.email) {
           case (?emailValue) {
             if (emailValue == "traviscastonguay@gmail.com") {
-              // Grant admin role - assignRole includes admin-only guard internally
-              // but for bootstrap, we're the first admin, so we call it directly
               AccessControl.assignRole(accessControlState, caller, caller, #admin);
               logAudit(caller, "bootstrap_owner", "Owner bootstrapped with email: " # emailValue);
               return {
@@ -387,7 +437,6 @@ actor {
     };
   };
 
-  // Promo Code Management (Admin Only)
   public shared ({ caller }) func createPromoCode(
     code : Text,
     discountPercentage : Nat,
@@ -430,7 +479,6 @@ actor {
     };
   };
 
-  // Admin-only: Get all promo codes
   public query ({ caller }) func getAllPromoCodes() : async [PromoCode] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view all promo codes");
@@ -443,7 +491,6 @@ actor {
     promoList.toArray();
   };
 
-  // Admin-only: Get specific promo code details
   public query ({ caller }) func getPromoCode(code : Text) : async ?PromoCode {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view promo code details");
@@ -452,7 +499,6 @@ actor {
     promoCodes.get(code);
   };
 
-  // Public: Validate promo code (returns only validity and discount, not usage details)
   public query func validatePromoCode(code : Text) : async PromoCodeValidation {
     switch (promoCodes.get(code)) {
       case (?promo) {
@@ -599,7 +645,6 @@ actor {
     userOrders.toArray();
   };
 
-  // Admin-only: Get all non-archived orders
   public query ({ caller }) func getAllOrders() : async [Order] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access all orders");
@@ -614,7 +659,6 @@ actor {
     allOrders.toArray();
   };
 
-  // Admin-only: Update order status
   public shared ({ caller }) func updateOrderStatus(orderId : Text, status : OrderStatus) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can update order status");
@@ -634,7 +678,6 @@ actor {
     };
   };
 
-  // Admin-only: Add/Edit order details
   public shared ({ caller }) func updateOrderDetails(
     orderId : Text,
     newDetails : Details,
@@ -664,7 +707,6 @@ actor {
     };
   };
 
-  // Admin-only: Set tracking number
   public shared ({ caller }) func setTrackingNumber(orderId : Text, trackingNumber : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set tracking numbers");
@@ -684,7 +726,6 @@ actor {
     };
   };
 
-  // Admin-only: Set VIP status
   public shared ({ caller }) func setVIPStatus(user : Principal, isVIP : Bool) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set VIP status");
@@ -703,7 +744,6 @@ actor {
     );
   };
 
-  // Admin-only: Ban user
   public shared ({ caller }) func banUser(user : Principal) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can ban users");
@@ -713,7 +753,6 @@ actor {
     logAudit(caller, "ban_user", "User: " # user.toText());
   };
 
-  // Admin-only: Unban user
   public shared ({ caller }) func unbanUser(user : Principal) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can unban users");
@@ -723,7 +762,6 @@ actor {
     logAudit(caller, "unban_user", "User: " # user.toText());
   };
 
-  // Admin-only: Get dashboard data
   public query ({ caller }) func getAdminDashboard() : async AdminDashboardData {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access dashboard");
@@ -763,7 +801,6 @@ actor {
     };
   };
 
-  // Admin-only: Get audit log
   public query ({ caller }) func getAuditLog() : async [AuditLogEntry] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access audit log");
@@ -772,7 +809,6 @@ actor {
     auditLog.toArray();
   };
 
-  // Admin-only: Get account info for a specific user (enhanced for admin UI)
   public query ({ caller }) func getAccountInfo(user : Principal) : async ?AccountInfo {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access account information");
@@ -797,7 +833,6 @@ actor {
     };
   };
 
-  // Authenticated: Check if user is banned (self or admin only)
   public query ({ caller }) func isUserBanned(user : Principal) : async Bool {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only check your own ban status");
@@ -805,7 +840,6 @@ actor {
     bannedUsers.contains(user);
   };
 
-  // Authenticated: Check caller's own VIP status
   public query ({ caller }) func isCallerVIP() : async Bool {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can check VIP status");
@@ -813,7 +847,6 @@ actor {
     vipUsers.contains(caller);
   };
 
-  // Authenticated: Check VIP status (self or admin)
   public query ({ caller }) func isUserVIP(user : Principal) : async Bool {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only check your own VIP status");
@@ -821,7 +854,6 @@ actor {
     vipUsers.contains(user);
   };
 
-  // Admin-only: Delete order
   public shared ({ caller }) func deleteOrder(orderId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can delete orders");
@@ -838,7 +870,6 @@ actor {
     };
   };
 
-  // Admin-only: Archive order
   public shared ({ caller }) func archiveOrder(orderId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can archive orders");
@@ -858,7 +889,6 @@ actor {
     };
   };
 
-  // Admin-only: Get archived orders
   public query ({ caller }) func getArchivedOrders() : async [Order] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can access archived orders");
@@ -873,4 +903,3 @@ actor {
     archivedOrders.toArray();
   };
 };
-

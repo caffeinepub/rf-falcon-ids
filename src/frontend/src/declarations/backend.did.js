@@ -132,6 +132,17 @@ export const TreyCSecurityStats = IDL.Record({
   'allowedCalls' : IDL.Nat,
   'throttledCalls' : IDL.Nat,
 });
+export const Config = IDL.Record({
+  'healthCheckEnabled' : IDL.Bool,
+  'version' : IDL.Text,
+});
+export const HealthCheck = IDL.Record({
+  'updateLogs' : IDL.Vec(IDL.Text),
+  'isHealthy' : IDL.Bool,
+  'version' : IDL.Text,
+  'config' : Config,
+  'time_ns' : IDL.Int,
+});
 export const PromoCodeValidation = IDL.Record({
   'valid' : IDL.Bool,
   'discountPercentage' : IDL.Nat,
@@ -198,6 +209,7 @@ export const idlService = IDL.Service({
   'getCallerOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getCanisterId' : IDL.Func([], [IDL.Principal], ['query']),
   'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
   'getPromoCode' : IDL.Func([IDL.Text], [IDL.Opt(PromoCode)], ['query']),
   'getTreyCSecurityConfig' : IDL.Func([], [TreyCSecurityConfig], ['query']),
@@ -212,6 +224,7 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'healthCheck' : IDL.Func([], [HealthCheck], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerVIP' : IDL.Func([], [IDL.Bool], ['query']),
   'isTreyCSecurityEnabled' : IDL.Func([], [IDL.Bool], ['query']),
@@ -219,10 +232,12 @@ export const idlService = IDL.Service({
   'isUserVIP' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
   'resetTreyCSecurityStats' : IDL.Func([], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'setCanisterId' : IDL.Func([IDL.Principal], [], []),
   'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'setTreyCSecurityConfig' : IDL.Func([TreyCSecurityConfig], [], []),
   'setVIPStatus' : IDL.Func([IDL.Principal, IDL.Bool], [], []),
   'unbanUser' : IDL.Func([IDL.Principal], [], []),
+  'updateConfig' : IDL.Func([Config], [], []),
   'updateOrderDetails' : IDL.Func([IDL.Text, Details, Address], [], []),
   'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
   'validatePromoCode' : IDL.Func([IDL.Text], [PromoCodeValidation], ['query']),
@@ -355,6 +370,17 @@ export const idlFactory = ({ IDL }) => {
     'allowedCalls' : IDL.Nat,
     'throttledCalls' : IDL.Nat,
   });
+  const Config = IDL.Record({
+    'healthCheckEnabled' : IDL.Bool,
+    'version' : IDL.Text,
+  });
+  const HealthCheck = IDL.Record({
+    'updateLogs' : IDL.Vec(IDL.Text),
+    'isHealthy' : IDL.Bool,
+    'version' : IDL.Text,
+    'config' : Config,
+    'time_ns' : IDL.Int,
+  });
   const PromoCodeValidation = IDL.Record({
     'valid' : IDL.Bool,
     'discountPercentage' : IDL.Nat,
@@ -421,6 +447,7 @@ export const idlFactory = ({ IDL }) => {
     'getCallerOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getCanisterId' : IDL.Func([], [IDL.Principal], ['query']),
     'getOrder' : IDL.Func([IDL.Text], [IDL.Opt(Order)], ['query']),
     'getPromoCode' : IDL.Func([IDL.Text], [IDL.Opt(PromoCode)], ['query']),
     'getTreyCSecurityConfig' : IDL.Func([], [TreyCSecurityConfig], ['query']),
@@ -435,6 +462,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'healthCheck' : IDL.Func([], [HealthCheck], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerVIP' : IDL.Func([], [IDL.Bool], ['query']),
     'isTreyCSecurityEnabled' : IDL.Func([], [IDL.Bool], ['query']),
@@ -442,10 +470,12 @@ export const idlFactory = ({ IDL }) => {
     'isUserVIP' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
     'resetTreyCSecurityStats' : IDL.Func([], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'setCanisterId' : IDL.Func([IDL.Principal], [], []),
     'setTrackingNumber' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'setTreyCSecurityConfig' : IDL.Func([TreyCSecurityConfig], [], []),
     'setVIPStatus' : IDL.Func([IDL.Principal, IDL.Bool], [], []),
     'unbanUser' : IDL.Func([IDL.Principal], [], []),
+    'updateConfig' : IDL.Func([Config], [], []),
     'updateOrderDetails' : IDL.Func([IDL.Text, Details, Address], [], []),
     'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
     'validatePromoCode' : IDL.Func(

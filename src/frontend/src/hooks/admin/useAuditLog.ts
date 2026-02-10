@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import { auditKeys } from '../orders/queryKeys';
+import { logErrorWithContext } from '../../utils/errorReporting';
 import type { AuditLogEntry } from '../../backend';
 
 export function useAuditLog(limit: number = 100) {
@@ -10,8 +11,14 @@ export function useAuditLog(limit: number = 100) {
     queryKey: auditKeys.log(limit),
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      // Backend getAuditLog doesn't accept parameters
-      return actor.getAuditLog();
+      try {
+        // Backend getAuditLog doesn't accept parameters
+        return actor.getAuditLog();
+      } catch (error) {
+        // Log with context preservation
+        logErrorWithContext('getAuditLog', error, { limit });
+        throw error;
+      }
     },
     enabled: !!actor && !actorFetching,
     staleTime: 8000, // Consider data fresh for 8 seconds

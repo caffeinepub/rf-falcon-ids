@@ -1,49 +1,98 @@
 {
   "kind": "build_request",
-  "title": "Fix Landing page CTA routing for signed-in users",
-  "priority": "normal",
+  "title": "Fix backend canister ID misconfiguration and enable static cPanel hosting build",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the Landing page CTA buttons so that clicking \"Get Started\" or \"Order Now\" routes authenticated users to the Dashboard instead of the Sign In page; unauthenticated users should still be routed to Sign In.",
+      "text": "Add a runtime-config fallback for the backend canister ID so the app can be hosted as a static site (e.g., on cPanel) without requiring build-time injection, while preserving the existing current behavior when VITE_BACKEND_CANISTER_ID is correctly set at build time.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1"
         ],
         "quotes": [
-          "when clicking get started or order it tries to redirect to sign in if they are already signed in redirect to dashboard so they can place a order if they  want"
+          "yes i wanna host the website in my cPanel on my domain",
+          "The backend canister ID is not configured. The deployment must inject this value before the application can connect to the backend service."
         ]
       },
       "acceptanceCriteria": [
-        "When the user is authenticated (Internet Identity identity is present), clicking the Landing page \"Get Started\" button navigates to /dashboard.",
-        "When the user is authenticated, clicking the Landing page \"Order Now\" button navigates to /dashboard.",
-        "When the user is not authenticated, clicking either Landing page button navigates to /signin.",
-        "This change is implemented in frontend/src/pages/LandingPage.tsx and does not require changes to the auth provider hooks in immutable paths."
+        "If VITE_BACKEND_CANISTER_ID is set at build time, the app uses it exactly as before and no new configuration file is required.",
+        "If VITE_BACKEND_CANISTER_ID is missing/empty at build time, the app can still be configured by editing a static file in the deployed site (no rebuild required) and then reloading the page.",
+        "Backend connectivity diagnostics (the existing error screen) correctly reflects whether the backend canister ID came from build-time env or runtime config, and shows the configured principal once set.",
+        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Create a cPanel-friendly static deployment bundle and documentation: ensure the production build output includes an index.html entry point and all required assets, and add clear steps for uploading to cPanel including SPA routing configuration (refreshing deep links like /dashboard should work).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "make it so i can download the code and host the website myself so make sure there a index.html",
+          "yes i wanna host the website in my cPanel on my domain"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The build output folder (dist) contains index.html and the referenced JS/CSS/assets produced by the build.",
+        "Documentation is added/updated with cPanel upload steps and an example Apache .htaccess rewrite rule so direct navigation/refresh on app routes works (SPA fallback to /index.html).",
+        "Documentation includes instructions for setting the backend canister principal for self-hosting (using the runtime-config mechanism from REQ-1)."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Fix the dashboard/admin-dashboard flows so authenticated users can reach the dashboard via the Get Started flow and place orders without being blocked by configuration errors when properly configured; keep the current design and behavior unchanged except for error fixes.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "fix the ordering placing errors just come up when trying to use dashboard (get started button) admin dashboard fix them.",
+          "2.should I keep its current design and behavior and only fix errors"
+        ]
+      },
+      "acceptanceCriteria": [
+        "With a valid backend canister ID configured, an authenticated user can load the dashboard without seeing the configuration error screen.",
+        "With a valid backend canister ID configured, a user can complete the checkout flow that creates orders (Cart -> create orders -> redirected to /dashboard with success modal).",
+        "Admin dashboard routes continue to be protected (admin-only) and load without runtime exceptions when backend configuration is valid.",
+        "When backend configuration is missing/invalid, the UI continues to show a clear configuration error state (no infinite spinners or silent failures)."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Improve the deployment scripts/docs so that when deploying to the Internet Computer, the build reliably injects VITE_BACKEND_CANISTER_ID (retrieving it via dfx when available), and the failure mode is actionable; do not hardcode canister IDs into version control.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "look if it has one then dont setup just fix if not set one up"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Mainnet/IC deployment flow continues to validate a missing/invalid backend canister ID and explains how to obtain it via dfx.",
+        "No canister principal IDs are committed into .env.production or other tracked env files."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts (immutable paths).",
-    "Keep all changes within the existing React Router (@tanstack/react-router) navigation approach already used in the app."
+    "Backend must remain a single Motoko actor in backend/main.mo (no multi-canister backend architecture).",
+    "Do not edit files under frontend/immutablePaths (compose them instead).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not change backend authentication or authorization behavior.",
-    "Do not change protected-route behavior in AuthGate (e.g., do not implement automatic redirects from AuthGate to /signin).",
-    "Do not alter the Sign In page’s existing post-auth redirect logic unless required to satisfy the CTA routing behavior."
+    "Redesigning the dashboard/admin dashboard UI or changing existing user-facing behavior beyond fixing errors and enabling configuration.",
+    "Adding third-party authentication providers (only Internet Identity is supported).",
+    "Adding external databases or non-Motoko backend services.",
+    "Implementing real-time features (WebSockets/push)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }
