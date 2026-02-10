@@ -21,6 +21,8 @@ if [ -z "$VITE_BACKEND_CANISTER_ID" ]; then
     if command -v dfx &> /dev/null; then
         BACKEND_ID=$(dfx canister id backend --network ic 2>/dev/null || echo "")
         if [ -n "$BACKEND_ID" ]; then
+            # Trim whitespace and newlines
+            BACKEND_ID=$(echo "$BACKEND_ID" | tr -d '[:space:]')
             export VITE_BACKEND_CANISTER_ID="$BACKEND_ID"
             echo "✓ Retrieved backend canister ID: $VITE_BACKEND_CANISTER_ID"
         else
@@ -41,10 +43,19 @@ if [ -z "$VITE_BACKEND_CANISTER_ID" ]; then
         echo ""
         exit 1
     fi
+else
+    # Trim whitespace from provided value
+    VITE_BACKEND_CANISTER_ID=$(echo "$VITE_BACKEND_CANISTER_ID" | tr -d '[:space:]')
+    export VITE_BACKEND_CANISTER_ID
 fi
 
-# Run validation script
-bash "$(dirname "$0")/validate-production-env.sh"
+# Run strict validation script
+if ! bash "$(dirname "$0")/validate-production-env.sh"; then
+    echo ""
+    echo "❌ Environment validation failed"
+    echo ""
+    exit 1
+fi
 
 echo ""
 echo "Step 2: Building frontend for production..."

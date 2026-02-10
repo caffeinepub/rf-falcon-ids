@@ -1,13 +1,15 @@
-import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
+import { RouterProvider, createRouter, createRoute, createRootRoute } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
+import { retryFunction, retryDelay } from './utils/reactQueryRetry';
 
 import AppShell from './components/AppShell';
 import AuthGate from './components/AuthGate';
 import AdminGate from './components/AdminGate';
+import BackendGate from './components/BackendGate';
 import LandingPage from './pages/LandingPage';
 import AboutPage from './pages/AboutPage';
 import FeaturesPage from './pages/FeaturesPage';
@@ -28,7 +30,12 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60,
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: retryFunction,
+      retryDelay: retryDelay,
+    },
+    mutations: {
+      retry: retryFunction,
+      retryDelay: retryDelay,
     },
   },
 });
@@ -89,7 +96,9 @@ const dashboardRoute = createRoute({
   component: () => (
     <Suspense fallback={<LoadingFallback />}>
       <AuthGate>
-        <DashboardPage />
+        <BackendGate loadingMessage="[LOADING DASHBOARD...]">
+          <DashboardPage />
+        </BackendGate>
       </AuthGate>
     </Suspense>
   ),
@@ -101,7 +110,9 @@ const newOrderRoute = createRoute({
   component: () => (
     <Suspense fallback={<LoadingFallback />}>
       <AuthGate>
-        <NewOrderPage />
+        <BackendGate loadingMessage="[LOADING ORDER FORM...]">
+          <NewOrderPage />
+        </BackendGate>
       </AuthGate>
     </Suspense>
   ),
@@ -113,7 +124,9 @@ const orderDetailRoute = createRoute({
   component: () => (
     <Suspense fallback={<LoadingFallback />}>
       <AuthGate>
-        <OrderDetailPage />
+        <BackendGate loadingMessage="[LOADING ORDER DETAILS...]">
+          <OrderDetailPage />
+        </BackendGate>
       </AuthGate>
     </Suspense>
   ),
@@ -125,7 +138,9 @@ const cartRoute = createRoute({
   component: () => (
     <Suspense fallback={<LoadingFallback />}>
       <AuthGate>
-        <CartPage />
+        <BackendGate loadingMessage="[LOADING CART...]">
+          <CartPage />
+        </BackendGate>
       </AuthGate>
     </Suspense>
   ),
@@ -137,9 +152,11 @@ const adminRoute = createRoute({
   component: () => (
     <Suspense fallback={<LoadingFallback />}>
       <AuthGate>
-        <AdminGate>
-          <AdminPanelPage />
-        </AdminGate>
+        <BackendGate loadingMessage="[INITIALIZING ADMIN PANEL...]">
+          <AdminGate>
+            <AdminPanelPage />
+          </AdminGate>
+        </BackendGate>
       </AuthGate>
     </Suspense>
   ),
