@@ -1,68 +1,72 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T05:29:56.411Z",
-  "summary": "Diff implements a runtime-config mechanism for backend canister ID (runtime-config.json + runtimeConfig utilities) and adds an Apache .htaccess for SPA routing. It also refactors frontend gating/error handling around backend connectivity. Some requirements around cPanel documentation completeness and IC deployment script improvements are not fully evidenced in the provided diff summary, and there are additional changes (not explicitly requested) such as extra .htaccess hardening/caching directives and backend canister-ID setter/getter logic.",
+  "generatedAt": "2026-02-11T03:35:27.811Z",
+  "summary": "Diff focuses on frontend runtime configuration diagnostics (VITE_BACKEND_CANISTER_ID vs /runtime-config.json) and improved error-boundary handling to show a dedicated configuration error screen. Backend/main.mo also adds configuration/health-check related types and admin-gated setters, but the diff does not provide evidence of a full rollback to Version 55 or of end-to-end order/admin/dashboard flow fixes.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Documentation is added/updated with cPanel upload steps and an example Apache .htaccess rewrite rule so direct navigation/refresh on app routes works (SPA fallback to /index.html), and includes instructions for setting the backend canister principal using the runtime-config mechanism.",
-      "reason": "While an .htaccess file is added and DEPLOYMENT.md is modified, the DEPLOYMENT.md content shown is truncated before any cPanel/static-hosting step-by-step instructions are visible, so the acceptance criteria for clear cPanel upload steps and runtime-config instructions in the documentation cannot be confirmed from the excerpt.",
+      "id": "REQ-1",
+      "requirement": "Restore/roll back the project to Version 55 as the active codebase and rebuild the project from that version.",
+      "reason": "The diff summary shows incremental modifications to existing files but provides no evidence of a repo-wide rollback to Version 55 (e.g., version markers, tags/commit reversion, or broad file restoration). The shown backend config.version is set to \"1.0.0\", which is not evidence of \"Version 55\".",
       "evidence": [
-        "frontend/public/.htaccess",
-        "frontend/DEPLOYMENT.md (truncated in diff summary)"
+        "backend/main.mo",
+        "project_state.json"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Update user-facing error/help text related to static hosting configuration so it references the correct deployed file path and workflow, with accurate actionable troubleshooting steps in English.",
+      "reason": "While runtimeConfig.ts and env examples reference \"/runtime-config.json\", the diff content for the actual user-facing configuration error screen instructions (the \"How to Fix\" section) is truncated, so it cannot be confirmed that the screen text meets the acceptance criteria (correct deployed paths, clear IC vs static hosting distinction, actionable steps).",
+      "evidence": [
+        "frontend/src/components/BackendConnectionErrorScreen.tsx (truncated)",
+        "frontend/src/utils/runtimeConfig.ts (truncated)",
+        "frontend/.env.example",
+        "frontend/.env.production"
       ]
     },
     {
       "id": "REQ-4",
-      "requirement": "Improve the deployment scripts/docs so IC deployment reliably injects VITE_BACKEND_CANISTER_ID (retrieving via dfx when available) with actionable failure mode; do not hardcode canister IDs into version control.",
-      "reason": "The diff shows updates to .env.example/.env.production and some deployment guide content, but no actual deployment script changes are included in the diff summary (e.g., scripts that retrieve via dfx and enforce validation). Without script diffs or full doc content, reliable injection/retrieval and actionable failure behavior cannot be verified.",
+      "requirement": "Ensure dashboard, admin panel, and order placement flows function end-to-end against the Motoko backend when the backend canister ID is configured, including order creation and loading user/admin order lists.",
+      "reason": "The diff summary does not include evidence of fixing/aligning the specific order APIs, dashboard/admin queries, or checkout mutations needed for end-to-end functionality; it mainly shows configuration diagnostics and error handling plus partial backend additions (truncated). No concrete frontend-to-backend API wiring/repair for order creation/list loading is demonstrated in the provided snippets.",
       "evidence": [
-        "frontend/DEPLOYMENT.md (truncated in diff summary)",
-        "frontend/.env.example",
-        "frontend/.env.production"
+        "backend/main.mo (truncated)",
+        "frontend-file-summaries.txt (high-level descriptions only; no concrete diff evidence for API connectivity correctness)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added additional Apache security headers, compression, and caching directives in .htaccess beyond the requested SPA routing rewrite rule.",
-      "reason": "REQ-2 explicitly asks for an example .htaccess rewrite rule for SPA routing; the diff adds broader hardening/performance configuration that was not requested.",
-      "evidence": [
-        "frontend/public/.htaccess"
-      ]
-    },
-    {
-      "description": "Backend canister now stores and exposes a configurable 'backendCanisterId' with admin-only setter and a getCanisterId query that traps when not configured.",
-      "reason": "BuildRequest focuses on fixing frontend canister-ID configuration (build-time vs runtime fallback) and deployment/docs; it does not request introducing a separate backend-side canister ID configuration API/state.",
+      "description": "Backend now stores an optional backend canister ID and exposes admin-only methods to set it (setCanisterId) and a getCanisterId query guarded by healthCheckEnabled.",
+      "reason": "The BuildRequest focuses on frontend determining the backend canister ID (build-time env or /runtime-config.json). Adding a backend-side canister-id registry and admin setter is not requested and could be considered a new feature beyond configuration/connectivity fixes.",
       "evidence": [
         "backend/main.mo"
       ]
     },
     {
-      "description": "Frontend UI/UX changes described as a 'Modern gradient hero landing page' and other design-oriented adjustments.",
-      "reason": "Non-goals explicitly include redesigning the dashboard/admin dashboard UI or changing user-facing behavior beyond fixing errors and enabling configuration; the diff summary text indicates visual redesign work, which was not requested.",
+      "description": "Backend healthCheck endpoint is permission-gated to authenticated users (#user) and includes config/logging payload (HealthCheck with updateLogs/config).",
+      "reason": "While REQ-4 mentions a backend health check used by the frontend should respond successfully, the specific addition of new config/log structures and strict authorization gating is not explicitly requested and may introduce behavioral changes beyond the stated scope.",
       "evidence": [
-        "frontend-file-summaries.txt (e.g., entries for frontend/src/pages/LandingPage.tsx, frontend/src/pages/DashboardPage.tsx)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Build-time script to validate VITE_BACKEND_CANISTER_ID (frontend/scripts/assert-vite-env.mjs) with console output and hard failure on invalid principal.",
+      "reason": "REQ-2 requires reliable determination of canister ID and correct error behavior; it does not explicitly request adding a build-time assertion script. This is extra tooling not specified.",
+      "evidence": [
+        "frontend/scripts/assert-vite-env.mjs"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.63,
   "changed_files": [
     "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/.env.example",
     "frontend/.env.production",
-    "frontend/DEPLOYMENT.md",
-    "frontend/index.html",
-    "frontend/public/.htaccess",
     "frontend/public/runtime-config.json",
-    "frontend/src/components/AdminGate.tsx",
+    "frontend/scripts/assert-vite-env.mjs",
     "frontend/src/components/BackendConnectionErrorScreen.tsx",
-    "frontend/src/components/BackendGate.tsx",
-    "frontend/src/hooks/useBackendConnectivity.ts",
     "frontend/src/pages/ErrorPage.tsx",
-    "frontend/src/utils/backendConnectivity.ts",
     "frontend/src/utils/runtimeConfig.ts",
     "project_state.json"
   ]

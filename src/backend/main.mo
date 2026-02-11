@@ -47,14 +47,14 @@ actor {
 
   public shared ({ caller }) func setCanisterId(newCanisterId : Principal) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can access dashboard");
+      Runtime.trap("Unauthorized: Only admins can set canister ID");
     };
     backendCanisterId := ?newCanisterId;
   };
 
   public shared ({ caller }) func updateConfig(newConfig : Config) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can access dashboard");
+      Runtime.trap("Unauthorized: Only admins can update configuration");
     };
     config := newConfig;
     logs := logs.concat(["updated at " # Time.now().toText()]);
@@ -499,7 +499,11 @@ actor {
     promoCodes.get(code);
   };
 
-  public query func validatePromoCode(code : Text) : async PromoCodeValidation {
+  public query ({ caller }) func validatePromoCode(code : Text) : async PromoCodeValidation {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can validate promo codes");
+    };
+
     switch (promoCodes.get(code)) {
       case (?promo) {
         let currentTime = Time.now();

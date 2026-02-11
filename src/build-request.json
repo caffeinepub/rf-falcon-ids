@@ -1,95 +1,93 @@
 {
   "kind": "build_request",
-  "title": "Fix backend canister ID misconfiguration and enable static cPanel hosting build",
-  "priority": "high",
+  "title": "Restore Version 55 and fix backend canister configuration so dashboard, admin panel, and ordering work",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a runtime-config fallback for the backend canister ID so the app can be hosted as a static site (e.g., on cPanel) without requiring build-time injection, while preserving the existing current behavior when VITE_BACKEND_CANISTER_ID is correctly set at build time.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "yes i wanna host the website in my cPanel on my domain",
-          "The backend canister ID is not configured. The deployment must inject this value before the application can connect to the backend service."
-        ]
-      },
-      "acceptanceCriteria": [
-        "If VITE_BACKEND_CANISTER_ID is set at build time, the app uses it exactly as before and no new configuration file is required.",
-        "If VITE_BACKEND_CANISTER_ID is missing/empty at build time, the app can still be configured by editing a static file in the deployed site (no rebuild required) and then reloading the page.",
-        "Backend connectivity diagnostics (the existing error screen) correctly reflects whether the backend canister ID came from build-time env or runtime config, and shows the configured principal once set.",
-        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Create a cPanel-friendly static deployment bundle and documentation: ensure the production build output includes an index.html entry point and all required assets, and add clear steps for uploading to cPanel including SPA routing configuration (refreshing deep links like /dashboard should work).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "make it so i can download the code and host the website myself so make sure there a index.html",
-          "yes i wanna host the website in my cPanel on my domain"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The build output folder (dist) contains index.html and the referenced JS/CSS/assets produced by the build.",
-        "Documentation is added/updated with cPanel upload steps and an example Apache .htaccess rewrite rule so direct navigation/refresh on app routes works (SPA fallback to /index.html).",
-        "Documentation includes instructions for setting the backend canister principal for self-hosting (using the runtime-config mechanism from REQ-1)."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Fix the dashboard/admin-dashboard flows so authenticated users can reach the dashboard via the Get Started flow and place orders without being blocked by configuration errors when properly configured; keep the current design and behavior unchanged except for error fixes.",
+      "text": "Restore/roll back the project to Version 55 as the active codebase and rebuild the project from that version.",
       "target": "both",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "fix the ordering placing errors just come up when trying to use dashboard (get started button) admin dashboard fix them.",
-          "2.should I keep its current design and behavior and only fix errors"
+          "Just go back to Version 55",
+          "Can you go back to build 55",
+          "yes build"
         ]
       },
       "acceptanceCriteria": [
-        "With a valid backend canister ID configured, an authenticated user can load the dashboard without seeing the configuration error screen.",
-        "With a valid backend canister ID configured, a user can complete the checkout flow that creates orders (Cart -> create orders -> redirected to /dashboard with success modal).",
-        "Admin dashboard routes continue to be protected (admin-only) and load without runtime exceptions when backend configuration is valid.",
-        "When backend configuration is missing/invalid, the UI continues to show a clear configuration error state (no infinite spinners or silent failures)."
+        "The codebase reflects Version 55 as the active version (not Version 58).",
+        "A clean build completes for the restored Version 55 project."
       ]
     },
     {
-      "id": "REQ-4",
-      "text": "Improve the deployment scripts/docs so that when deploying to the Internet Computer, the build reliably injects VITE_BACKEND_CANISTER_ID (retrieving it via dfx when available), and the failure mode is actionable; do not hardcode canister IDs into version control.",
+      "id": "REQ-2",
+      "text": "Fix the production configuration flow so the app can reliably determine the backend canister ID (via VITE_BACKEND_CANISTER_ID at build-time or via /runtime-config.json at runtime for static hosting), and ensure pages do not route to a generic error page due to missing canister ID when the runtime config is correctly set.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "look if it has one then dont setup just fix if not set one up"
+          "fix the dashboard and placing orders not working same error page ones up when i click both make sure website fully works"
         ]
       },
       "acceptanceCriteria": [
-        "Mainnet/IC deployment flow continues to validate a missing/invalid backend canister ID and explains how to obtain it via dfx.",
-        "No canister principal IDs are committed into .env.production or other tracked env files."
+        "When VITE_BACKEND_CANISTER_ID is set to a valid principal at build time, navigating to Dashboard, Admin Panel, and placing an order works without showing the \"Configuration Error\" screen.",
+        "When VITE_BACKEND_CANISTER_ID is empty/missing, setting a valid principal in /runtime-config.json (deployed static site) allows the app to connect after a reload and the same flows work.",
+        "If the backend canister ID is missing/invalid, the app shows the dedicated configuration error screen with diagnostics (not a generic router error page)."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update user-facing error/help text related to static hosting configuration so it references the correct deployed file path and workflow (e.g., editing the deployed runtime-config.json), and ensure the troubleshooting steps are accurate and actionable in English.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "same error page ones up when i click both make sure website fully works"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The configuration error screen’s \"How to Fix\" instructions reference the deployed runtime config file path (\"/runtime-config.json\" or \"dist/runtime-config.json\" depending on context) rather than source-repo paths like \"frontend/public/runtime-config.json\".",
+        "The instructions clearly distinguish IC deployment (build-time env) vs static hosting (runtime file) without requiring users to modify source code."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Ensure the dashboard, admin panel, and order placement flows function end-to-end against the Motoko backend when the backend canister ID is configured, including successful order creation from the cart/checkout flow and successful loading of user/admin order lists.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "fix the dashboard and placing orders not working",
+          "fix admin panel just make sure everything works"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Authenticated users can open /dashboard and see their orders load (or an empty state) without runtime configuration errors.",
+        "Authenticated users can complete the cart checkout/order placement flow without being redirected to an error page.",
+        "Admins can open /admin and load the admin panel without runtime configuration errors.",
+        "Backend health check and order APIs used by the frontend respond successfully when called with proper authentication and configuration."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no multi-canister backend architecture).",
-    "Do not edit files under frontend/immutablePaths (compose them instead).",
+    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo only if a state upgrade is required.",
+    "Do not modify files under frontend/src/components/ui (read-only shadcn components); compose them instead.",
+    "Do not modify immutable paths listed in SYSTEM_CONTEXT (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
     "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Redesigning the dashboard/admin dashboard UI or changing existing user-facing behavior beyond fixing errors and enabling configuration.",
-    "Adding third-party authentication providers (only Internet Identity is supported).",
-    "Adding external databases or non-Motoko backend services.",
-    "Implementing real-time features (WebSockets/push)."
+    "Adding new product features beyond fixing configuration/connectivity and restoring functionality (e.g., new payment providers, new user roles, new pages).",
+    "Integrating third-party authentication providers beyond Internet Identity.",
+    "Introducing external databases or non-Motoko backend services."
   ],
   "imageRequirements": {
     "required": [],

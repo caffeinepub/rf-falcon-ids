@@ -1,140 +1,153 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Static-hostable runtime backend canister configuration + cPanel deployment support",
+  "title": "Restore v55 frontend behavior and fix runtime backend canister configuration to unblock dashboard/admin/ordering",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Allow backend canister ID to be provided at runtime via a static, editable file when VITE_BACKEND_CANISTER_ID is missing, while preserving current build-time behavior and improving diagnostics.",
+      "summary": "Align the frontend workspace with Version 55 expectations and ensure the restored version builds cleanly.",
       "acceptanceCriteria": [
-        "If VITE_BACKEND_CANISTER_ID is set at build time, the app uses it exactly as before and no new configuration file is required.",
-        "If VITE_BACKEND_CANISTER_ID is missing/empty at build time, the app can still be configured by editing a static file in the deployed site (no rebuild required) and then reloading the page.",
-        "Backend connectivity diagnostics (the existing error screen) correctly reflects whether the backend canister ID came from build-time env or runtime config, and shows the configured principal once set.",
-        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
+        "The codebase reflects Version 55 as the active version (not Version 58).",
+        "A clean build completes for the restored Version 55 project."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/runtime-config.json",
-          "operation": "create",
-          "description": "Add a runtime-editable static config file (checked into the build output) that can provide the backend canister principal for static hosting scenarios. Include minimal documented keys (e.g., backendCanisterId) and keep values empty by default for safety."
+          "path": "frontend/DEPLOYMENT.md",
+          "operation": "modify",
+          "description": "Update documentation to match the restored Version 55 build/deploy workflow and remove any references introduced after v55 that no longer apply."
         },
         {
-          "path": "frontend/src/utils/runtimeConfig.ts",
+          "path": "frontend/PERF.md",
           "operation": "modify",
-          "description": "Extend runtime config resolution to: (1) prefer build-time import.meta.env.VITE_BACKEND_CANISTER_ID exactly as today when present; (2) when missing/empty, load and validate backend canister ID from the static runtime config file in frontend/public/runtime-config.json; (3) return diagnostics including the resolved canisterId, validity, and a new source field (e.g., build-time env vs runtime file vs missing/invalid) for UI rendering."
+          "description": "Reconcile performance notes with the restored Version 55 behavior so the document matches the active codebase (no references to later-version-only changes)."
         },
         {
-          "path": "frontend/src/utils/backendConnectivity.ts",
+          "path": "frontend/.env.example",
           "operation": "modify",
-          "description": "Update connectivity classification to use the enhanced runtimeConfig resolution (env first, then runtime file fallback) so static-hosted deployments can reach a non-misconfigured state after runtime-config.json is filled and the page is reloaded."
-        },
-        {
-          "path": "frontend/src/components/BackendConnectionErrorScreen.tsx",
-          "operation": "modify",
-          "description": "Update the existing configuration error UI and Diagnostics section to: (1) display whether the canister ID came from build-time env or runtime config; (2) show the configured principal once set; (3) update the 'How to Fix' instructions to describe editing the deployed frontend/public/runtime-config.json and reloading the page for static hosting (while keeping existing env-based guidance when applicable). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/BackendGate.tsx",
-          "operation": "modify",
-          "description": "Ensure BackendGate’s error/diagnostic rendering uses the updated runtimeConfig diagnostics so the error screen accurately reflects runtime-config fallback and does not get stuck in misleading states after configuration is provided and the page is reloaded. Verify the component's usage instructions before implementing."
+          "description": "Ensure the example env file reflects the restored Version 55 configuration behavior for build-time vs runtime canister ID resolution."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add cPanel-friendly static deployment documentation and supporting files so dist contains index.html/assets and deep-link refresh works via SPA routing rewrite.",
+      "summary": "Make backend canister ID resolution reliable in production via build-time env or runtime-config.json, and prevent routing to generic error pages when config is correctly set.",
       "acceptanceCriteria": [
-        "The build output folder (dist) contains index.html and the referenced JS/CSS/assets produced by the build.",
-        "Documentation is added/updated with cPanel upload steps and an example Apache .htaccess rewrite rule so direct navigation/refresh on app routes works (SPA fallback to /index.html).",
-        "Documentation includes instructions for setting the backend canister principal for self-hosting (using the runtime-config mechanism from REQ-1)."
+        "When VITE_BACKEND_CANISTER_ID is set to a valid principal at build time, navigating to Dashboard, Admin Panel, and placing an order works without showing the \"Configuration Error\" screen.",
+        "When VITE_BACKEND_CANISTER_ID is empty/missing, setting a valid principal in /runtime-config.json (deployed static site) allows the app to connect after a reload and the same flows work.",
+        "If the backend canister ID is missing/invalid, the app shows the dedicated configuration error screen with diagnostics (not a generic router error page)."
       ],
       "file_operations": [
         {
-          "path": "frontend/DEPLOYMENT.md",
+          "path": "frontend/src/utils/runtimeConfig.ts",
           "operation": "modify",
-          "description": "Expand/append a cPanel static hosting section: how to run a production build, upload the contents of dist to the domain’s public web root, confirm index.html presence, and configure SPA routing with an Apache .htaccess rewrite fallback to /index.html; include explicit instructions for setting the backend canister principal using frontend/public/runtime-config.json from REQ-1."
+          "description": "Harden runtime-config loading/validation: (1) treat empty build-time env as allowed when runtime config exists, (2) improve validation error classification and messaging for missing vs invalid IDs, and (3) expand diagnostics to clearly report whether /runtime-config.json was attempted/loaded and which source was selected."
         },
         {
-          "path": "frontend/public/.htaccess",
-          "operation": "create",
-          "description": "Add an Apache rewrite configuration file suitable for cPanel static hosting that performs SPA fallback routing to index.html while still serving existing files directly. This file should be included in dist via the Vite public/ copy mechanism."
+          "path": "frontend/src/utils/backendConnectivity.ts",
+          "operation": "modify",
+          "description": "Ensure connectivity state derivation correctly prioritizes validated configuration sources and does not mark the app as misconfigured when /runtime-config.json provides a valid canister ID."
         },
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/hooks/useBackendConnectivity.ts",
           "operation": "modify",
-          "description": "Verify the entrypoint remains compatible with static hosting (relative asset behavior as currently implemented) and, if needed, add a short HTML comment pointing deployers to DEPLOYMENT.md for runtime-config.json and SPA routing notes (no functional change)."
+          "description": "Adjust retry behavior so unreachable/unhealthy states can re-attempt health checks and queries without forcing navigation to the router error boundary; keep misconfiguration non-retriable."
+        },
+        {
+          "path": "frontend/src/components/BackendGate.tsx",
+          "operation": "modify",
+          "description": "Ensure the gate always renders BackendConnectionErrorScreen for misconfigured/unreachable/unhealthy states and never allows those states to fall through into route rendering that could trigger the generic router error screen."
+        },
+        {
+          "path": "frontend/src/pages/ErrorPage.tsx",
+          "operation": "modify",
+          "description": "Add a fast-path that detects configuration misconfiguration via the runtime config utilities and renders the dedicated BackendConnectionErrorScreen (with diagnostics) instead of the generic router error UI when the underlying issue is missing/invalid canister configuration. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/scripts/assert-vite-env.mjs",
+          "operation": "modify",
+          "description": "Relax production env assertions to allow static hosting mode: permit VITE_BACKEND_CANISTER_ID to be empty when the deployment is intended to supply /runtime-config.json at runtime, while still failing fast for malformed principals when a value is provided."
+        },
+        {
+          "path": "frontend/.env.production",
+          "operation": "modify",
+          "description": "Clarify and align production configuration variables for both IC deployment (build-time VITE_BACKEND_CANISTER_ID) and static hosting (runtime-config.json), matching the actual runtime resolution logic."
+        },
+        {
+          "path": "frontend/public/runtime-config.json",
+          "operation": "modify",
+          "description": "Ensure the runtime config file format matches what runtimeConfig.ts expects and that it is suitable for deployed static hosting at /runtime-config.json (no repo-local path assumptions)."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Fix dashboard/admin-dashboard navigation and ordering flow error states so properly configured authenticated users can reach dashboard and place orders; keep design/behavior unchanged except for error fixes.",
+      "summary": "Correct and improve user-facing configuration help text for static hosting vs IC deployment, with accurate file paths and actionable steps in English.",
       "acceptanceCriteria": [
-        "With a valid backend canister ID configured, an authenticated user can load the dashboard without seeing the configuration error screen.",
-        "With a valid backend canister ID configured, a user can complete the checkout flow that creates orders (Cart -> create orders -> redirected to /dashboard with success modal).",
-        "Admin dashboard routes continue to be protected (admin-only) and load without runtime exceptions when backend configuration is valid.",
-        "When backend configuration is missing/invalid, the UI continues to show a clear configuration error state (no infinite spinners or silent failures)."
+        "The configuration error screen’s \"How to Fix\" instructions reference the deployed runtime config file path (\"/runtime-config.json\" or \"dist/runtime-config.json\" depending on context) rather than source-repo paths like \"frontend/public/runtime-config.json\".",
+        "The instructions clearly distinguish IC deployment (build-time env) vs static hosting (runtime file) without requiring users to modify source code."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useActor.ts",
+          "path": "frontend/src/components/BackendConnectionErrorScreen.tsx",
           "operation": "modify",
-          "description": "Ensure actor initialization uses the resolved backend canister ID from the updated runtime config logic (env first, runtime fallback) and that failures surface as actionable errors (not silent) so BackendGate can render the correct configuration/connection error state. Verify the component's usage instructions before implementing."
+          "description": "Update the \"How to Fix\" copy to reference deployed paths (e.g., /runtime-config.json for static hosting, and dist/runtime-config.json when describing the build artifact), and clearly separate build-time env steps from runtime file steps. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/hooks/useBackendHealth.ts",
+          "path": "frontend/src/utils/runtimeConfig.ts",
           "operation": "modify",
-          "description": "Keep health-check behavior stable but ensure error messages are normalized/consistent for display so valid configurations don’t incorrectly present as misconfigured and missing/invalid configurations don’t cause infinite loading loops. Verify the component's usage instructions before implementing."
+          "description": "Adjust missing/invalid configuration error messages so they are accurate for both IC deployment and static hosting (avoid telling users to edit source-repo files)."
         },
         {
-          "path": "frontend/src/pages/CartPage.tsx",
+          "path": "frontend/DEPLOYMENT.md",
           "operation": "modify",
-          "description": "Harden checkout error handling so that when backend configuration is valid, transient createOrder failures do not incorrectly appear as configuration errors; ensure success path still redirects to /dashboard with the existing success modal behavior unchanged. Verify the component's usage instructions before implementing."
+          "description": "Update static hosting troubleshooting guidance to match the actual deployed workflow (editing /runtime-config.json on the hosted site, then reloading), and align terminology with the UI diagnostics."
         },
         {
-          "path": "frontend/src/pages/AdminPanelPage.tsx",
+          "path": "frontend/.env.example",
           "operation": "modify",
-          "description": "Fix any runtime exceptions in the admin dashboard page caused by missing/stubbed sections by adding safe guards/fallback UI while keeping the current design and route protection intact. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/AdminGate.tsx",
-          "operation": "modify",
-          "description": "Ensure admin-only protection remains intact while improving resilience to backend call failures (show clear error state rather than throwing) when configuration is missing/invalid. Verify the component's usage instructions before implementing."
+          "description": "Update comments/instructions to accurately describe when to use VITE_BACKEND_CANISTER_ID (IC deployment) vs /runtime-config.json (static hosting), in clear English."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Adjust frontend deployment scripts/docs so IC deployment still validates/injects VITE_BACKEND_CANISTER_ID via dfx when available, while avoiding hardcoded canister IDs in tracked env files.",
+      "summary": "Verify and stabilize dashboard, admin panel, and checkout/order placement flows so they work end-to-end when configuration is set, with proper auth gating and non-generic failure handling.",
       "acceptanceCriteria": [
-        "Mainnet/IC deployment flow continues to validate a missing/invalid backend canister ID and explains how to obtain it via dfx.",
-        "No canister principal IDs are committed into .env.production or other tracked env files."
+        "Authenticated users can open /dashboard and see their orders load (or an empty state) without runtime configuration errors.",
+        "Authenticated users can complete the cart checkout/order placement flow without being redirected to an error page.",
+        "Admins can open /admin and load the admin panel without runtime configuration errors.",
+        "Backend health check and order APIs used by the frontend respond successfully when called with proper authentication and configuration."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/deploy-mainnet.sh",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Refine messaging and guardrails so the script reliably retrieves VITE_BACKEND_CANISTER_ID via dfx when not provided, trims it, and clearly explains remediation when retrieval/validation fails (keep behavior that does not hardcode IDs)."
+          "description": "Confirm all authenticated routes involved in ordering (/dashboard, /orders/new, /orders/$orderId, /cart, /admin) are consistently wrapped with AuthGate + BackendGate (and AdminGate where applicable) so misconfiguration/unreachable states are handled by the dedicated screen rather than the router error boundary. Verify the authorization component's usage instructions before implementing."
         },
         {
-          "path": "frontend/scripts/assert-vite-env.mjs",
+          "path": "frontend/src/pages/CartPage.tsx",
           "operation": "modify",
-          "description": "Update the validator so IC/mainnet deployment remains strict and actionable, but support static hosting builds by allowing an explicit opt-in to skip hard failure when VITE_BACKEND_CANISTER_ID is missing (documented in DEPLOYMENT.md), relying on runtime-config.json instead."
+          "description": "Improve checkout failure handling to ensure backend/authorization/configuration errors are surfaced via user-friendly toasts and do not trigger navigation into the router error boundary during order creation."
         },
         {
-          "path": "frontend/.env.production",
+          "path": "frontend/src/hooks/orders/useCreateOrder.ts",
           "operation": "modify",
-          "description": "Keep VITE_BACKEND_CANISTER_ID empty by default and update comments (if needed) to reflect: (1) IC deployments inject at build time; (2) static hosting can use runtime-config.json; (3) do not commit real canister IDs."
+          "description": "Harden order creation error handling so missing actor/config/auth failures are translated into actionable, user-friendly errors (and do not manifest as unhandled exceptions that lead to the generic error page)."
         },
         {
-          "path": "frontend/.env.example",
+          "path": "frontend/src/hooks/orders/useUserOrders.ts",
           "operation": "modify",
-          "description": "Update developer-facing notes to reflect the new runtime-config fallback for self-hosting while keeping IC deployment instructions for build-time injection via dfx."
+          "description": "Ensure dashboard order loading handles actor availability/config/auth errors gracefully (empty state vs explicit error) and does not crash the route render when backend connectivity is temporarily unavailable."
         },
         {
-          "path": "frontend/DEPLOYMENT.md",
+          "path": "frontend/src/hooks/orders/useAllOrders.ts",
           "operation": "modify",
-          "description": "Update IC deployment documentation to continue requiring build-time injection for IC deployments, and add a clear note differentiating IC deployment (strict env validation) vs static hosting (runtime-config.json)."
+          "description": "Ensure admin order listing handles authorization and backend connectivity errors gracefully, matching AdminGate expectations and avoiding unhandled exceptions that could bubble to the router error boundary. Verify the authorization component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AdminGate.tsx",
+          "operation": "modify",
+          "description": "Confirm admin gating displays access denied vs connectivity/config errors appropriately (delegating connectivity/config to BackendGate) and avoids throwing errors that would redirect to the generic router error page. Verify the authorization component's usage instructions before implementing."
         }
       ]
     }

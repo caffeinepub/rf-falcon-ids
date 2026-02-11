@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import { getRuntimeConfigDiagnostics, type RuntimeConfigDiagnostics } from '../utils/runtimeConfig';
 import { useEffect, useState } from 'react';
+import BackendConnectionErrorScreen from '../components/BackendConnectionErrorScreen';
 
 export default function ErrorPage() {
   const navigate = useNavigate();
@@ -52,6 +53,20 @@ export default function ErrorPage() {
       cause: errorCause,
       timestamp: new Date().toISOString(),
     });
+  }
+
+  // Check if this is a configuration error - if so, show the dedicated screen
+  if (diagnostics && (diagnostics.isBackendCanisterIdMissing || diagnostics.isBackendCanisterIdInvalid)) {
+    return (
+      <BackendConnectionErrorScreen
+        diagnostics={diagnostics}
+        connectivityState="misconfigured"
+        connectivityMessage="Backend configuration error"
+        onRetry={handleRetry}
+        isRetrying={false}
+        canRetry={false}
+      />
+    );
   }
 
   return (
@@ -103,6 +118,14 @@ export default function ErrorPage() {
                     {diagnostics.isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
                   </span>
                 </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground">Configuration Source:</span>
+                  <span className="font-mono text-foreground">
+                    {diagnostics.source === 'build-time' && 'Build-time environment'}
+                    {diagnostics.source === 'runtime-file' && 'Runtime config file'}
+                    {diagnostics.source === 'none' && 'Not configured'}
+                  </span>
+                </div>
                 <div className="flex flex-col gap-1 py-1">
                   <span className="text-muted-foreground">Backend Canister ID:</span>
                   <span className="font-mono text-xs text-foreground break-all bg-background/50 p-2 rounded border border-border">
@@ -149,4 +172,3 @@ export default function ErrorPage() {
     </div>
   );
 }
-

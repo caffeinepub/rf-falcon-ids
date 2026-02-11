@@ -109,8 +109,20 @@ export default function BackendConnectionErrorScreen({
                 <span className="text-muted-foreground">Configuration Source:</span>
                 <span className="font-mono text-foreground">
                   {diagnostics.source === 'build-time' && 'Build-time environment'}
-                  {diagnostics.source === 'runtime-file' && 'Runtime config file'}
+                  {diagnostics.source === 'runtime-file' && 'Runtime config file (/runtime-config.json)'}
                   {diagnostics.source === 'none' && 'Not configured'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-muted-foreground">Runtime Config Attempted:</span>
+                <span className="font-mono text-foreground">
+                  {diagnostics.runtimeConfigAttempted ? 'Yes' : 'No'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-muted-foreground">Runtime Config Loaded:</span>
+                <span className="font-mono text-foreground">
+                  {diagnostics.runtimeConfigLoaded ? 'Yes' : 'No'}
                 </span>
               </div>
               <div className="flex flex-col gap-1 py-1">
@@ -132,32 +144,50 @@ export default function BackendConnectionErrorScreen({
                     <>
                       <p className="mb-2 font-semibold">For Static Hosting (cPanel, etc.):</p>
                       <ol className="list-decimal list-inside space-y-1 ml-2 mb-3">
-                        <li>Locate the file <code className="bg-background px-1 rounded">frontend/public/runtime-config.json</code> in your deployed site</li>
-                        <li>Edit the file and set <code className="bg-background px-1 rounded">backendCanisterId</code> to your backend canister principal ID</li>
+                        <li>
+                          Locate the file <code className="bg-background/50 px-1 rounded">/runtime-config.json</code> in your deployed site
+                        </li>
+                        <li>
+                          Edit the file and set <code className="bg-background/50 px-1 rounded">backendCanisterId</code> to your backend canister principal ID
+                        </li>
                         <li>Save the file and reload this page</li>
                       </ol>
                       <p className="mb-2 font-semibold">For IC Deployment:</p>
                       <ol className="list-decimal list-inside space-y-1 ml-2">
-                        <li>Set VITE_BACKEND_CANISTER_ID environment variable to a valid backend canister principal ID</li>
+                        <li>
+                          Set <code className="bg-background/50 px-1 rounded">VITE_BACKEND_CANISTER_ID</code> environment variable to a valid backend canister principal ID
+                        </li>
                         <li>Rebuild the frontend with the correct configuration</li>
                         <li>Redeploy the application</li>
                       </ol>
                     </>
                   )}
-                  {diagnostics.source !== 'none' && (
-                    <ol className="list-decimal list-inside space-y-1 ml-2">
-                      <li>Verify the backend canister ID is a valid Internet Computer principal</li>
-                      <li>
-                        {diagnostics.source === 'build-time'
-                          ? 'Set VITE_BACKEND_CANISTER_ID correctly and rebuild'
-                          : 'Edit runtime-config.json with a valid principal ID and reload'}
-                      </li>
-                      <li>Redeploy the application</li>
-                    </ol>
+                  {diagnostics.source === 'build-time' && diagnostics.isBackendCanisterIdInvalid && (
+                    <>
+                      <p className="mb-2">The build-time environment variable contains an invalid principal ID.</p>
+                      <ol className="list-decimal list-inside space-y-1 ml-2">
+                        <li>Verify your backend canister ID is correct</li>
+                        <li>
+                          Set <code className="bg-background/50 px-1 rounded">VITE_BACKEND_CANISTER_ID</code> to a valid IC principal (format: xxxxx-xxxxx-xxxxx-xxxxx-xxx)
+                        </li>
+                        <li>Rebuild and redeploy the application</li>
+                      </ol>
+                    </>
                   )}
-                  <p className="mt-2 text-muted-foreground">
-                    This issue cannot be fixed by retrying. The application must be reconfigured.
-                  </p>
+                  {diagnostics.source === 'runtime-file' && diagnostics.isBackendCanisterIdInvalid && (
+                    <>
+                      <p className="mb-2">The runtime configuration file contains an invalid principal ID.</p>
+                      <ol className="list-decimal list-inside space-y-1 ml-2">
+                        <li>
+                          Edit <code className="bg-background/50 px-1 rounded">/runtime-config.json</code> in your deployed site
+                        </li>
+                        <li>
+                          Set <code className="bg-background/50 px-1 rounded">backendCanisterId</code> to a valid IC principal (format: xxxxx-xxxxx-xxxxx-xxxxx-xxx)
+                        </li>
+                        <li>Save the file and reload this page</li>
+                      </ol>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -167,4 +197,3 @@ export default function BackendConnectionErrorScreen({
     </div>
   );
 }
-

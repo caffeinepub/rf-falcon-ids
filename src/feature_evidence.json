@@ -2,14 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-runtime-config-fallback-for-the-backend-canister-id-so-the-app-can-be-hosted-as-a-static-site-e-g-on-cpanel-without-requiring-build-time-injection-while-preserving-the-existing-current-behavior-when-vite-backend-canister-id-is-correctly-set-at-build-time",
-      "featureTitle": "Add a runtime-config fallback for the backend canister ID so the app can be hosted as a static site (e.g., on cPanel) without requiring build-time injection, while preserving the existing current behavior when VITE_BACKEND_CANISTER_ID is correctly set at build time.",
+      "featureId": "feature-restore-roll-back-the-project-to-version-55-as-the-active-codebase-and-rebuild-the-project-from-that-version",
+      "featureTitle": "Restore/roll back the project to Version 55 as the active codebase and rebuild the project from that version.",
       "files": [
-        "frontend/public/runtime-config.json",
-        "frontend/src/components/BackendConnectionErrorScreen.tsx",
-        "frontend/src/components/BackendGate.tsx",
-        "frontend/src/utils/backendConnectivity.ts",
-        "frontend/src/utils/runtimeConfig.ts"
+        "frontend/.env.example"
       ],
       "components": [
         "authorization@4.0.0",
@@ -26,12 +22,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-create-a-cpanel-friendly-static-deployment-bundle-and-documentation-ensure-the-production-build-output-includes-an-index-html-entry-point-and-all-required-assets-and-add-clear-steps-for-uploading-to-cpanel-including-spa-routing-configuration-refreshing-deep-links-like-dashboard-should-work",
-      "featureTitle": "Create a cPanel-friendly static deployment bundle and documentation: ensure the production build output includes an index.html entry point and all required assets, and add clear steps for uploading to cPanel including SPA routing configuration (refreshing deep links like /dashboard should work).",
+      "featureId": "feature-fix-the-production-configuration-flow-so-the-app-can-reliably-determine-the-backend-canister-id-via-vite-backend-canister-id-at-build-time-or-via-runtime-config-json-at-runtime-for-static-hosting-and-ensure-pages-do-not-route-to-a-generic-error-page-due-to-missing-canister-id-when-the-runtime-config-is-correctly-set",
+      "featureTitle": "Fix the production configuration flow so the app can reliably determine the backend canister ID (via VITE_BACKEND_CANISTER_ID at build-time or via /runtime-config.json at runtime for static hosting), and ensure pages do not route to a generic error page due to missing canister ID when the runtime config is correctly set.",
       "files": [
-        "frontend/DEPLOYMENT.md",
-        "frontend/index.html",
-        "frontend/public/.htaccess"
+        "frontend/.env.production",
+        "frontend/public/runtime-config.json",
+        "frontend/scripts/assert-vite-env.mjs",
+        "frontend/src/pages/ErrorPage.tsx",
+        "frontend/src/utils/runtimeConfig.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -48,10 +46,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-the-dashboard-admin-dashboard-flows-so-authenticated-users-can-reach-the-dashboard-via-the-get-started-flow-and-place-orders-without-being-blocked-by-configuration-errors-when-properly-configured-keep-the-current-design-and-behavior-unchanged-except-for-error-fixes",
-      "featureTitle": "Fix the dashboard/admin-dashboard flows so authenticated users can reach the dashboard via the Get Started flow and place orders without being blocked by configuration errors when properly configured; keep the current design and behavior unchanged except for error fixes.",
+      "featureId": "feature-update-user-facing-error-help-text-related-to-static-hosting-configuration-so-it-references-the-correct-deployed-file-path-and-workflow-e-g-editing-the-deployed-runtime-config-json-and-ensure-the-troubleshooting-steps-are-accurate-and-actionable-in-english",
+      "featureTitle": "Update user-facing error/help text related to static hosting configuration so it references the correct deployed file path and workflow (e.g., editing the deployed runtime-config.json), and ensure the troubleshooting steps are accurate and actionable in English.",
       "files": [
-        "frontend/src/components/AdminGate.tsx"
+        "frontend/.env.example",
+        "frontend/src/components/BackendConnectionErrorScreen.tsx",
+        "frontend/src/utils/runtimeConfig.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -64,28 +64,6 @@
       ],
       "testIds": [
         "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-improve-the-deployment-scripts-docs-so-that-when-deploying-to-the-internet-computer-the-build-reliably-injects-vite-backend-canister-id-retrieving-it-via-dfx-when-available-and-the-failure-mode-is-actionable-do-not-hardcode-canister-ids-into-version-control",
-      "featureTitle": "Improve the deployment scripts/docs so that when deploying to the Internet Computer, the build reliably injects VITE_BACKEND_CANISTER_ID (retrieving it via dfx when available), and the failure mode is actionable; do not hardcode canister IDs into version control.",
-      "files": [
-        "frontend/.env.example",
-        "frontend/.env.production",
-        "frontend/DEPLOYMENT.md"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

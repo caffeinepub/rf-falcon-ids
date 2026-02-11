@@ -1,45 +1,36 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Web app with existing user/admin dashboard where clicking Get Started fails due to missing Internet Computer backend canister configuration; user wants errors fixed (including ordering placement issues) and a build that can be hosted on cPanel as a static site with an index.html.",
+  "summary": "Project focused on restoring/rolling back to Version 55 as the active build and rebuilding it; prior issues involved broken Motoko backend canister configuration causing errors in admin panel, dashboard, and order placement.",
   "architectural_notes": [
-    "Frontend relies on Internet Computer backend canister principal ID provided via VITE_BACKEND_CANISTER_ID; production deployments must inject this value before the app can connect.",
-    "Need a downloadable static build (index.html + assets) compatible with standard web hosting (cPanel), not just platform deployment."
+    "Admin panel, dashboard, and order placement depend on a Motoko backend canister; misconfigured/missing canister IDs cause runtime configuration error pages."
   ],
   "known_issues": [
-    "Production build misconfigured: VITE_BACKEND_CANISTER_ID not set, causing Get Started/dashboard connectivity failure and blocking backend-dependent flows (including ordering)."
+    "Build/rebuild attempts for Version 58 failed due to unexpected AI/language model errors, preventing completion of the repair."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-a-runtime-config-fallback-for-the-backend-canister-id-so-the-app-can-be-hosted-as-a-static-site-e-g-on-cpanel-without-requiring-build-time-injection-while-preserving-the-existing-current-behavior-when-vite-backend-canister-id-is-correctly-set-at-build-time",
-      "title": "Add a runtime-config fallback for the backend canister ID so the app can be hosted as a static site (e.g., on cPanel) without requiring build-time injection, while preserving the existing current behavior when VITE_BACKEND_CANISTER_ID is correctly set at build time.",
+      "id": "feature-restore-roll-back-the-project-to-version-55-as-the-active-codebase-and-rebuild-the-project-from-that-version",
+      "title": "Restore/roll back the project to Version 55 as the active codebase and rebuild the project from that version.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-create-a-cpanel-friendly-static-deployment-bundle-and-documentation-ensure-the-production-build-output-includes-an-index-html-entry-point-and-all-required-assets-and-add-clear-steps-for-uploading-to-cpanel-including-spa-routing-configuration-refreshing-deep-links-like-dashboard-should-work",
-      "title": "Create a cPanel-friendly static deployment bundle and documentation: ensure the production build output includes an index.html entry point and all required assets, and add clear steps for uploading to cPanel including SPA routing configuration (refreshing deep links like /dashboard should work).",
+      "id": "feature-fix-the-production-configuration-flow-so-the-app-can-reliably-determine-the-backend-canister-id-via-vite-backend-canister-id-at-build-time-or-via-runtime-config-json-at-runtime-for-static-hosting-and-ensure-pages-do-not-route-to-a-generic-error-page-due-to-missing-canister-id-when-the-runtime-config-is-correctly-set",
+      "title": "Fix the production configuration flow so the app can reliably determine the backend canister ID (via VITE_BACKEND_CANISTER_ID at build-time or via /runtime-config.json at runtime for static hosting), and ensure pages do not route to a generic error page due to missing canister ID when the runtime config is correctly set.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-the-dashboard-admin-dashboard-flows-so-authenticated-users-can-reach-the-dashboard-via-the-get-started-flow-and-place-orders-without-being-blocked-by-configuration-errors-when-properly-configured-keep-the-current-design-and-behavior-unchanged-except-for-error-fixes",
-      "title": "Fix the dashboard/admin-dashboard flows so authenticated users can reach the dashboard via the Get Started flow and place orders without being blocked by configuration errors when properly configured; keep the current design and behavior unchanged except for error fixes.",
+      "id": "feature-update-user-facing-error-help-text-related-to-static-hosting-configuration-so-it-references-the-correct-deployed-file-path-and-workflow-e-g-editing-the-deployed-runtime-config-json-and-ensure-the-troubleshooting-steps-are-accurate-and-actionable-in-english",
+      "title": "Update user-facing error/help text related to static hosting configuration so it references the correct deployed file path and workflow (e.g., editing the deployed runtime-config.json), and ensure the troubleshooting steps are accurate and actionable in English.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-improve-the-deployment-scripts-docs-so-that-when-deploying-to-the-internet-computer-the-build-reliably-injects-vite-backend-canister-id-retrieving-it-via-dfx-when-available-and-the-failure-mode-is-actionable-do-not-hardcode-canister-ids-into-version-control",
-      "title": "Improve the deployment scripts/docs so that when deploying to the Internet Computer, the build reliably injects VITE_BACKEND_CANISTER_ID (retrieving it via dfx when available), and the failure mode is actionable; do not hardcode canister IDs into version control.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -47,24 +38,26 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix deployment/config so VITE_BACKEND_CANISTER_ID is set/injected (detect existing backend canister ID if present, otherwise set up a backend canister) and redeploy so dashboard Get Started connects successfully.",
+      "summary": "Restore/roll back to Version 55 as the active project version and build it",
       "reqIds": [],
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "AR-2",
-      "summary": "Provide a static-site build output suitable for cPanel hosting, including an index.html entry point (and necessary assets) so user can download and self-host the website.",
+      "summary": "Ensure admin panel, dashboard, and order placement work by connecting to a functioning Motoko backend canister (fix backend canister configuration error)",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-3",
-      "summary": "Fix dashboard/admin dashboard issues preventing users from placing orders (\"ordering placing\" errors) while keeping current design and behavior.",
-      "reqIds": [],
+      "id": "AR-6",
+      "summary": "Ensure the dashboard, admin panel, and order placement flows function end-to-end against the Motoko backend when the backend canister ID is configured, including successful order creation from the cart/checkout flow and successful loading of user/admin order lists.",
+      "reqIds": [
+        "REQ-4"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Fix backend canister ID misconfiguration and enable static cPanel hosting build",
+  "projectName": "Restore Version 55 and fix backend canister configuration so dashboard, admin panel, and ordering work",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

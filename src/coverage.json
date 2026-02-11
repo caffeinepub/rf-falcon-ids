@@ -1,80 +1,79 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T05:29:56.415Z",
+  "generatedAt": "2026-02-11T03:35:27.815Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 4,
-    "implemented": 4,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a runtime-config fallback for the backend canister ID so the app can be hosted as a static site (e.g., on cPanel) without requiring build-time injection, while preserving the existing current behavior when VITE_BACKEND_CANISTER_ID is correctly set at build time.",
+        "summary": "Restore/roll back the project to Version 55 as the active codebase and rebuild the project from that version.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/runtime-config.json",
-          "frontend/src/utils/runtimeConfig.ts",
-          "frontend/src/utils/backendConnectivity.ts",
-          "frontend/src/components/BackendConnectionErrorScreen.tsx",
-          "frontend/src/components/BackendGate.tsx"
+          "frontend/DEPLOYMENT.md",
+          "frontend/PERF.md",
+          "frontend/.env.example"
         ],
         "matchedFiles": [
-          "frontend/public/runtime-config.json",
-          "frontend/src/utils/runtimeConfig.ts",
-          "frontend/src/utils/backendConnectivity.ts",
-          "frontend/src/components/BackendConnectionErrorScreen.tsx",
-          "frontend/src/components/BackendGate.tsx"
+          "frontend/.env.example"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Create a cPanel-friendly static deployment bundle and documentation: ensure the production build output includes an index.html entry point and all required assets, and add clear steps for uploading to cPanel including SPA routing configuration (refreshing deep links like /dashboard should work).",
+        "summary": "Fix the production configuration flow so the app can reliably determine the backend canister ID (via VITE_BACKEND_CANISTER_ID at build-time or via /runtime-config.json at runtime for static hosting), and ensure pages do not route to a generic error page due to missing canister ID when the runtime config is correctly set.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/DEPLOYMENT.md",
-          "frontend/public/.htaccess",
-          "frontend/index.html"
+          "frontend/src/utils/runtimeConfig.ts",
+          "frontend/src/utils/backendConnectivity.ts",
+          "frontend/src/hooks/useBackendConnectivity.ts",
+          "frontend/src/components/BackendGate.tsx",
+          "frontend/src/pages/ErrorPage.tsx",
+          "frontend/scripts/assert-vite-env.mjs",
+          "frontend/.env.production",
+          "frontend/public/runtime-config.json"
         ],
         "matchedFiles": [
-          "frontend/DEPLOYMENT.md",
-          "frontend/public/.htaccess",
-          "frontend/index.html"
+          "frontend/src/utils/runtimeConfig.ts",
+          "frontend/src/pages/ErrorPage.tsx",
+          "frontend/scripts/assert-vite-env.mjs",
+          "frontend/.env.production",
+          "frontend/public/runtime-config.json"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Fix the dashboard/admin-dashboard flows so authenticated users can reach the dashboard via the Get Started flow and place orders without being blocked by configuration errors when properly configured; keep the current design and behavior unchanged except for error fixes.",
+        "summary": "Update user-facing error/help text related to static hosting configuration so it references the correct deployed file path and workflow (e.g., editing the deployed runtime-config.json), and ensure the troubleshooting steps are accurate and actionable in English.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useActor.ts",
-          "frontend/src/hooks/useBackendHealth.ts",
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/AdminPanelPage.tsx",
-          "frontend/src/components/AdminGate.tsx"
+          "frontend/src/components/BackendConnectionErrorScreen.tsx",
+          "frontend/src/utils/runtimeConfig.ts",
+          "frontend/DEPLOYMENT.md",
+          "frontend/.env.example"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminGate.tsx"
+          "frontend/src/components/BackendConnectionErrorScreen.tsx",
+          "frontend/src/utils/runtimeConfig.ts",
+          "frontend/.env.example"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Improve the deployment scripts/docs so that when deploying to the Internet Computer, the build reliably injects VITE_BACKEND_CANISTER_ID (retrieving it via dfx when available), and the failure mode is actionable; do not hardcode canister IDs into version control.",
-        "status": "implemented",
+        "summary": "Ensure the dashboard, admin panel, and order placement flows function end-to-end against the Motoko backend when the backend canister ID is configured, including successful order creation from the cart/checkout flow and successful loading of user/admin order lists.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/scripts/deploy-mainnet.sh",
-          "frontend/scripts/assert-vite-env.mjs",
-          "frontend/.env.production",
-          "frontend/.env.example",
-          "frontend/DEPLOYMENT.md"
+          "frontend/src/App.tsx",
+          "frontend/src/pages/CartPage.tsx",
+          "frontend/src/hooks/orders/useCreateOrder.ts",
+          "frontend/src/hooks/orders/useUserOrders.ts",
+          "frontend/src/hooks/orders/useAllOrders.ts",
+          "frontend/src/components/AdminGate.tsx"
         ],
-        "matchedFiles": [
-          "frontend/.env.production",
-          "frontend/.env.example",
-          "frontend/DEPLOYMENT.md"
-        ]
+        "matchedFiles": []
       }
     ]
   },
@@ -86,16 +85,10 @@
     "frontend-implementation-plan.json",
     "frontend/.env.example",
     "frontend/.env.production",
-    "frontend/DEPLOYMENT.md",
-    "frontend/index.html",
-    "frontend/public/.htaccess",
     "frontend/public/runtime-config.json",
-    "frontend/src/components/AdminGate.tsx",
+    "frontend/scripts/assert-vite-env.mjs",
     "frontend/src/components/BackendConnectionErrorScreen.tsx",
-    "frontend/src/components/BackendGate.tsx",
-    "frontend/src/hooks/useBackendConnectivity.ts",
     "frontend/src/pages/ErrorPage.tsx",
-    "frontend/src/utils/backendConnectivity.ts",
     "frontend/src/utils/runtimeConfig.ts",
     "project_state.json",
     "scratch/component-selection.json",

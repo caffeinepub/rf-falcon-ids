@@ -14,6 +14,8 @@ export interface RuntimeConfigDiagnostics {
   isAuthenticated: boolean;
   environment: 'development' | 'production';
   source: 'build-time' | 'runtime-file' | 'none';
+  runtimeConfigAttempted: boolean;
+  runtimeConfigLoaded: boolean;
 }
 
 export interface RuntimeConfigValidation {
@@ -30,6 +32,7 @@ interface RuntimeConfigFile {
 
 let runtimeConfigCache: RuntimeConfigFile | null = null;
 let runtimeConfigFetchAttempted = false;
+let runtimeConfigLoadedSuccessfully = false;
 
 /**
  * Fetch runtime config from static JSON file (for static hosting scenarios)
@@ -48,15 +51,17 @@ async function fetchRuntimeConfig(): Promise<RuntimeConfigFile> {
   try {
     const response = await fetch('/runtime-config.json');
     if (!response.ok) {
-      console.warn('[Runtime Config] Failed to fetch runtime-config.json:', response.status);
+      console.warn('[Runtime Config] Failed to fetch /runtime-config.json:', response.status);
       runtimeConfigCache = {};
       return {};
     }
     const config = await response.json();
     runtimeConfigCache = config;
+    runtimeConfigLoadedSuccessfully = true;
+    console.log('[Runtime Config] Loaded /runtime-config.json successfully');
     return config;
   } catch (error) {
-    console.warn('[Runtime Config] Error loading runtime-config.json:', error);
+    console.warn('[Runtime Config] Error loading /runtime-config.json:', error);
     runtimeConfigCache = {};
     return {};
   }
@@ -90,11 +95,12 @@ export async function validateBackendCanisterId(): Promise<RuntimeConfigValidati
         isValid: false,
         canisterId: trimmedValue,
         error: 'invalid',
-        errorMessage: `Backend canister ID "${trimmedValue}" is not a valid Internet Computer principal. Expected format: xxxxx-xxxxx-xxxxx-xxxxx-xxx`,
+        errorMessage: `Build-time backend canister ID "${trimmedValue}" is not a valid Internet Computer principal. Expected format: xxxxx-xxxxx-xxxxx-xxxxx-xxx`,
         source: 'build-time',
       };
     }
 
+    console.log('[Runtime Config] Using build-time VITE_BACKEND_CANISTER_ID:', trimmedValue);
     return {
       isValid: true,
       canisterId: trimmedValue,
@@ -105,6 +111,7 @@ export async function validateBackendCanisterId(): Promise<RuntimeConfigValidati
   }
 
   // Fall back to runtime config file (for static hosting)
+  console.log('[Runtime Config] Build-time VITE_BACKEND_CANISTER_ID not set, attempting to load /runtime-config.json');
   const runtimeConfig = await fetchRuntimeConfig();
   const runtimeValue = runtimeConfig.backendCanisterId;
 
@@ -114,7 +121,7 @@ export async function validateBackendCanisterId(): Promise<RuntimeConfigValidati
       canisterId: null,
       error: 'missing',
       errorMessage:
-        'Backend canister ID is not configured. The VITE_BACKEND_CANISTER_ID environment variable must be set to a valid principal ID.',
+        'Backend canister ID is not configured. For IC deployment, set VITE_BACKEND_CANISTER_ID before building. For static hosting, edit /runtime-config.json in your deployed site.',
       source: 'none',
     };
   }
@@ -126,11 +133,12 @@ export async function validateBackendCanisterId(): Promise<RuntimeConfigValidati
       isValid: false,
       canisterId: trimmedRuntimeValue,
       error: 'invalid',
-      errorMessage: `Backend canister ID "${trimmedRuntimeValue}" is not a valid Internet Computer principal. Expected format: xxxxx-xxxxx-xxxxx-xxxxx-xxx`,
+      errorMessage: `Runtime backend canister ID "${trimmedRuntimeValue}" from /runtime-config.json is not a valid Internet Computer principal. Expected format: xxxxx-xxxxx-xxxxx-xxxxx-xxx`,
       source: 'runtime-file',
     };
   }
 
+  console.log('[Runtime Config] Using runtime /runtime-config.json backendCanisterId:', trimmedRuntimeValue);
   return {
     isValid: true,
     canisterId: trimmedRuntimeValue,
@@ -172,6 +180,7 @@ export async function getRuntimeConfigDiagnostics(
     isAuthenticated,
     environment: import.meta.env.DEV ? 'development' : 'production',
     source: validation.source,
+    runtimeConfigAttempted: runtimeConfigFetchAttempted,
+    runtimeConfigLoaded: runtimeConfigLoadedSuccessfully,
   };
 }
-
